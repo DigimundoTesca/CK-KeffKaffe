@@ -1,0 +1,47 @@
+<!--
+<nav class="navbar fixed-top navbar-light bg-faded msg-warning">
+  <marquee behavior="" direction="">
+    Su compañia tiene un adeudo con nosotros. Favor de ponerse al corriente :'v
+  </marquee>
+</nav>
+-->
+<nav class="navbar navbar-full navbar-dark navbar-base">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'users:login' %}"><h3>{{ page_title }}</h3></a>
+    <ul class="nav navbar-nav float-xs-right">
+      <li class="nav-item" id="link-sales">
+        <a class="nav-link" href="{% url 'sales:sales' %}">Ventas <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item" id="link-new-breakfast">
+        <a class="nav-link" href="{% url 'sales:new_breakfast'  %}">Desayunos</a>
+      </li>
+      <li class="nav-item" id="link-new-food">
+        <a class="nav-link" href="{% url 'sales:new_food'  %}">Comidas</a>
+      </li>
+      <li class="nav-item dropdown" id="link-kitchen">
+        <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Cocina</a>
+        <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
+          <a class="dropdown-item" href="{% url 'kitchen:kitchen' %}">Cocina</a>
+          <a class="dropdown-item" href="{% url 'kitchen:assembly' %}">Ensamble</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown" id="link-diners">
+        <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Comedor</a>
+        <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
+          <a class="dropdown-item" href="{% url 'diners:diners' %}">Accesos de hoy</a>
+          <a class="dropdown-item" href="{% url 'diners:diners_logs' %}">Historial de Accesos</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ user.username }}</a>
+        <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
+          {% if user.is_superuser %}
+          <a class="dropdown-item" href="{% url 'admin:login' %}">Panel de Control</a>
+          {% endif %}
+          <a class="dropdown-item" href="#">Configuración</a>
+          <a class="dropdown-item" href="{% url 'users:logout' %}">Cerrar sesión</a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
