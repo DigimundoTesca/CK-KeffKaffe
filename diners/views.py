@@ -6,7 +6,7 @@ from time import sleep
 import  pytz, json
 from datetime import date, datetime, timedelta, time
 from django.conf import settings
-
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -276,6 +276,7 @@ def RFID(request):
     else:
         return redirect('diners:diners')
 
+@login_required(login_url='users:login')
 def diners(request):
     count = 0
     diners_list = []    
@@ -296,6 +297,7 @@ def diners(request):
     }
     return render(request, template, context)
 
+@login_required(login_url='users:login')
 def diners_logs(request):
     all_entries = AccessLog.objects.all()
     diners = Diner.objects.all()
@@ -491,7 +493,7 @@ def diners_logs(request):
         }
         return render(request, template, context)    
 
-
+@login_required(login_url='users:login')
 def diners_score(request):
     template = 'diners_score.html'
     title = 'Rating'
@@ -502,7 +504,7 @@ def diners_score(request):
     return render (request, template, context)
 
 # --------------------------- TEST ------------------------
-
+@login_required(login_url='users:login')
 def test(request):
     rfids = [ 52661 ,]
 
