@@ -25,3 +25,14 @@ class AccessLog(models.Model):
 
     def __str__(self):
         return self.RFID
+
+
+class Score(models.Model):
+
+    class Meta:
+        verbose_name = "Calificación"
+        verbose_name_plural = "Calificaciones"
+
+    def __str__(self):
+        pass
+    

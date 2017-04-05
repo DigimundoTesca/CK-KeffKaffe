@@ -7,7 +7,7 @@ urlpatterns = [
     url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
     url(r'^admin-cloud/', admin.site.urls, name='admin'),
     url(r'^', include('users.urls')),
-    # url(r'^', include('branchoffices.urls')),
+    url(r'^', include('branchoffices.urls')),
     url(r'^', include('products.urls')),
     url(r'^', include('sales.urls')),
     # url(r'^', include('orders.urls')),

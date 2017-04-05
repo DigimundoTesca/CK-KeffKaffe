@@ -567,6 +567,15 @@ small {
 .dropdown-menu {
   margin-left: -5rem !important;
 }
+.emoji {
+  width: 75%;
+  height: 100%;
+}
+.emoji-container {
+  border: 1px red solid;
+  display: flex;
+  
+}
 .form-register-customer {
   margin: 2rem 0;
 }

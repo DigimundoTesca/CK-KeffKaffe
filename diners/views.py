@@ -492,6 +492,15 @@ def diners_logs(request):
         return render(request, template, context)    
 
 
+def diners_score(request):
+    template = 'diners_score.html'
+    title = 'Rating'
+    context = {
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title,
+    }
+    return render (request, template, context)
+
 # --------------------------- TEST ------------------------
 
 def test(request):

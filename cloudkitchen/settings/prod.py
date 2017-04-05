@@ -1,6 +1,6 @@
 from cloudkitchen.settings.base import *
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
