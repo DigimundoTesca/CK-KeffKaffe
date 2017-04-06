@@ -18,26 +18,36 @@
     </div>
     <div class="col-xs-6 col-md-4 col-lg-3">
       <figure class="emoji-container emoji-lv-3">
-        <img class="emoji" src="{% static 'images/Slightly_Smiling_Face_Emoji.png' %}" alt="Slightly_Smiling_Face_Emoji">
+        <img class="emoji" src="{% static 'images/Smiling_Emoji_with_Smiling_Eyes.png' %}" alt="Smiling_Emoji_with_Smiling_Eyes">
       </figure>
     </div>
     <div class="col-xs-6 col-md-4 col-lg-3 ">
       <figure class="emoji-container emoji-lv-4">
-        <img class="emoji" src="{% static 'images/Smiling_Emoji_with_Smiling_Eyes.png' %}" alt="Smiling_Emoji_with_Smiling_Eyes">
+        <img class="emoji" src="{% static 'images/Heart_Eyes_Emoji.png' %}" alt="Heart_Eyes_Emoji">
       </figure>
     </div>
   </div>
-  <div class="container-rating-footer mt-3 ">
-    <h3 class="text-xs-center container-footer-title"></h3>
+  <div class="rating-footer mt-2 mb-3">
+    <h3 class="text-xs-center rating-footer-title"></h3>
     <div class="container">
       <div class="row">
       {% for element in elements %}
         <div class="col-xs-6 col-lg-4 mt-1">
-          <button class="btn btn-outline-primary btn-lg btn-block" id="element-id-{{ element.id }}">
+          <button class="btn btn-outline-primary btn-lg btn-block btn-option" id="element-id-{{ element.id }}">
             <span>{{ element }}</span>
           </button>
         </div>
         {% endfor %}
+      </div>
+      <div class="row mt-3">
+        <div class="col-xs-12">
+          <button id="btn-send-score" class="btn btn-block btn-success">
+            <span class="btn-text">Enviar</span>
+            <span class="icon-container">
+              <i class="material-icons">send</i>
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -57,21 +67,37 @@ $(function() {
   let active_buttons = [];
 
   $(this).on('click', '.emoji-container', function(event) {
-    let emoji_level = $(this).attr('class');
-    emoji_level = emoji_level.split(' ');
+    let emoji = $(this);
+    emoji_level = emoji.attr('class').split(' ');
 
     for (let i = 0; i < emoji_level.length; i++) {
       if (emoji_level[i].search('emoji-lv') >= 0) {
         emoji_level = emoji_level[i].split('-')[2];
+        emoji = emoji_level[i];
       };
     };
 
-    $('.container-rating-footer').show(500);
     if (emoji_level >= 1 && emoji_level <= 2 ) {
-      $('.container-footer-title').text('¿Qué salió mal?')
+      $('.rating-footer-title').text('¿Qué salió mal?')
+      let buttons = $('.btn-option');
+      buttons.each(function(index, el) {
+        elemento = $(this);
+        console.log(elemento);
+        elemento.removeClass('btn-outline-primary');
+        elemento.addClass('btn-outline-danger')
+      });
     } else {
-      $('.container-footer-title').text('¿Qué salió bien?');
+      $('.rating-footer-title').text('¿Qué salió bien?');
+      let buttons = $('.btn-option');
+      buttons.each(function(index, el) {
+        elemento = $(this);
+        console.log(elemento);
+        elemento.removeClass('btn-outline-danger');
+        elemento.addClass('btn-outline-primary')
+      });
     }
+
+    $('.rating-footer').show(300);
   });
 
 });
