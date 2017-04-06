@@ -1,5 +1,5 @@
 from django.contrib import admin
-from diners.models import Diner, AccessLog
+from .models import Diner, AccessLog, ElementScore
 
 from actions import export_as_excel
 
@@ -20,3 +20,9 @@ class AccessLogAdmin(admin.ModelAdmin):
     list_filter = ('diner', 'RFID', 'access_to_room', )
     search_fields = ('RFID',)
     date_hierarchy = 'access_to_room'
+
+
+@admin.register(ElementScore)
+class ElementScoreAdmin(admin.ModelAdmin):
+    list_display = ('id', 'element', )
+    ordering = ('id',) 

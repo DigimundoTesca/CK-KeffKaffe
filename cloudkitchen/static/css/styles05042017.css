@@ -206,6 +206,9 @@ small {
   background-color: #eaeaea;
   color: #1e3c50;
 }
+.br {
+  height: 2em;
+}
 .btn-extra-ing {
   width: 100%;
   text-overflow:ellipsis;
@@ -297,6 +300,9 @@ small {
   min-height: 80vh;
   overflow: hidden;
 }
+.container-rating .container-rating-footer {
+  display: none;
+}
 .container-rating .rating-title {
   width: 100%;
   display: block;
@@ -309,20 +315,19 @@ small {
   cursor: pointer;
   display: flex;
   justify-content: center;
-  height: 150px;
-  width: 150px;
+  height: 160px;
+  width: 160px;
 }
 .container-rating .emoji {
   display: block;
   transition: all 0.3s ease;
-  height: 90%;
-  width: 90%;
+  height: 85%;
+  width: 85%;
 }
-.container-rating .emoji-container:hover > .emoji {
+.container-rating .emoji-container .emoji:hover {
   opacity: 0.8;
   height: 100%;
   width: 100%;
-  content: 'hola';
 }
 .container-sales {
   margin: 0 0.5rem;
@@ -584,6 +589,7 @@ small {
 .container-error .alert {
   margin-top: 2rem;
 }
+
 .custom-select {
   display: inline-block;
   max-width: 100%;

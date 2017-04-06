@@ -27,8 +27,18 @@ class AccessLog(models.Model):
         return self.RFID
 
 
-class Score(models.Model):
+class ElementScore(models.Model):
+    element = models.CharField(max_length=48, default='', unique=True)
 
+    class Meta:
+        verbose_name = "Elemento a valorar"
+        verbose_name_plural = "Elementos a valorar"
+
+    def __str__(self):
+        return self.element
+
+
+class Score(models.Model):
     class Meta:
         verbose_name = "Calificación"
         verbose_name_plural = "Calificaciones"
