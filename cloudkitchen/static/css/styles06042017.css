@@ -227,6 +227,29 @@ small {
   color: #0275d8;
   border: 1px solid #0275d8;
 }
+.btn-outline-1,
+.btn-outline-2,
+.btn-outline-3,
+.btn-outline-4 {
+  color: #353535;
+  /*border-radius: 0.25rem;*/
+}
+.btn-outline-1:focus {
+  background: #E57373;
+  color: #fefefe;
+}
+.btn-outline-2:focus {
+  background: #FFE082;
+  color: #353535;
+}
+.btn-outline-3:focus {
+  background: #90CAF9;
+  color: #353535;
+}
+.btn-outline-4:focus {
+  background: #81C784;
+  color: #fefefe;
+}
 .card-scroll {
   overflow-y: scroll;
 }

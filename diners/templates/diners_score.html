@@ -33,7 +33,7 @@
       <div class="row">
       {% for element in elements %}
         <div class="col-xs-6 col-lg-4 mt-1">
-          <button class="btn btn-outline-primary btn-lg btn-block btn-option" id="element-id-{{ element.id }}">
+          <button class="btn btn-lg btn-block btn-option" id="element-id-{{ element.id }}">
             <span>{{ element }}</span>
           </button>
         </div>
@@ -69,34 +69,54 @@ $(function() {
   $(this).on('click', '.emoji-container', function(event) {
     let emoji = $(this);
     emoji_level = emoji.attr('class').split(' ');
+    // console.log(emoji);
 
+    /**
+     * Gets the emoji level
+     */
     for (let i = 0; i < emoji_level.length; i++) {
       if (emoji_level[i].search('emoji-lv') >= 0) {
         emoji_level = emoji_level[i].split('-')[2];
-        emoji = emoji_level[i];
+        // emoji = emoji_level[i];
+        // console.log(emoji_level);
       };
     };
-
-    if (emoji_level >= 1 && emoji_level <= 2 ) {
-      $('.rating-footer-title').text('¿Qué salió mal?')
+    if (emoji_level == 1) {
+      $('.rating-footer-title').text('¿Qué salió mal?');
       let buttons = $('.btn-option');
+
       buttons.each(function(index, el) {
         elemento = $(this);
-        console.log(elemento);
-        elemento.removeClass('btn-outline-primary');
-        elemento.addClass('btn-outline-danger')
+        elemento.removeClass('btn-outline-2 btn-outline-3 btn-outline-4');
+        elemento.addClass('btn-outline-1');
+      });
+    } else if (emoji_level == 2) {
+      $('.rating-footer-title').text('¿Qué salió mal?');
+      let buttons = $('.btn-option');
+
+      buttons.each(function(index, el) {
+        elemento = $(this);
+        elemento.removeClass('btn-outline-1 btn-outline-3 btn-outline-4');
+        elemento.addClass('btn-outline-2');
+      });
+    } else if (emoji_level == 3) {
+      $('.rating-footer-title').text('¿Qué salió bien?');
+      let buttons = $('.btn-option');
+
+      buttons.each(function(index, el) {
+        elemento = $(this);
+        elemento.removeClass('btn-outline-1 btn-outline-2 btn-outline-4');
+        elemento.addClass('btn-outline-3');
       });
     } else {
       $('.rating-footer-title').text('¿Qué salió bien?');
       let buttons = $('.btn-option');
       buttons.each(function(index, el) {
         elemento = $(this);
-        console.log(elemento);
-        elemento.removeClass('btn-outline-danger');
-        elemento.addClass('btn-outline-primary')
+        elemento.removeClass('btn-outline-1 btn-outline-2 btn-outline-3');
+        elemento.addClass('btn-outline-4')
       });
     }
-
     $('.rating-footer').show(300);
   });
 
