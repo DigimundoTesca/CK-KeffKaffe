@@ -33,14 +33,14 @@
       <div class="row">
         {% for element in elements %}
         <div class="col-xs-6 col-lg-4 mt-1">
-          <label class="btn btn-lg btn-block btn-option">
+          <label class="btn btn-lg btn-block btn-option" id="element-rate-{{ element.id }}">
             <input id="checkbox-rate" type="checkbox" class="custom-control-input">
             <span class="custom-control-description">{{ element }}</span>
           </label> 
         </div>
         {% endfor %}
       </div>
-      <div class="row mt-3">
+      <div class="row mt-3 hidde">
         <div class="col-xs-12">
           <button id="btn-writte-commentary" class="btn btn-block btn-outline-primary">
             <span class="btn-text">Sugerencias</span>
@@ -77,20 +77,21 @@
 $(function() {
   let data = {
     'score': 0,
+    'elements_id': []
   }
   /**
-   * Configures the button colors
+   * Sets the buttons classes
    */
   $(this).on('click', '.emoji-container', function(event) {
     let emoji = $(this);
     emoji_level = emoji.attr('class').split(' ');
-
     /**
      * Gets the emoji level
      */
     for (let i = 0; i < emoji_level.length; i++) {
       if (emoji_level[i].search('emoji-lv') >= 0) {
         emoji_level = emoji_level[i].split('-')[2];
+        data['score'] = emoji_level;
       };
     };
 
@@ -134,14 +135,30 @@ $(function() {
     $('.rating-footer').show(300);
   });
 
+  /**
+   * Sets the buttons colors
+   */
   $(this).on('change', '#checkbox-rate', function(event) {
     let element = $(this);
     let element_parent = $(this).parent();
+    let element_parent_id = element_parent[0].id.split('-')[2];
 
     if (element[0].checked == false) {
       element_parent.removeClass('selected');
+      for (var i = 0; i < data['elements_id'].length; i++) {
+        if (data['elements_id'][i] == element_parent_id) {
+          data['elements_id'].splice(i, 1);
+        }
+      }
     } else {
       element_parent.addClass('selected');
+      data['elements_id'].push(element_parent_id)
+    }
+
+    if (data['elements_id'].length > 0) {
+      $('#btn-writte-commentary').parent().parent().show('fast');
+    } else {
+      $('#btn-writte-commentary').parent().parent().hide('fast');
     }
   });
 

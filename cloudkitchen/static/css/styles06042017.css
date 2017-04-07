@@ -361,6 +361,9 @@ small {
   font-size: 0.8rem;
   background: #dedede;
 }
+.container-rating .rating-footer .hidde {
+  display: none;  
+}
 .container-rating .rating-footer #btn-writte-commentary,
 .container-rating .rating-footer #btn-send-score {
   display: flex;
