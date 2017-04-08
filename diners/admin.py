@@ -30,7 +30,7 @@ class ElementToEvaluateAdmin(admin.ModelAdmin):
 
 @admin.register(Suggestion)
 class SuggestionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'suggestion', 'creation_date', 'satisfaction_rating' )
+    list_display = ('id', 'shortened_suggestion', 'creation_date', 'satisfaction_rating' )
     ordering = ('id',) 
 
 

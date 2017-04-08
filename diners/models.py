@@ -48,8 +48,14 @@ class Suggestion(models.Model):
         verbose_name_plural = "Sugerencias"
 
     def __str__(self):
-        return self.suggestion
+        text = str(self.suggestion)
+        text = (text[:48] + '...') if len(text) > 12 else text
+        return text
     
+    def shortened_suggestion(self):
+        text = str(self.suggestion)
+        text = (text[:48] + '...') if len(text) > 12 else text
+        return text
 
 class SatisfactionRating(models.Model):
     elements = models.ManyToManyField(ElementToEvaluate)
@@ -63,7 +69,5 @@ class SatisfactionRating(models.Model):
         verbose_name_plural = "Índices de Satisfacción"
 
     def __str__(self):
-        text = str(self.suggestion)
-        text = (text[:18] + '..') if len(text) > 24 else text
-        return '%s: %s' % self.satisfaction_rating, text
+        return self.satisfaction_rating
     
