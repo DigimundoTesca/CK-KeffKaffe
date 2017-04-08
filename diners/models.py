@@ -27,22 +27,43 @@ class AccessLog(models.Model):
         return self.RFID
 
 
-class ElementScore(models.Model):
+class ElementToEvaluate(models.Model):
     element = models.CharField(max_length=48, default='', unique=True)
 
     class Meta:
-        verbose_name = "Elemento a valorar"
-        verbose_name_plural = "Elementos a valorar"
+        verbose_name = "Elemento a evaluar"
+        verbose_name_plural = "Elementos a evaluar"
 
     def __str__(self):
         return self.element
 
 
-class Score(models.Model):
+class Suggestion(models.Model):
+    suggestion = models.TextField(default='')
+    creation_date = models.DateTimeField(auto_now_add=True)
+    satisfaction_rating = models.PositiveIntegerField(default=1)
+
     class Meta:
-        verbose_name = "Calificación"
-        verbose_name_plural = "Calificaciones"
+        verbose_name = "Segerencia"
+        verbose_name_plural = "Sugerencias"
 
     def __str__(self):
-        pass
+        return self.suggestion
+    
+
+class SatisfactionRating(models.Model):
+    elements = models.ManyToManyField(ElementToEvaluate)
+    satisfaction_rating = models.PositiveIntegerField(default=1)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    suggestion = models.ForeignKey(Suggestion, null=True, blank=True)
+
+
+    class Meta:
+        verbose_name = "Índice de Satisfacción"
+        verbose_name_plural = "Índices de Satisfacción"
+
+    def __str__(self):
+        text = str(self.suggestion)
+        text = (text[:18] + '..') if len(text) > 24 else text
+        return '%s: %s' % self.satisfaction_rating, text
     

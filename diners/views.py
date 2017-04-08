@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.db.models import Max, Min
 
-from .models import AccessLog, Diner, ElementScore
+from .models import AccessLog, Diner, ElementToEvaluate
 from cloudkitchen.settings.base import PAGE_TITLE
 
 
@@ -497,7 +497,7 @@ def diners_logs(request):
 def diners_score(request):
     template = 'diners_score.html'
     title = 'Rating'
-    elements = ElementScore.objects.all()
+    elements = ElementToEvaluate.objects.all()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,

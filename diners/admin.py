@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Diner, AccessLog, ElementScore
+from .models import Diner, AccessLog, ElementToEvaluate, Suggestion, SatisfactionRating
 
 from actions import export_as_excel
 
@@ -22,7 +22,20 @@ class AccessLogAdmin(admin.ModelAdmin):
     date_hierarchy = 'access_to_room'
 
 
-@admin.register(ElementScore)
-class ElementScoreAdmin(admin.ModelAdmin):
+@admin.register(ElementToEvaluate)
+class ElementToEvaluateAdmin(admin.ModelAdmin):
     list_display = ('id', 'element', )
     ordering = ('id',) 
+
+
+@admin.register(Suggestion)
+class SuggestionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'suggestion', 'creation_date', 'satisfaction_rating' )
+    ordering = ('id',) 
+
+
+@admin.register(SatisfactionRating)
+class SatisfactionRatingAdmin(admin.ModelAdmin):
+    list_display = ('id', 'creation_date', 'satisfaction_rating', 'suggestion' )
+    ordering = ('id',) 
+    

@@ -162,6 +162,22 @@ $(function() {
     }
   });
 
+  $(this).on('click', '#btn-writte-commentary', function(event) {
+    swal({
+      title: 'Tu opinión es importante',
+      type: 'question',
+      input: 'textarea',
+      showCancelButton: true
+    }).then(function (text) {
+      if (text) {
+        swal({
+          type: 'success',
+          title: 'Los grandes cambios comienzan con una opinión',
+          text: '¡¡Gracias!!'
+          });
+      }
+    })
+  });
 });
 </script>
 {% endblock javascript %}
