@@ -34,6 +34,9 @@ urlpatterns = [
     url(r'^categories/$', views.categories, name='categories'),
     url(r'^categories/new/$', views.new_category, name='new_category'),
     url(r'^categories/([A-Za-z]+)/$', views.categories_supplies, name='categories_supplies'),
+
+    # Catering
+    url(r'^catering/$', views.catering, name='catering'),
 ]
 
 # test

@@ -1,0 +1,26 @@
+{% extends "base/base_nav_footer.html" %}
+{% block content %}
+	<div class="col-xs-6 col-md-4">
+		<table class="table table-kitchen table-striped table-hover">		
+			<thead class="thead-inverse">
+				<tr>
+					<th>Nombre</th>
+					<th>Stock</th>
+				</tr>
+			</thead>
+			<tbody>
+				
+				{% for stock in stock_supplies %}
+					<tr>						
+						<td>{{ stock.Nombre }}</td>
+						<td>{{ stock.Cantidad }}</td>
+					</tr>
+				{% endfor %}
+				
+			</tbody>
+		</table>
+		
+	</div>
+{% endblock content %}
+{% block javascript %}
+{% endblock javascript %}

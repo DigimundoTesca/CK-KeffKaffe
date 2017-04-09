@@ -10,6 +10,7 @@ from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm
 from products.models import Cartridge, Supply, SuppliesCategory
+from kitchen.models import Warehouse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -84,7 +85,7 @@ def test(request):
 
 
 # -------------------------------------  Providers -------------------------------------
-@login_required(login_url='users:login')
+@login_required(login_url='users:login')    
 def suppliers(request):
     suppliers_list = Supplier.objects.order_by('id')
     template = 'suppliers/suppliers.html'
@@ -330,3 +331,47 @@ def cartridge_modify(request, pk):
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
+
+# -------------------------------------  Catering -------------------------------------
+
+def get_supplies_on_stock():
+
+    stock_list = []
+    elements = Warehouse.objects.all()    
+    for element in elements:
+        stock_object = {
+            'Nombre' : element.supply,
+            'Gasto' : element.waste,
+            'Cantidad' :  element.cost,
+        }
+        stock_list.append(stock_object)
+    return stock_list
+
+def get_prediction_supplies():
+    prediction = []  
+
+    predict_object={
+        'name' : "Papa horneada",
+        'cantidad' : 10,
+    }      
+
+    prediction.append(predict_object)
+
+    return prediction
+
+@login_required(login_url='users:login')
+def catering(request):
+
+    print(get_prediction_supplies())
+    
+    template = 'catering/catering.html'
+    title = 'Abastecimiento'
+    context = {        
+        'title': title,
+        'stock_supplies' : get_supplies_on_stock(),
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
+
+
+
