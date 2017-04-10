@@ -21,6 +21,35 @@
 		</table>
 		
 	</div>
+	<div class="col-xs-6 col-md-4">
+		<table class="table table-kitchen table-striped table-hover">		
+			<thead class="thead-inverse">
+				<tr>
+					<th>Nombre</th>
+					<th>Cantidad</th>
+					<th>Costo</th>
+					<th>Costo Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				
+				{% for required in required_supplies %}
+					<tr>						
+						<td>{{ required.supply_name }}</td>
+						<td>{{ required.cantidad }}</td>
+						<td>{{ required.costo }}</td>
+						<td>{{ required.full_cost }}</td>
+					</tr>
+				{% endfor %}
+				
+			</tbody>
+		</table>
+		
+	</div>
+
+	<p>Costo total de Insumos {{total_cost}}</p>
+
+
 {% endblock content %}
 {% block javascript %}
 {% endblock javascript %}

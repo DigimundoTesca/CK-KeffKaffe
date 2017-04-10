@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm
-from products.models import Cartridge, Supply, SuppliesCategory
+from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -23,7 +23,7 @@ class Create_Supply(CreateView):
     model = Supply
     fields = ['name','category','barcode','supplier','storage_required','presentation_unit','presentation_cost',
         'measurement_quantity','measurement_unit','optimal_duration','optimal_duration_unit','location','image']
-    template_name = 'new_supply.html'   
+    template_name = 'supplies/new_supply.html'   
 
     def form_valid(self,form):
         self.object = form.save()        
@@ -33,7 +33,7 @@ class Update_Supply(UpdateView):
     model = Supply
     fields = ['name','category','barcode','supplier','storage_required','presentation_unit','presentation_cost',
         'measurement_quantity','measurement_unit','optimal_duration','optimal_duration_unit','location','image']
-    template_name = 'new_supply.html'
+    template_name = 'supplies/new_supply.html'
 
     def form_valid(self,form):
         self.object = form.save()
@@ -41,7 +41,7 @@ class Update_Supply(UpdateView):
 
 class Delete_Supply(DeleteView):
     model = Supply
-    template_name = 'delete_supply.html'
+    template_name = 'supplies/delete_supply.html'
 
     def delete(self, request, *args, **kwargs):        
         self.object = self.get_object()        
@@ -334,6 +334,44 @@ def cartridge_modify(request, pk):
 
 # -------------------------------------  Catering -------------------------------------
 
+def get_required_supplies():
+    required_supplies_list = []    
+
+    predictions = get_prediction_supplies()
+    cartridges = Cartridge.objects.filter(name__contains="Papa") 
+    
+    for prediction in predictions:
+        for cartridge in cartridges:
+            if prediction['name'] == cartridge:
+                ingredientes = CartridgeRecipe.objects.filter(cartridge=cartridge)              
+                for ingrediente in ingredientes:
+                    name = ingrediente.supply.name
+                    cost = ingrediente.supply.presentation_cost
+                    cantidad = ingrediente.quantity                    
+                    if(len(required_supplies_list)==0):
+                        required_suppply_object = {
+                            'supply_name' : name,
+                            'cantidad' : cantidad,
+                            'costo' : cost,
+                        }                   
+                    for required_supplies in required_supplies_list:
+
+                        if name in required_supplies_list:                            
+                            required_supplies['cantidad'] += cantidad
+                        else:                            
+                            required_suppply_object = {
+                                'supply_name' : name,
+                                'cantidad' : cantidad,
+                                'costo' : cost,
+                            }
+                    required_supplies_list.append(required_suppply_object)
+
+    for required_supplies in required_supplies_list:
+        required_supplies["full_cost"] = required_supplies['costo']*required_supplies['cantidad']
+
+    return required_supplies_list
+
+
 def get_supplies_on_stock():
 
     stock_list = []
@@ -350,25 +388,36 @@ def get_supplies_on_stock():
 def get_prediction_supplies():
     prediction = []  
 
-    predict_object={
-        'name' : "Papa horneada",
-        'cantidad' : 10,
-    }      
+    cartridges = Cartridge.objects.filter(name__contains="Papa")  
 
-    prediction.append(predict_object)
+    for cartridge in cartridges:
+
+        predict_object={
+            'name' : cartridge,
+            'cantidad' : 10,
+        }      
+
+        prediction.append(predict_object)
 
     return prediction
 
 @login_required(login_url='users:login')
 def catering(request):
 
-    print(get_prediction_supplies())
+    total_cost = 0;
+
+    required_supplies = get_required_supplies()
+
+    for required in required_supplies:
+        total_cost = total_cost + required['full_cost']
     
     template = 'catering/catering.html'
     title = 'Abastecimiento'
     context = {        
         'title': title,
         'stock_supplies' : get_supplies_on_stock(),
+        'required_supplies' :required_supplies,
+        'total_cost' : total_cost,
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
