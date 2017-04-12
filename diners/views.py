@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.db.models import Max, Min
 
-from .models import AccessLog, Diner, ElementToEvaluate, Suggestion
+from .models import AccessLog, Diner, ElementToEvaluate, Suggestion, SatisfactionRating
 from cloudkitchen.settings.base import PAGE_TITLE
 
 
@@ -494,13 +494,39 @@ def diners_logs(request):
         return render(request, template, context)    
 
 @login_required(login_url='users:login')
-def new_satisfaction_rating(request):
+def satisfaction_rating(request):
     if request.method == 'POST':
         if request.POST['type'] == 'suggestion':
             suggestion = request.POST['suggestion']
-            new_suggestion = Suggestion.objects.create(suggestion=suggestion)
+            satisfaction_rating = request.POST['satisfaction_rating']
+            new_suggestion = Suggestion.objects.create(
+                suggestion=suggestion,
+                satisfaction_rating=satisfaction_rating)
             new_suggestion.save()
-            return JsonResponse({'data': 'exito :v'})
+            return JsonResponse({'suggestion_id': new_suggestion.id})
+        if request.POST['type'] == 'satisfaction_rating':
+            satisfaction_rating = request.POST['satisfaction_rating']
+            elements_list = json.loads(request.POST['elements_id'])
+
+            if request.POST['suggestion_id']:
+                suggestion_id = int(request.POST['suggestion_id'])
+                suggestion = Suggestion.objects.get(id=suggestion_id)
+                new_satisfaction_rating = SatisfactionRating.objects.create(
+                    suggestion=suggestion,
+                    satisfaction_rating=satisfaction_rating
+                )
+            else:
+                new_satisfaction_rating = SatisfactionRating.objects.create(
+                    satisfaction_rating=satisfaction_rating
+                )
+            new_satisfaction_rating.save();
+
+            for element in elements_list:
+                new_element = ElementToEvaluate.objects.get(id=element)
+                new_satisfaction_rating.elements.add(new_element)
+                new_satisfaction_rating.save()
+            return JsonResponse({'status':'ready'})
+
 
     template = 'diners_score.html'
     title = 'Rating'

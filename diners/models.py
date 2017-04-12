@@ -69,5 +69,6 @@ class SatisfactionRating(models.Model):
         verbose_name_plural = "Índices de Satisfacción"
 
     def __str__(self):
-        return self.satisfaction_rating
+        return '%s' % self.satisfaction_rating
+
     

@@ -11,7 +11,7 @@ urlpatterns = [
     url(r'^diners/rfid/$', views.RFID, name='rfid'),
     url(r'^diners/$', views.diners, name='diners'),
     url(r'^diners/logs/$', views.diners_logs, name='diners_logs'),
-    url(r'^diners/satisfaction-rating/$', views.new_satisfaction_rating, name='new_satisfaction_rating'),
+    url(r'^diners/satisfaction-rating/$', views.satisfaction_rating, name='satisfaction_rating'),
 
 ]
 

@@ -52,7 +52,7 @@
       </div>
       <div class="row mt-1">
         <div class="col-xs-12">
-          <button id="btn-send-score" class="btn btn-block btn-success">
+          <button id="btn-send-score" class="btn btn-block btn-success" disabled=true>
             <span class="btn-text">Enviar</span>
             <span class="icon-container">
               <i class="material-icons">send</i>
@@ -77,9 +77,11 @@
 <script type="text/javascript" charset="utf-8" async>
 $(function() {
   let data = {
-    'score': 0,
-    'elements_id': []
+    'satisfaction_rating': 0,
+    'elements_id': [],
+    'suggestion_id': null,
   }
+
   /**
    * Sets the buttons classes
    */
@@ -92,7 +94,7 @@ $(function() {
     for (let i = 0; i < emoji_level.length; i++) {
       if (emoji_level[i].search('emoji-lv') >= 0) {
         emoji_level = emoji_level[i].split('-')[2];
-        data['score'] = emoji_level;
+        data['satisfaction_rating'] = emoji_level;
       };
     };
 
@@ -158,8 +160,10 @@ $(function() {
 
     if (data['elements_id'].length > 0) {
       $('#btn-writte-commentary').parent().parent().show('fast');
+      $('#btn-send-score').attr('disabled', false);
     } else {
       $('#btn-writte-commentary').parent().parent().hide('fast');
+      $('#btn-send-score').attr('disabled', true);
     }
   });
 
@@ -174,15 +178,14 @@ $(function() {
       showCancelButton: true
     }).then(function (suggestion) {
       if (suggestion) {
-        console.log("hay comentario");
         $.ajax({
-          url: "{% url 'diners:new_satisfaction_rating' %}",
+          url: "{% url 'diners:satisfaction_rating' %}",
           type: 'POST',
           data: {
             csrfmiddlewaretoken: '{{ csrf_token }}',
             'suggestion': suggestion,
             'type': 'suggestion',
-            'satisfaction_rating': data['score'],
+            'satisfaction_rating': data['satisfaction_rating'],
           },
           traditional: true,
           datatype: 'jsonp',
@@ -193,7 +196,7 @@ $(function() {
             swal.enableLoading();
           },
           success: function(result) {
-            console.log(result);
+            data['suggestion_id'] = result['suggestion_id'];
             swal({
               title: 'Los grandes cambios comienzan con una opinión',
               text: '¡Gracias!',
@@ -208,14 +211,74 @@ $(function() {
           },
 
           error: function(result, jqXHR, textStatus, errorThrown) {
+            swal({
+              title: 'Ha surgido un problema en el servidor',
+              text: 'Intente más tarde.',
+              type: "error",
+              showConfirmButton: false
+            }).then(
+              function(){},
+              function (dismiss) {}
+            );
             console.log(result);
           },
         });
-
-
       }
-    })
+    });
   });
+
+  $(this).on('click', '#btn-send-score', function(event) {
+    $.ajax({
+      url: "{% url 'diners:satisfaction_rating' %}",
+      type: 'POST',
+      data: {
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+        'satisfaction_rating': data['satisfaction_rating'],
+        'elements_id': JSON.stringify(data['elements_id']),
+        'suggestion_id': data['suggestion_id'],
+        'type': 'satisfaction_rating',
+      },
+      traditional: true,
+      datatype: 'jsonp',
+      beforeSend: function(){
+        swal({
+            title: "Enviando comentario",
+          });
+        swal.enableLoading();
+      },
+      success: function(result) {
+        console.log(result);
+        swal({
+          title: 'Gracias por tu retroalimentación',
+          text: 'Trabajamos diario en mejorar.',
+          type: "success",
+          timer: 3000,
+          showConfirmButton: false
+        }).then(
+          function(){
+          },
+          function (dismiss) {
+            location.reload();
+          }
+        );
+        $('#btn-writte-commentary').attr('disabled', true);
+        $('#btn-send-score').attr('disabled', true);        
+      },
+      error: function(result, jqXHR, textStatus, errorThrown) {
+        swal({
+          title: 'Ha surgido un problema en el servidor',
+          text: 'Intente más tarde.',
+          type: "error",
+          showConfirmButton: false
+        }).then(
+          function(){},
+          function (dismiss) {}
+        );
+        console.log(result);
+      },
+    });
+  });
+
 
   
 });

@@ -16,7 +16,7 @@ class DinerAdmin(admin.ModelAdmin):
 @admin.register(AccessLog)
 class AccessLogAdmin(admin.ModelAdmin):
     list_display = ('id', 'RFID', 'diner', 'access_to_room', )
-    ordering = ('access_to_room',) 
+    ordering = ('-access_to_room',) 
     list_filter = ('diner', 'RFID', 'access_to_room', )
     search_fields = ('RFID',)
     date_hierarchy = 'access_to_room'
@@ -31,11 +31,15 @@ class ElementToEvaluateAdmin(admin.ModelAdmin):
 @admin.register(Suggestion)
 class SuggestionAdmin(admin.ModelAdmin):
     list_display = ('id', 'shortened_suggestion', 'creation_date', 'satisfaction_rating' )
-    ordering = ('id',) 
+    ordering = ('-creation_date',) 
 
 
 @admin.register(SatisfactionRating)
 class SatisfactionRatingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'creation_date', 'satisfaction_rating', 'suggestion' )
-    ordering = ('id',) 
+    list_display = ('id', 'creation_date', 'satisfaction_rating', 'suggestion', 'selected_elements')
+    ordering = ('-creation_date',) 
+    
+    def selected_elements(self, obj):
+        return ",\n".join([p.element for p in obj.elements.all()])
+
     
