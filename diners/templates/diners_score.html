@@ -40,7 +40,7 @@
         </div>
         {% endfor %}
       </div>
-      <div class="row mt-3 hidde">
+      <div class="row mt-3 hidden">
         <div class="col-xs-12">
           <button id="btn-writte-commentary" class="btn btn-block btn-outline-primary">
             <span class="btn-text">Sugerencias</span>
@@ -56,6 +56,7 @@
             <span class="btn-text">Enviar</span>
             <span class="icon-container">
               <i class="material-icons">send</i>
+              <i class="material-icons hidden">done</i>
             </span>
           </button>
         </div>
@@ -167,17 +168,56 @@ $(function() {
       title: 'Tu opinión es importante',
       type: 'question',
       input: 'textarea',
+      confirmButtonText: 'Enviar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
       showCancelButton: true
-    }).then(function (text) {
-      if (text) {
-        swal({
-          type: 'success',
-          title: 'Los grandes cambios comienzan con una opinión',
-          text: '¡¡Gracias!!'
-          });
+    }).then(function (suggestion) {
+      if (suggestion) {
+        console.log("hay comentario");
+        $.ajax({
+          url: "{% url 'diners:new_satisfaction_rating' %}",
+          type: 'POST',
+          data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+            'suggestion': suggestion,
+            'type': 'suggestion',
+            'satisfaction_rating': data['score'],
+          },
+          traditional: true,
+          datatype: 'jsonp',
+          beforeSend: function(){
+            swal({
+                title: "Enviando comentario",
+              });
+            swal.enableLoading();
+          },
+          success: function(result) {
+            console.log(result);
+            swal({
+              title: 'Los grandes cambios comienzan con una opinión',
+              text: '¡Gracias!',
+              type: "success",
+              timer: 1000,
+              showConfirmButton: false
+            }).then(
+              function(){},
+              function (dismiss) {}
+            );
+            $('#btn-writte-commentary').attr('disabled', true);
+          },
+
+          error: function(result, jqXHR, textStatus, errorThrown) {
+            console.log(result);
+          },
+        });
+
+
       }
     })
   });
+
+  
 });
 </script>
 {% endblock javascript %}

@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.db.models import Max, Min
 
-from .models import AccessLog, Diner, ElementToEvaluate
+from .models import AccessLog, Diner, ElementToEvaluate, Suggestion
 from cloudkitchen.settings.base import PAGE_TITLE
 
 
@@ -494,7 +494,14 @@ def diners_logs(request):
         return render(request, template, context)    
 
 @login_required(login_url='users:login')
-def diners_score(request):
+def new_satisfaction_rating(request):
+    if request.method == 'POST':
+        if request.POST['type'] == 'suggestion':
+            suggestion = request.POST['suggestion']
+            new_suggestion = Suggestion.objects.create(suggestion=suggestion)
+            new_suggestion.save()
+            return JsonResponse({'data': 'exito :v'})
+
     template = 'diners_score.html'
     title = 'Rating'
     elements = ElementToEvaluate.objects.all()
