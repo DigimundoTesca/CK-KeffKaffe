@@ -7,7 +7,6 @@
   <table class="table table-hover">
     <thead>
       <tr>
-        <th>id</th>
         <th>Reaccion</th>
         <th>Comentario</th>
         <th>Hora</th>
@@ -16,8 +15,17 @@
     <tbody>
       {% for suggestion in suggestions %}
           <tr>
-            <th>{{ suggestion.id }}</th>
-            <td>{{ suggestion.satisfaction_rating }}</td>
+            <td>
+              {% if suggestion.satisfaction_rating == 1 %}
+                <img src="{% static 'images/Very_Angry_Emoji.png' %}" alt="Product image" height="80" >
+              {% elif suggestion.satisfaction_rating == 2 %}
+                <img src="{% static 'images/Very_sad_emoji_icon_png.png' %}" alt="Product image" height="80" >
+              {% elif suggestion.satisfaction_rating == 3 %}
+                <img src="{% static 'images/Smiling_Emoji_with_Smiling_Eyes.png' %}" alt="Product image" height="80" >
+              {% elif suggestion.satisfaction_rating == 4 %}
+                <img src="{% static 'images/Heart_Eyes_Emoji.png' %}" alt="Product image" height="80" >
+              {% endif %}
+            </td>
             <td>{{ suggestion.suggestion }}</td>
             <td>{{ suggestion.creation_date }}</td>
           </tr>

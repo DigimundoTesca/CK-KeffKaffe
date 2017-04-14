@@ -543,7 +543,7 @@ def analytics(request):
     template = 'analytics.html'
     title = 'Analytics'
     ratings = SatisfactionRating.objects.all()
-    suggestions = Suggestion.objects.all()
+    suggestions = Suggestion.objects.order_by('-creation_date',)
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
