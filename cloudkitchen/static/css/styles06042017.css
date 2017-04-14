@@ -147,6 +147,13 @@ footer .footer-header .row figure .tesca-logo {
 footer .footer-header .info-container {
   margin: 0.5rem 0;
 }
+nav.navbar-base {
+  /*margin-top: 2.2em;*/
+  background-color: #004c83;
+  color: #efefef;
+  margin-bottom: 1rem;
+  min-height: 4rem;
+}
 .custom-select {
   height: 2.5em !important;
   scroll: no !important;
@@ -680,9 +687,6 @@ small {
   left: 0;
   z-index: 1030;
 }
-.navbar-base {
-  margin-top: 2.2em;
-}
 .modal#extra-ingredient-modal .modal-header {
   height: 4rem;
 }
@@ -794,12 +798,6 @@ small {
 }
 .modal#modal-order .modal-content .modal-body .card #ticket-description {
   width: 100%;
-}
-.navbar-base {
-  background-color: #004c83;
-  color: #efefef;
-  margin-bottom: 1rem;
-  min-height: 4rem;
 }
 .popout {
   position: fixed;

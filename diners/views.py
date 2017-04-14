@@ -528,7 +528,7 @@ def satisfaction_rating(request):
             return JsonResponse({'status':'ready'})
 
 
-    template = 'diners_score.html'
+    template = 'satisfaction_rating.html'
     title = 'Rating'
     elements = ElementToEvaluate.objects.all()
     context = {
@@ -537,6 +537,21 @@ def satisfaction_rating(request):
         'elements': elements,
     }
     return render (request, template, context)
+
+@login_required(login_url='users:login')
+def analytics(request):
+    template = 'analytics.html'
+    title = 'Analytics'
+    ratings = SatisfactionRating.objects.all()
+    suggestions = Suggestion.objects.all()
+    context = {
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title,
+        'ratings': ratings,
+        'suggestions': suggestions,
+    }
+    return render (request, template, context)
+
 
 # --------------------------- TEST ------------------------
 @login_required(login_url='users:login')
