@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.db.models import Max, Min
 
-from .models import AccessLog, Diner, ElementToEvaluate, Suggestion, SatisfactionRating
+from .models import AccessLog, Diner, ElementToEvaluate, SatisfactionRating
 from cloudkitchen.settings.base import PAGE_TITLE
 
 
@@ -496,24 +496,14 @@ def diners_logs(request):
 @login_required(login_url='users:login')
 def satisfaction_rating(request):
     if request.method == 'POST':
-        if request.POST['type'] == 'suggestion':
-            suggestion = request.POST['suggestion']
-            satisfaction_rating = request.POST['satisfaction_rating']
-            new_suggestion = Suggestion.objects.create(
-                suggestion=suggestion,
-                satisfaction_rating=satisfaction_rating)
-            new_suggestion.save()
-            return JsonResponse({'suggestion_id': new_suggestion.id})
         if request.POST['type'] == 'satisfaction_rating':
             satisfaction_rating = request.POST['satisfaction_rating']
             elements_list = json.loads(request.POST['elements_id'])
 
-            if request.POST['suggestion_id']:
-                suggestion_id = int(request.POST['suggestion_id'])
-                suggestion = Suggestion.objects.get(id=suggestion_id)
+            if request.POST['suggestion']:
                 new_satisfaction_rating = SatisfactionRating.objects.create(
-                    suggestion=suggestion,
-                    satisfaction_rating=satisfaction_rating
+                    satisfaction_rating=satisfaction_rating,
+                    suggestion=request.POST['suggestion'],
                 )
             else:
                 new_satisfaction_rating = SatisfactionRating.objects.create(
@@ -543,12 +533,12 @@ def analytics(request):
     template = 'analytics.html'
     title = 'Analytics'
     ratings = SatisfactionRating.objects.all()
-    suggestions = Suggestion.objects.order_by('-creation_date',)
+    tests = SatisfactionRating.objects.all()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
         'ratings': ratings,
-        'suggestions': suggestions,
+        'tests': tests,
     }
     return render (request, template, context)
 
@@ -557,8 +547,6 @@ def analytics(request):
 @login_required(login_url='users:login')
 def test(request):
     rfids = [ 52661 ,]
-
-
 
     for rfid in rfids:
         dt = naive_to_datetime(datetime(2017,3,23,13,30))

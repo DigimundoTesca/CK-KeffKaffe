@@ -30,7 +30,7 @@
   <div class="rating-footer mt-2 mb-3">
     <h3 class="text-xs-center rating-footer-title"></h3>
     <div class="container">
-      <div class="row">
+      <div class="row" id="elements-container">
         {% for element in elements %}
         <div class="col-xs-6 col-lg-4 mt-1">
           <label class="btn btn-lg btn-block btn-option" id="element-rate-{{ element.id }}">
@@ -40,17 +40,21 @@
         </div>
         {% endfor %}
       </div>
-      <div class="row mt-3 hidden">
+
+      <div class="row mt-1 hidden">
         <div class="col-xs-12">
-          <button id="btn-writte-commentary" class="btn btn-block btn-outline-primary">
-            <span class="btn-text">Sugerencias</span>
+          <button id="btn-writte-commentary" class="btn btn-block btn-outline-primary btn-text-close">
+            <span class="btn-text">Escribir un comentario</span>
             <span class="icon-container">
-              <i class="material-icons">create</i>
+              <i class="material-icons">keyboard_arrow_down</i>
             </span>
           </button>
         </div>
       </div>
-      <div class="row mt-1">
+      <div class="form-group mt-1 hidden" id="suggestion-container">
+        <textarea class="form-control" id="suggestion-textarea" rows="6" placeholder="Estamos para servirte." ></textarea>
+      </div>
+      <div class="row mt-1" id="btn-send-container">
         <div class="col-xs-12">
           <button id="btn-send-score" class="btn btn-block btn-success" disabled=true>
             <span class="btn-text">Enviar</span>
@@ -79,7 +83,7 @@ $(function() {
   let data = {
     'satisfaction_rating': 0,
     'elements_id': [],
-    'suggestion_id': null,
+    'suggestion': '',
   }
 
   /**
@@ -134,7 +138,6 @@ $(function() {
         elemento.addClass('btn-rate-4')
       });
     }
-
     $('.rating-footer').show(300);
   });
 
@@ -168,63 +171,43 @@ $(function() {
   });
 
   $(this).on('click', '#btn-writte-commentary', function(event) {
-    swal({
-      title: 'Tu opinión es importante',
-      type: 'question',
-      input: 'textarea',
-      confirmButtonText: 'Enviar',
-      cancelButtonText: 'Cancelar',
-      reverseButtons: true,
-      showCancelButton: true
-    }).then(function (suggestion) {
-      if (suggestion) {
-        $.ajax({
-          url: "{% url 'diners:satisfaction_rating' %}",
-          type: 'POST',
-          data: {
-            csrfmiddlewaretoken: '{{ csrf_token }}',
-            'suggestion': suggestion,
-            'type': 'suggestion',
-            'satisfaction_rating': data['satisfaction_rating'],
-          },
-          traditional: true,
-          datatype: 'jsonp',
-          beforeSend: function(){
-            swal({
-                title: "Enviando comentario",
-              });
-            swal.enableLoading();
-          },
-          success: function(result) {
-            data['suggestion_id'] = result['suggestion_id'];
-            swal({
-              title: 'Los grandes cambios comienzan con una opinión',
-              text: '¡Gracias!',
-              type: "success",
-              timer: 1000,
-              showConfirmButton: false
-            }).then(
-              function(){},
-              function (dismiss) {}
-            );
-            $('#btn-writte-commentary').attr('disabled', true);
-          },
 
-          error: function(result, jqXHR, textStatus, errorThrown) {
-            swal({
-              title: 'Ha surgido un problema en el servidor',
-              text: 'Intente más tarde.',
-              type: "error",
-              showConfirmButton: false
-            }).then(
-              function(){},
-              function (dismiss) {}
-            );
-            console.log(result);
-          },
+    if ($(this).hasClass('btn-text-close')) {
+      $(this).removeClass('btn-text-close')
+      $('#suggestion-container').show(300);
+      $('#btn-send-container').addClass('hidden')
+      $('#elements-container').addClass('hidden')
+    } else {
+      $(this).addClass('btn-text-close')
+      $('#suggestion-container').hide(300);
+      $('#btn-send-container').removeClass('hidden')
+      $('#elements-container').removeClass('hidden')
+    }
+  });
+
+  $(this).on('change keyup paste mouseup', '#suggestion-textarea', function(event) {
+    let suggestion_textarea = $('#suggestion-textarea').val();
+    var size =suggestion_textarea.length;
+    let btn_text = $('#btn-writte-commentary').find('.btn-text');
+    let btn_text_icon = $('#btn-writte-commentary .icon-container').find('.material-icons');
+
+    if ($(this).val() != data['suggestion']) {
+      if (btn_text.text() == 'Escribir un comentario') {
+        btn_text.fadeOut(100, function() {
+          $(this).text('Guardar').fadeIn(100);
         });
-      }
-    });
+        btn_text_icon.text('keyboard_arrow_up')
+      };
+      data['suggestion'] = $(this).val();
+      console.log(data['suggestion']);
+    };
+
+    if (data['suggestion'].length == 0) {
+      btn_text.fadeOut(100, function() {
+        $(this).text('Escribir un comentario').fadeIn(100);
+      });
+      btn_text_icon.text('keyboard_arrow_down')
+    };
   });
 
   $(this).on('click', '#btn-send-score', function(event) {
@@ -235,7 +218,7 @@ $(function() {
         csrfmiddlewaretoken: '{{ csrf_token }}',
         'satisfaction_rating': data['satisfaction_rating'],
         'elements_id': JSON.stringify(data['elements_id']),
-        'suggestion_id': data['suggestion_id'],
+        'suggestion': data['suggestion'],
         'type': 'satisfaction_rating',
       },
       traditional: true,
@@ -249,7 +232,7 @@ $(function() {
       success: function(result) {
         console.log(result);
         swal({
-          title: 'Gracias por tu retroalimentación',
+          title: 'Los grandes cambios comienzan con una opinión',
           text: 'Trabajamos diario en mejorar.',
           type: "success",
           timer: 3000,
@@ -277,10 +260,7 @@ $(function() {
         console.log(result);
       },
     });
-  });
-
-
-  
+  });  
 });
 </script>
 {% endblock javascript %}

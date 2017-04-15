@@ -38,30 +38,11 @@ class ElementToEvaluate(models.Model):
         return self.element
 
 
-class Suggestion(models.Model):
-    suggestion = models.TextField(default='')
-    creation_date = models.DateTimeField(auto_now_add=True)
-    satisfaction_rating = models.PositiveIntegerField(default=1)
-
-    class Meta:
-        verbose_name = "Segerencia"
-        verbose_name_plural = "Sugerencias"
-
-    def __str__(self):
-        text = str(self.suggestion)
-        text = (text[:48] + '...') if len(text) > 12 else text
-        return text
-    
-    def shortened_suggestion(self):
-        text = str(self.suggestion)
-        text = (text[:48] + '...') if len(text) > 12 else text
-        return text
-
 class SatisfactionRating(models.Model):
     elements = models.ManyToManyField(ElementToEvaluate)
     satisfaction_rating = models.PositiveIntegerField(default=1)
     creation_date = models.DateTimeField(auto_now_add=True)
-    suggestion = models.ForeignKey(Suggestion, null=True, blank=True)
+    suggestion = models.TextField(blank=True, null=True)
 
 
     class Meta:
@@ -71,4 +52,8 @@ class SatisfactionRating(models.Model):
     def __str__(self):
         return '%s' % self.satisfaction_rating
 
+    def shortened_suggestion(self):
+        text = str(self.suggestion)
+        text = (text[:48] + '...') if len(text) > 12 else text
+        return text
     

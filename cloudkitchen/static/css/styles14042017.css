@@ -213,6 +213,22 @@ small {
   background-color: #eaeaea;
   color: #1e3c50;
 }
+.badge-emotion {
+  color: #3780B5;
+  padding: .3rem;
+}
+.badge-emotion-1 {
+  border: 3px #E57373 solid;
+}
+.badge-emotion-2 {
+  border: 3px #FFE082 solid;
+}
+.badge-emotion-3 {
+  border: 3px #90CAF9 solid;
+}
+.badge-emotion-4 {
+  border: 3px #81C784 solid;
+}
 .br {
   height: 2em;
 }
@@ -376,6 +392,7 @@ small {
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: all 0.3s ease;
 }
 .container-rating .rating-footer #btn-writte-commentary .btn-text,
 .container-rating .rating-footer #btn-send-score .btn-text {
