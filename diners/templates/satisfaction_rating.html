@@ -171,17 +171,30 @@ $(function() {
   });
 
   $(this).on('click', '#btn-writte-commentary', function(event) {
+    let btn_text = $('#btn-writte-commentary').find('.btn-text');
+    let btn_text_icon = $('#btn-writte-commentary .icon-container').find('.material-icons');
 
     if ($(this).hasClass('btn-text-close')) {
       $(this).removeClass('btn-text-close')
       $('#suggestion-container').show(300);
-      $('#btn-send-container').addClass('hidden')
-      $('#elements-container').addClass('hidden')
+      // $('#btn-send-container').addClass('hidden')
+      // $('#elements-container').addClass('hidden')
+      $('#btn-send-container').hide(0);
+      $('#elements-container').hide(0);
+      btn_text_icon.text('keyboard_arrow_up')
     } else {
       $(this).addClass('btn-text-close')
+      if (data['suggestion'].length > 0 ) {
+          btn_text.fadeOut(100, function() {
+          $(this).text('Mensaje Guardado').fadeIn(100);
+          btn_text_icon.text('keyboard_arrow_down')
+        });
+      };
       $('#suggestion-container').hide(300);
-      $('#btn-send-container').removeClass('hidden')
-      $('#elements-container').removeClass('hidden')
+      // $('#btn-send-container').removeClass('hidden')
+      // $('#elements-container').removeClass('hidden')
+      $('#btn-send-container').show(300);
+      $('#elements-container').show(300);
     }
   });
 
@@ -233,7 +246,7 @@ $(function() {
         console.log(result);
         swal({
           title: 'Los grandes cambios comienzan con una opinión',
-          text: 'Trabajamos diario en mejorar.',
+          text: '¡Gracias!',
           type: "success",
           timer: 3000,
           showConfirmButton: false

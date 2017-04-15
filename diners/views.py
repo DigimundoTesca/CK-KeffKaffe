@@ -532,12 +532,12 @@ def satisfaction_rating(request):
 def analytics(request):
     template = 'analytics.html'
     title = 'Analytics'
-    ratings = SatisfactionRating.objects.all()
-    tests = SatisfactionRating.objects.all()
+    # ratings = SatisfactionRating.objects.all()
+    tests = SatisfactionRating.objects.order_by('-creation_date')
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
-        'ratings': ratings,
+        # 'ratings': ratings,
         'tests': tests,
     }
     return render (request, template, context)
