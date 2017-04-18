@@ -27,10 +27,12 @@
       </li>
       <li class="nav-item dropdown" id="link-products">
         <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Almacen</a>
-        <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
-          <a class="dropdown-item" href="{% url 'products:catering' %}">Almacenamineto</a>
+        <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">          
           <a class="dropdown-item" href="{% url 'products:supplies' %}">Insumos</a>
           <a class="dropdown-item" href="{% url 'products:cartridges' %}">Producos</a>
+          <a class="dropdown-item" href="{% url 'products:catering' %}">Almacenamineto</a>
+          <a class="dropdown-item" href="{% url 'products:categories' %}">Categorias</a>
+          <a class="dropdown-item" href="{% url 'products:suppliers' %}">Proveedores</a>
         </div>
       </li>
       <li class="nav-item dropdown" id="link-diners">

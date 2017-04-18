@@ -29,6 +29,7 @@ urlpatterns = [
 
     # Suppliers
     url(r'^suppliers/$', views.suppliers, name='suppliers'),
+    url(r'^suppliers/new$', views.new_supplier, name='new_suppliers'),
 
     # Categories
     url(r'^categories/$', views.categories, name='categories'),

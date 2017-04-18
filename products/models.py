@@ -230,3 +230,7 @@ class PackageCartridgeRecipe(models.Model):
         ordering = ('id',)
         verbose_name = 'Receta del Paquete'
         verbose_name_plural = 'Recetas de Paquetes'
+
+
+
+

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django import forms
 
 from products.models import Supply, SuppliesCategory, Cartridge
+from branchoffices.models import Supplier
 
 
 class SupplyForm(forms.ModelForm):
@@ -15,6 +16,12 @@ class SuppliesCategoryForm(forms.ModelForm):
 
     class Meta:
         model = SuppliesCategory
+        fields = '__all__'
+
+class SuppliersForm(forms.ModelForm):
+
+    class Meta:
+        model = Supplier
         fields = '__all__'
 
 

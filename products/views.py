@@ -1,23 +1,22 @@
 
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
-
 from django.shortcuts import get_object_or_404, render, redirect
-
 from django.contrib.auth.decorators import login_required
-
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
-from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm
+from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
+
+
+# -------------------------------------  Class based Views -------------------------------------
 
 class Create_Supply(CreateView):
     model = Supply
@@ -51,7 +50,7 @@ class Delete_Supply(DeleteView):
 class Create_Cartridge(CreateView):
     model = Cartridge
     fields = ['name','price','category','image']
-    template_name = 'new_cartridge.html'     
+    template_name = 'cartridges/new_cartridge.html'     
 
     def form_valid(self,form):
         self.object = form.save()
@@ -60,7 +59,7 @@ class Create_Cartridge(CreateView):
 class Update_Cartridge(UpdateView):
     model = Cartridge
     fields = ['name','price','category','image']
-    template_name = 'new_cartridge.html'
+    template_name = 'cartridges/new_cartridge.html'
 
     def form_valid(self,form):
         self.object = form.save()
@@ -68,12 +67,31 @@ class Update_Cartridge(UpdateView):
 
 class Delete_Cartridge(DeleteView):
     model = Cartridge
-    template_name = 'delete_cartridge.html'
+    template_name = 'cartridges/delete_cartridge.html'
 
     def delete(self, request, *args, **kwargs):        
         self.object = self.get_object()        
         self.object.delete()
         return redirect('/cartridges/')
+
+class Create_Supplier(CreateView):
+    model = Supplier
+    fields = ['name','image']
+    template_name = 'supplies/new_category.html'
+
+    def form_valid(self,form):
+        self.object = form.save()
+        return redirect('/supplies/')
+
+class Create_Category(CreateView):
+    model = SuppliesCategory
+    fields = ['name', 'image']
+    template_name = 'supplies/new_supplier.html'
+
+    def form_valid(self,form):
+        self.object = form.save()
+        return redirect('/supplies/')
+
 
 def test(request):
     # template = 'base/base_nav_footer.html'
@@ -135,7 +153,6 @@ def new_supply(request):
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
-
 
 @login_required(login_url='users:login')
 def supply_detail(request, pk):
@@ -332,6 +349,28 @@ def cartridge_modify(request, pk):
     }
     return render(request, template, context)
 
+# -------------------------------------  Suppliers and  -------------------------------------
+
+@login_required(login_url='users:login')
+def new_supplier(request):
+    if request.method == 'POST':
+        form = SuppliersForm(request.POST, request.FILES)
+        if form.is_valid():
+            supplier = form.save(commit=False)
+            supplier.save()
+            return redirect('/suppliers')
+    else:
+        form = SuppliersForm()
+
+    template = 'suppliers/new_supplier.html'
+    title = 'Nuevo Proveedor'
+    context = {
+        'form': form,
+        'title': title,
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
+
 # -------------------------------------  Catering -------------------------------------
 
 def get_required_supplies():
@@ -370,7 +409,6 @@ def get_required_supplies():
         required_supplies["full_cost"] = required_supplies['costo']*required_supplies['cantidad']
 
     return required_supplies_list
-
 
 def get_supplies_on_stock():
 
