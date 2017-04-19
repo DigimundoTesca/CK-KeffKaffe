@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
-from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm
+from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse
 from django.urls import reverse
@@ -313,6 +313,26 @@ def cartridge_detail(request, pk):
         'page_title': PAGE_TITLE,
         'cartridge': cartridge,
         'title': title
+    }
+    return render(request, template, context)
+
+@login_required(login_url='users:login')
+def cartridge_recipe(request, pk):
+    if request.method == 'POST':
+        form = RecipeForm(request.POST, request.FILES)
+        if form.is_valid():
+            recipe = form.save(commit=False)
+            recipe.save()
+            return redirect('/cartridges')
+    else:
+        form = RecipeForm()
+
+    template = 'cartridges/cartridge_recipe.html'
+    title = 'Nuevo Receta'
+    context = {
+        'form': form,
+        'title': title,
+        'page_title': PAGE_TITLE
     }
     return render(request, template, context)
 

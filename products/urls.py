@@ -24,8 +24,10 @@ urlpatterns = [
     url(r'^cartridges/$', views.cartridges, name='cartridges'),
     url(r'^cartridges/new/$', Create_Cartridge.as_view(), name='new_cartridge'),
     url(r'^cartridges/(?P<pk>[0-9]+)/$', views.cartridge_detail, name='cartridge_detail'),
+    url(r'^cartridges/recipe/(?P<pk>[0-9]+)/$', views.cartridge_recipe, name='cartridge_recipe'),
     url(r'^cartridges/modify/(?P<pk>[0-9]+)/$', Update_Cartridge.as_view(), name='cartridge_modify'),
     url(r'^cartridges/delete/(?P<pk>[0-9]+)/$', Delete_Cartridge.as_view(), name='cartridge_delete'),
+
 
     # Suppliers
     url(r'^suppliers/$', views.suppliers, name='suppliers'),

@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django import forms
 
-from products.models import Supply, SuppliesCategory, Cartridge
+from products.models import Supply, SuppliesCategory, Cartridge, CartridgeRecipe, CartridgeRecipe
 from branchoffices.models import Supplier
 
 
@@ -29,4 +29,10 @@ class CartridgeForm(forms.ModelForm):
 
     class Meta:
         model = Cartridge
+        fields = '__all__'
+
+class RecipeForm(forms.ModelForm):
+
+    class Meta:
+        model = CartridgeRecipe
         fields = '__all__'
