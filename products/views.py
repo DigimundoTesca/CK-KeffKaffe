@@ -15,6 +15,8 @@ from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
 
+import math
+
 
 # -------------------------------------  Class based Views -------------------------------------
 
@@ -409,32 +411,36 @@ def get_required_supplies():
                     measurement = ingrediente.supply.measurement_unit
                     measurement_quantity = ingrediente.supply.measurement_quantity
                     quantity = ingrediente.quantity   
-                    if(len(required_supplies_list)==0):
-                        required_suppply_object = {
+
+                    cont = 0;
+
+                    required_suppply_object = {
                             'name' : name,
                             'cost' : cost,
                             'measurement' : measurement,
                             'measurement_quantity' : measurement_quantity,
                             'quantity' : quantity,
                         }   
-                        required_supplies_list.append(required_suppply_object)
+
+                    if(len(required_supplies_list)==0):                        
+                        print("flag")
+                        count=1;
                     else:                                    
                         for required_supplies in required_supplies_list:
-                            if required_supplies['name'] == name:                            
-                                required_supplies['quantity'] += quantity
-                            else:                            
-                                required_suppply_object = {
-                                    'name' : name,
-                                    'cost' : cost,
-                                    'measurement' : measurement,
-                                    'measurement_quantity' : measurement_quantity,
-                                    'quantity' : quantity,
-                                }
-                                required_supplies_list.append(required_suppply_object)
-                    
-    
+                            if required_supplies['name'] == name:                
+                                required_supplies['quantity'] += quantity    
+                                print("flag2")
+                                count=0
+                                break                                                 
+                            else:             
+                                print("flag3")              
+                                count=1
+                    if(count==1):
+                        required_supplies_list.append(required_suppply_object)
 
-    return required_supplies_list
+                        
+
+    return required_supplies_list                    
 
 def get_supplies_on_stock():
 
@@ -481,8 +487,9 @@ def catering(request):
             else:
                 required['stock'] = 0                
 
+
         required['required'] = required['quantity']-required['stock']
-        required['full_cost'] = required['cost']*required['required']
+        required['full_cost'] = required['cost']*(math.ceil(required['required']/required['measurement_quantity']))
         total_cost = total_cost + required['full_cost']
         
     

@@ -1,7 +1,10 @@
 {% extends "base/base_nav_footer.html" %}
 {% block content %}	
-	<div class="col-xs-8 col-md-7">
-		<table class="table table-kitchen table-striped table-hover">		
+	<div class="col-xs-8 col-md-10">
+		<div class="col-xs-7" text-align="center">		
+			<p>Costo Total de Insumos Estimados {{total_cost}}</p>	
+		</div>		
+		<table class="table table-kitchen table-striped table-hover" align="right">		
 			<thead class="thead-inverse">
 				<tr>
 					<th>Nombre</th>
@@ -29,12 +32,9 @@
 				{% endfor %}									
 			</tbody>
 		</table>
-		
+	
 	</div>
-	<div class = "row">
-		
-	<p>Costo Total de Insumos Estimados {{total_cost}}</p>	
-	</div>
+	
 	
 
 
