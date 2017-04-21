@@ -397,7 +397,7 @@ def get_required_supplies():
     required_supplies_list = []    
 
     predictions = get_prediction_supplies()
-    cartridges = Cartridge.objects.filter(name__contains="Papa") 
+    cartridges = Cartridge.objects.filter(name__contains="Pita")     
     
     for prediction in predictions:
         for cartridge in cartridges:
@@ -406,27 +406,33 @@ def get_required_supplies():
                 for ingrediente in ingredientes:
                     name = ingrediente.supply.name
                     cost = ingrediente.supply.presentation_cost
-                    cantidad = ingrediente.quantity                    
+                    measurement = ingrediente.supply.measurement_unit
+                    measurement_quantity = ingrediente.supply.measurement_quantity
+                    quantity = ingrediente.quantity   
                     if(len(required_supplies_list)==0):
                         required_suppply_object = {
-                            'supply_name' : name,
-                            'cantidad' : cantidad,
-                            'costo' : cost,
-                        }                   
-                    for required_supplies in required_supplies_list:
-
-                        if name in required_supplies_list:                            
-                            required_supplies['cantidad'] += cantidad
-                        else:                            
-                            required_suppply_object = {
-                                'supply_name' : name,
-                                'cantidad' : cantidad,
-                                'costo' : cost,
-                            }
-                    required_supplies_list.append(required_suppply_object)
-
-    for required_supplies in required_supplies_list:
-        required_supplies["full_cost"] = required_supplies['costo']*required_supplies['cantidad']
+                            'name' : name,
+                            'cost' : cost,
+                            'measurement' : measurement,
+                            'measurement_quantity' : measurement_quantity,
+                            'quantity' : quantity,
+                        }   
+                        required_supplies_list.append(required_suppply_object)
+                    else:                                    
+                        for required_supplies in required_supplies_list:
+                            if required_supplies['name'] == name:                            
+                                required_supplies['quantity'] += quantity
+                            else:                            
+                                required_suppply_object = {
+                                    'name' : name,
+                                    'cost' : cost,
+                                    'measurement' : measurement,
+                                    'measurement_quantity' : measurement_quantity,
+                                    'quantity' : quantity,
+                                }
+                                required_supplies_list.append(required_suppply_object)
+                    
+    
 
     return required_supplies_list
 
@@ -436,9 +442,8 @@ def get_supplies_on_stock():
     elements = Warehouse.objects.all()    
     for element in elements:
         stock_object = {
-            'Nombre' : element.supply,
-            'Gasto' : element.waste,
-            'Cantidad' :  element.cost,
+            'name' : element.supply,            
+            'quantity' :  element.quantity,
         }
         stock_list.append(stock_object)
     return stock_list
@@ -446,13 +451,13 @@ def get_supplies_on_stock():
 def get_prediction_supplies():
     prediction = []  
 
-    cartridges = Cartridge.objects.filter(name__contains="Papa")  
+    cartridges = Cartridge.objects.filter(name__contains="Pita")  
 
     for cartridge in cartridges:
 
         predict_object={
             'name' : cartridge,
-            'cantidad' : 10,
+            'cantidad' : 3,
         }      
 
         prediction.append(predict_object)
@@ -466,14 +471,25 @@ def catering(request):
 
     required_supplies = get_required_supplies()
 
-    for required in required_supplies:
+    supplies_on_stock = get_supplies_on_stock()
+    
+    for required in required_supplies:        
+
+        for supplies in supplies_on_stock:
+            if(supplies['name'] == required['name']):                
+                required['stock'] = supplies['quantity']                                       
+            else:
+                required['stock'] = 0                
+
+        required['required'] = required['quantity']-required['stock']
+        required['full_cost'] = required['cost']*required['required']
         total_cost = total_cost + required['full_cost']
+        
     
     template = 'catering/catering.html'
     title = 'Abastecimiento'
     context = {        
-        'title': title,
-        'stock_supplies' : get_supplies_on_stock(),
+        'title': title,        
         'required_supplies' :required_supplies,
         'total_cost' : total_cost,
         'page_title': PAGE_TITLE

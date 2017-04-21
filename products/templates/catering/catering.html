@@ -1,53 +1,41 @@
 {% extends "base/base_nav_footer.html" %}
-{% block content %}
-	<div class="col-xs-6 col-md-4">
+{% block content %}	
+	<div class="col-xs-8 col-md-7">
 		<table class="table table-kitchen table-striped table-hover">		
 			<thead class="thead-inverse">
 				<tr>
 					<th>Nombre</th>
-					<th>Stock</th>
-				</tr>
-			</thead>
-			<tbody>
-				
-				{% for stock in stock_supplies %}
-					<tr>						
-						<td>{{ stock.Nombre }}</td>
-						<td>{{ stock.Cantidad }}</td>
-					</tr>
-				{% endfor %}
-				
-			</tbody>
-		</table>
-		
-	</div>
-	<div class="col-xs-6 col-md-4">
-		<table class="table table-kitchen table-striped table-hover">		
-			<thead class="thead-inverse">
-				<tr>
-					<th>Nombre</th>
-					<th>Cantidad</th>
 					<th>Costo</th>
-					<th>Costo Total</th>
+					<th>Unidad</th>
+					<th>Cantidad por Unidad</th>
+					<th>Cantidad</th>
+					<th>Stock</th>
+					<th>Requeridos</th>
+					<th>Costo de Requeridos</th>				
 				</tr>
 			</thead>
-			<tbody>
-				
+			<tbody>				
 				{% for required in required_supplies %}
 					<tr>						
-						<td>{{ required.supply_name }}</td>
-						<td>{{ required.cantidad }}</td>
-						<td>{{ required.costo }}</td>
-						<td>{{ required.full_cost }}</td>
-					</tr>
-				{% endfor %}
-				
+						<td>{{ required.name }}</td>
+						<td>{{ required.cost }}</td>	
+						<td>{{ required.measurement }}</td>												
+						<td>{{ required.measurement_quantity }}</td>	
+						<td>{{ required.quantity }}</td>	
+						<td>{{ required.stock }}</td>						
+						<td>{{ required.required }}</td>
+						<td>{{ required.full_cost }}</td>						
+					<tr>											
+				{% endfor %}									
 			</tbody>
 		</table>
 		
 	</div>
-
-	<p>Costo total de Insumos {{total_cost}}</p>
+	<div class = "row">
+		
+	<p>Costo Total de Insumos Estimados {{total_cost}}</p>	
+	</div>
+	
 
 
 {% endblock content %}
