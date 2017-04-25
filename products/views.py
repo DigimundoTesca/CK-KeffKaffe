@@ -400,11 +400,11 @@ def get_required_supplies():
     required_supplies_list = []    
 
     predictions = get_prediction_supplies()
-    cartridges = Cartridge.objects.filter(name__contains="Pita")     
+    cartridges = Cartridge.objects.all()     
     
     for prediction in predictions:
         for cartridge in cartridges:
-            if prediction['name'] == cartridge:
+            if prediction['name'] == cartridge.name:
                 ingredientes = CartridgeRecipe.objects.filter(cartridge=cartridge)              
                 for ingrediente in ingredientes:
                     name = ingrediente.supply.name
@@ -423,18 +423,15 @@ def get_required_supplies():
                             'quantity' : quantity,
                         }   
 
-                    if(len(required_supplies_list)==0):                        
-                        print("flag")
+                    if(len(required_supplies_list)==0):                                                
                         count=1;
                     else:                                    
                         for required_supplies in required_supplies_list:
                             if required_supplies['name'] == name:                
-                                required_supplies['quantity'] += quantity    
-                                print("flag2")
+                                required_supplies['quantity'] += quantity                                    
                                 count=0
                                 break                                                 
-                            else:             
-                                print("flag3")              
+                            else:                                             
                                 count=1
                     if(count==1):
                         required_supplies_list.append(required_suppply_object)
@@ -458,26 +455,18 @@ def get_supplies_on_stock():
 
 def get_prediction_supplies():
     prediction = []  
-    used_cartridges = []
 
-    quantity_cartridges = TicketDetail.objects.all()
-    cartridges = Cartridge.objects.all()
+    TicketsDetails = TicketDetail.objects.all()    
 
-    for quantity in quantity_cartridges:
-        if quantity == quantity_cartridges:
-            count += 1
-
-
-    for cartridge in cartridges:    
-
-        predict_object={
-            'name' : cartridge,
-            'cantidad' : 3,
+    for TicketsDetail in TicketsDetails:        
+        cartridge_object = {
+            'name' : TicketsDetail.cartridge.name,
+            'cantidad' : 1,
         }
 
-        prediction.append(predict_object)
+        prediction.append(cartridge_object)
 
-    return prediction
+    return prediction    
 
 @login_required(login_url='users:login')
 def catering(request):
