@@ -452,6 +452,7 @@ def get_supplies_on_stock():
             'name' : element.supply,            
             'quantity' :  element.quantity,
         }
+        
         stock_list.append(stock_object)
     return stock_list
 
