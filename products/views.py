@@ -446,11 +446,13 @@ def get_supplies_on_stock():
     elements = Warehouse.objects.all()    
     for element in elements:
         stock_object = {
-            'name' : element.supply,            
+            'name' : element.supply.name,            
             'quantity' :  element.quantity,
         }
         
         stock_list.append(stock_object)
+
+    print(stock_object)
     return stock_list
 
 def get_prediction_supplies():
@@ -486,7 +488,7 @@ def catering(request):
                 required['stock'] = 0                
 
 
-        required['required'] = required['quantity']-required['stock']
+        required['required'] = max(0, required['quantity']-required['stock'])
         required['full_cost'] = required['cost']*(math.ceil(required['required']/required['measurement_quantity']))
         total_cost = total_cost + required['full_cost']
         
