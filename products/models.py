@@ -180,7 +180,7 @@ class ExtraIngredient(models.Model):
 
 
 class PackageCartridge(models.Model):
-    # Kinf of food
+    # Kind of food
     BREAKFAST = 'BF'
     FOOD = 'FO'
     

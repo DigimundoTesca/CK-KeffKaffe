@@ -8,6 +8,7 @@ from cloudkitchen.settings.base import PAGE_TITLE
 from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse
+from sales.models import TicketDetail
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -456,15 +457,22 @@ def get_supplies_on_stock():
 
 def get_prediction_supplies():
     prediction = []  
+    used_cartridges = []
 
-    cartridges = Cartridge.objects.filter(name__contains="Pita")  
+    quantity_cartridges = TicketDetail.objects.all()
+    cartridges = Cartridge.objects.all()
 
-    for cartridge in cartridges:
+    for quantity in quantity_cartridges:
+        if quantity == quantity_cartridges:
+            count += 1
+
+
+    for cartridge in cartridges:    
 
         predict_object={
             'name' : cartridge,
             'cantidad' : 3,
-        }      
+        }
 
         prediction.append(predict_object)
 
@@ -502,6 +510,3 @@ def catering(request):
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
-
-
-
