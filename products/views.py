@@ -1,4 +1,3 @@
-
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 from django.shortcuts import get_object_or_404, render, redirect
@@ -9,9 +8,6 @@ from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, Supp
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse
 from sales.models import TicketDetail
-from django.urls import reverse
-from django.http import HttpResponseRedirect
-from django.urls import reverse_lazy
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
@@ -20,78 +16,86 @@ import math
 
 
 # -------------------------------------  Class based Views -------------------------------------
-
-class Create_Supply(CreateView):
+class CreateSupply(CreateView):
     model = Supply
-    fields = ['name','category','barcode','supplier','storage_required','presentation_unit','presentation_cost',
-        'measurement_quantity','measurement_unit','optimal_duration','optimal_duration_unit','location','image']
-    template_name = 'supplies/new_supply.html'   
-
-    def form_valid(self,form):
-        self.object = form.save()        
-        return redirect('/supplies/')
-
-class Update_Supply(UpdateView):
-    model = Supply
-    fields = ['name','category','barcode','supplier','storage_required','presentation_unit','presentation_cost',
-        'measurement_quantity','measurement_unit','optimal_duration','optimal_duration_unit','location','image']
+    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'presentation_unit', 'presentation_cost',
+              'measurement_quantity', 'measurement_unit', 'optimal_duration', 'optimal_duration_unit', 'location',
+              'image']
     template_name = 'supplies/new_supply.html'
 
-    def form_valid(self,form):
+    def form_valid(self, form):
         self.object = form.save()
         return redirect('/supplies/')
 
-class Delete_Supply(DeleteView):
+
+class UpdateSupply(UpdateView):
+    model = Supply
+    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'presentation_unit', 'presentation_cost',
+              'measurement_quantity', 'measurement_unit', 'optimal_duration', 'optimal_duration_unit', 'location',
+              'image']
+    template_name = 'supplies/new_supply.html'
+
+    def form_valid(self, form):
+        self.object = form.save()
+        return redirect('products:supplies')
+
+
+class DeleteSupply(DeleteView):
     model = Supply
     template_name = 'supplies/delete_supply.html'
 
-    def delete(self, request, *args, **kwargs):        
-        self.object = self.get_object()        
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
         self.object.delete()
         return redirect('/supplies/')
 
-class Create_Cartridge(CreateView):
-    model = Cartridge
-    fields = ['name','price','category','image']
-    template_name = 'cartridges/new_cartridge.html'     
 
-    def form_valid(self,form):
-        self.object = form.save()
-        return redirect('/cartridges/')
-
-class Update_Cartridge(UpdateView):
+class CreateCartridge(CreateView):
     model = Cartridge
-    fields = ['name','price','category','image']
+    fields = ['name', 'price', 'category', 'image']
     template_name = 'cartridges/new_cartridge.html'
 
-    def form_valid(self,form):
+    def form_valid(self, form):
         self.object = form.save()
         return redirect('/cartridges/')
 
-class Delete_Cartridge(DeleteView):
+
+class UpdateCartridge(UpdateView):
+    model = Cartridge
+    fields = ['name', 'price', 'category', 'image']
+    template_name = 'cartridges/new_cartridge.html'
+
+    def form_valid(self, form):
+        self.object = form.save()
+        return redirect('/cartridges/')
+
+
+class DeleteCartridge(DeleteView):
     model = Cartridge
     template_name = 'cartridges/delete_cartridge.html'
 
-    def delete(self, request, *args, **kwargs):        
-        self.object = self.get_object()        
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
         self.object.delete()
         return redirect('/cartridges/')
 
-class Create_Supplier(CreateView):
+
+class CreateSupplier(CreateView):
     model = Supplier
-    fields = ['name','image']
+    fields = ['name', 'image']
     template_name = 'supplies/new_category.html'
 
-    def form_valid(self,form):
+    def form_valid(self, form):
         self.object = form.save()
         return redirect('/supplies/')
 
-class Create_Category(CreateView):
+
+class CreateCategory(CreateView):
     model = SuppliesCategory
     fields = ['name', 'image']
     template_name = 'supplies/new_supplier.html'
 
-    def form_valid(self,form):
+    def form_valid(self, form):
         self.object = form.save()
         return redirect('/supplies/')
 
@@ -106,7 +110,7 @@ def test(request):
 
 
 # -------------------------------------  Providers -------------------------------------
-@login_required(login_url='users:login')    
+@login_required(login_url='users:login')
 def suppliers(request):
     suppliers_list = Supplier.objects.order_by('id')
     template = 'suppliers/suppliers.html'
@@ -157,6 +161,7 @@ def new_supply(request):
     }
     return render(request, template, context)
 
+
 @login_required(login_url='users:login')
 def supply_detail(request, pk):
     supply = get_object_or_404(Supply, pk=pk)
@@ -169,11 +174,12 @@ def supply_detail(request, pk):
     }
     return render(request, template, context)
 
-@login_required(login_url='users:login')
-def supply_modify(request,pk):
-    supply = get_object_or_404(Supply, pk=pk) 
 
-    if request.method == 'POST':        
+@login_required(login_url='users:login')
+def supply_modify(request, pk):
+    supply = get_object_or_404(Supply, pk=pk)
+
+    if request.method == 'POST':
         form = SupplyForm(request.POST, request.FILES)
 
         if form.is_valid():
@@ -190,26 +196,26 @@ def supply_modify(request,pk):
             supply.optimal_duration = nuevo.optimal_duration
             supply.optimal_duration_unit = nuevo.optimal_duration_unit
             supply.location = nuevo.location
-            supply.image = nuevo.image            
+            supply.image = nuevo.image
             supply.save()
 
-            return redirect('/supply')        
-            
+            return redirect('/supply')
+
     else:
         dic = {
-            'name' : supply.name,           
-            'category' : supply.category ,
-            'barcode' : supply.barcode,
-            'supplier' : supply.supplier,
-            'storage_required' : supply.storage_required,
-            'presentation_unit' : supply.presentation_unit,
-            'presentation_cost' : supply.presentation_cost,
-            'quantity' : supply.measurement_quantity,
-            'measurement_unit' : supply.measurement_unit,
-            'optimal_duration' : supply.optimal_duration,
-            'optimal_duration_unit' : supply.optimal_duration_unit,
-            'location' : supply.location,
-            'image' : supply.image,    
+            'name': supply.name,
+            'category': supply.category,
+            'barcode': supply.barcode,
+            'supplier': supply.supplier,
+            'storage_required': supply.storage_required,
+            'presentation_unit': supply.presentation_unit,
+            'presentation_cost': supply.presentation_cost,
+            'quantity': supply.measurement_quantity,
+            'measurement_unit': supply.measurement_unit,
+            'optimal_duration': supply.optimal_duration,
+            'optimal_duration_unit': supply.optimal_duration_unit,
+            'location': supply.location,
+            'image': supply.image,
         }
         form = SupplyForm(initial=dic)
 
@@ -217,11 +223,12 @@ def supply_modify(request,pk):
     title = 'Modificar Insumo'
     context = {
         'form': form,
-        'supply' : supply,
+        'supply': supply,
         'title': title,
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
+
 
 # ------------------------------------- Categories -------------------------------------
 @login_required(login_url='users:login')
@@ -319,6 +326,7 @@ def cartridge_detail(request, pk):
     }
     return render(request, template, context)
 
+
 @login_required(login_url='users:login')
 def cartridge_recipe(request, pk):
     if request.method == 'POST':
@@ -339,11 +347,12 @@ def cartridge_recipe(request, pk):
     }
     return render(request, template, context)
 
+
 def cartridge_modify(request, pk):
-    cartridge = get_object_or_404(Cartridge, pk=pk)      
+    cartridge = get_object_or_404(Cartridge, pk=pk)
 
     if request.method == 'POST':
-        form = CartridgeForm(request.POST, request.FILES)  
+        form = CartridgeForm(request.POST, request.FILES)
 
         if form.is_valid():
             nuevo = form.save(commit=False)
@@ -351,14 +360,14 @@ def cartridge_modify(request, pk):
             cartridge.price = nuevo.price
             cartridge.category = nuevo.category
             cartridge.save()
-            return redirect('/cartridges')        
-            
+            return redirect('/cartridges')
+
     else:
         dic = {
-            'name' : cartridge.name, 
-            'price' : cartridge.price,
-            'category' : cartridge.category,
-            'image' : cartridge.image
+            'name': cartridge.name,
+            'price': cartridge.price,
+            'category': cartridge.category,
+            'image': cartridge.image
         }
         form = CartridgeForm(initial=dic)
 
@@ -366,11 +375,12 @@ def cartridge_modify(request, pk):
     title = 'Modificar Cartucho'
     context = {
         'form': form,
-        'cartridge' : cartridge,
+        'cartridge': cartridge,
         'title': title,
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
+
 
 # -------------------------------------  Suppliers and  -------------------------------------
 
@@ -394,111 +404,129 @@ def new_supplier(request):
     }
     return render(request, template, context)
 
+
 # -------------------------------------  Catering -------------------------------------
 
-def get_required_supplies():
-    required_supplies_list = []    
+class CateringHelper(object):
+    """Catering Helpers """
 
-    predictions = get_prediction_supplies()
-    cartridges = Cartridge.objects.all()     
-    
-    for prediction in predictions:
-        for cartridge in cartridges:
-            if prediction['name'] == cartridge.name:
-                ingredientes = CartridgeRecipe.objects.filter(cartridge=cartridge)              
-                for ingrediente in ingredientes:
-                    name = ingrediente.supply.name
-                    cost = ingrediente.supply.presentation_cost
-                    measurement = ingrediente.supply.measurement_unit
-                    measurement_quantity = ingrediente.supply.measurement_quantity
-                    quantity = ingrediente.quantity   
+    def __init__(self):
+        super(CateringHelper, self).__init__()
 
-                    cont = 0;
+    def get_start_week_day(self, day):
+        format = "%w"
+        number_day = int(self.naive_to_datetime(day).strftime(format))
+        if number_day == 0:
+            number_day = 7
+        else:
+            day = self.naive_to_datetime(day) - timedelta(days=number_day - 1)
 
-                    required_suppply_object = {
-                            'name' : name,
-                            'cost' : cost,
-                            'measurement' : measurement,
-                            'measurement_quantity' : measurement_quantity,
-                            'quantity' : quantity,
-                        }   
+    def get_required_supplies(self):
+        required_supplies_list = []
 
-                    if(len(required_supplies_list)==0):                                                
-                        count=1;
-                    else:                                    
-                        for required_supplies in required_supplies_list:
-                            if required_supplies['name'] == name:                
-                                required_supplies['quantity'] += quantity                                    
-                                count=0
-                                break                                                 
-                            else:                                             
-                                count=1
-                    if(count==1):
-                        required_supplies_list.append(required_suppply_object)
+        predictions = self.get_prediction_supplies()
+        cartridges = Cartridge.objects.all()
+        for prediction in predictions:
+            for cartridge in cartridges:
+                if prediction['name'] == cartridge.name:
+                    ingredients = CartridgeRecipe.objects.filter(cartridge=cartridge)
+                    for ingredient in ingredients:
+                        name = ingredient.supply.name
+                        cost = ingredient.supply.presentation_cost
+                        measurement = ingredient.supply.measurement_unit
+                        measurement_quantity = ingredient.supply.measurement_quantity
+                        quantity = ingredient.quantity
 
-                        
+                        cont = 0;
 
-    return required_supplies_list                    
+                        required_suppply_object = {
+                            'name': name,
+                            'cost': cost,
+                            'measurement': measurement,
+                            'measurement_quantity': measurement_quantity,
+                            'quantity': quantity,
+                        }
 
-def get_supplies_on_stock():
+                        if (len(required_supplies_list) == 0):
+                            count = 1;
+                        else:
+                            for required_supplies in required_supplies_list:
+                                if required_supplies['name'] == name:
+                                    required_supplies['quantity'] += quantity
+                                    count = 0
+                                    break
+                                else:
+                                    count = 1
+                        if (count == 1):
+                            required_supplies_list.append(required_suppply_object)
 
-    stock_list = []
-    elements = Warehouse.objects.all()    
-    for element in elements:
-        stock_object = {
-            'name' : element.supply.name,            
-            'quantity' :  element.quantity,
-        }
-        
-        stock_list.append(stock_object)
+        return required_supplies_list
 
-    print(stock_object)
-    return stock_list
+    def get_supplies_on_stock(self):
 
-def get_prediction_supplies():
-    prediction = []  
+        stock_list = []
+        elements = Warehouse.objects.all()
+        for element in elements:
+            stock_object = {
+                'name': element.supply.name,
+                'quantity': element.quantity,
+            }
 
-    TicketsDetails = TicketDetail.objects.all()    
+            stock_list.append(stock_object)
 
-    for TicketsDetail in TicketsDetails:        
-        cartridge_object = {
-            'name' : TicketsDetail.cartridge.name,
-            'cantidad' : 1,
-        }
+        return stock_list
 
-        prediction.append(cartridge_object)
+    def get_prediction_supplies(self):
+        prediction = []
 
-    return prediction    
+        TicketsDetails = TicketDetail.objects.all()
+
+        for TicketsDetail in TicketsDetails:
+            cartridge_object = {
+                'name': TicketsDetail.cartridge.name,
+                'cantidad': 1,
+            }
+
+            prediction.append(cartridge_object)
+
+        return prediction
+
 
 @login_required(login_url='users:login')
 def catering(request):
+    helper = CateringHelper()
 
-    total_cost = 0;
+    total_cost = 0
 
-    required_supplies = get_required_supplies()
+    required_supplies = helper.get_required_supplies()
 
-    supplies_on_stock = get_supplies_on_stock()
-    
-    for required in required_supplies:        
+    supplies_on_stock = helper.get_supplies_on_stock()
+    for required in required_supplies:
 
         for supplies in supplies_on_stock:
-            if(supplies['name'] == required['name']):                
-                required['stock'] = supplies['quantity']                                       
+            if (supplies['name'] == required['name']):
+                required['stock'] = supplies['quantity']
             else:
-                required['stock'] = 0                
+                required['stock'] = 0
 
-
-        required['required'] = max(0, required['quantity']-required['stock'])
-        required['full_cost'] = required['cost']*(math.ceil(required['required']/required['measurement_quantity']))
+        required['required'] = max(0, required['quantity'] - required['stock'])
+        required['full_cost'] = required['cost'] * (math.ceil(required['required'] / required['measurement_quantity']))
         total_cost = total_cost + required['full_cost']
-        
-    
+
     template = 'catering/catering.html'
     title = 'Abastecimiento'
-    context = {        
-        'title': title,        
-        'required_supplies' :required_supplies,
-        'total_cost' : total_cost,
+    context = {
+        'title': title,
+        'required_supplies': required_supplies,
+        'total_cost': total_cost,
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
+
+
+''' 
+    TODO: Media para predicción.
+    TODO: Filtros por día.
+    TODO: Ordenar por prioridad.
+
+'''
