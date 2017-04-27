@@ -1,0 +1,76 @@
+{% extends 'base/base_nav_footer.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2>Comentarios</h2>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Reaccion</th>
+        <th>Comentario</th>
+        <th>Elementos Evaluados</th>
+        <th>Hora</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for test in tests %}
+        {% if test.suggestion %}
+          <tr>
+            <td>
+              {% if test.satisfaction_rating == 1 %}
+                <img src="{% static 'images/Very_Angry_Emoji.png' %}" alt="Product image" height="80" >
+              {% elif test.satisfaction_rating == 2 %}
+                <img src="{% static 'images/Very_sad_emoji_icon_png.png' %}" alt="Product image" height="80" >
+              {% elif test.satisfaction_rating == 3 %}
+                <img src="{% static 'images/Smiling_Emoji_with_Smiling_Eyes.png' %}" alt="Product image" height="80" >
+              {% elif test.satisfaction_rating == 4 %}
+                <img src="{% static 'images/Heart_Eyes_Emoji.png' %}" alt="Product image" height="80" >
+              {% endif %}
+            </td>
+            <td>{{ test.suggestion }}</td>
+            <td>
+              {% if test.satisfaction_rating == 1 %}
+                {% for element in test.elements.all %}
+                  <div class="badge badge-emotion badge-emotion-1">
+                    {{ element }} 
+                  </div>
+                {% endfor %}
+              {% elif test.satisfaction_rating == 2 %}
+                {% for element in test.elements.all %}
+                  <div class="badge badge-emotion badge-emotion-2">
+                    {{ element }} 
+                  </div>
+                {% endfor %}
+              {% elif test.satisfaction_rating == 3 %}
+                {% for element in test.elements.all %}
+                  <div class="badge badge-emotion badge-emotion-3">
+                    {{ element }} 
+                  </div>
+                {% endfor %}
+              {% elif test.satisfaction_rating == 4 %}
+                {% for element in test.elements.all %}
+                  <div class="badge badge-emotion badge-emotion-4">
+                    {{ element }} 
+                  </div>
+                {% endfor %}
+              {% endif %}
+            </td>
+            <td>{{ test.creation_date }}</td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %} 
+
+{% block javascript %}
+
+
+<script type="text/javascript" charset="utf-8" async>
+  $(function() {
+    
+  });
+</script>
+{% endblock javascript %}
