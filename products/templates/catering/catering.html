@@ -1,43 +1,49 @@
 {% extends "base/base_nav_footer.html" %}
 {% block content %} 
-    <div class="col-xs-8 col-md-10">
-        <div class="col-xs-7" text-align="center">      
-            <p>Costo Total de Insumos Estimados {{total_cost}}</p>  
-        </div>      
-        <table class="table table-kitchen table-striped table-hover" align="right">     
-            <thead class="thead-inverse">
-                <tr>
-                    <th>Nombre</th>
-                    <th>Costo</th>
-                    <th>Unidad</th>
-                    <th>Cantidad por Unidad</th>
-                    <th>Cantidad</th>
-                    <th>Stock</th>
-                    <th>Requeridos</th>
-                    <th>Costo de Requeridos</th>                
-                </tr>
-            </thead>
-            <tbody>             
-                {% for required in required_supplies %}
-                    <tr>                        
-                        <td>{{ required.name }}</td>
-                        <td>{{ required.cost }}</td>    
-                        <td>{{ required.measurement }}</td>                                             
-                        <td>{{ required.measurement_quantity }}</td>    
-                        <td>{{ required.quantity }}</td>    
-                        <td>{{ required.stock }}</td>                       
-                        <td>{{ required.required }}</td>
-                        <td>{{ required.full_cost }}</td>                       
-                    <tr>                                            
-                {% endfor %}                                    
-            </tbody>
-        </table>
-    
+<div class="container-fluid">
+  <div class="row mt-3 mb-2">
+    <div class="col-xs-12 col-md-6">
+      <h2 class="text-xs-center">Producto popular de hoy: <div class="badge badge-info">{{ popular_cartridge_today.name }}</div></h2>
     </div>
-    
-    
-
-
-{% endblock content %}
-{% block javascript %}
-{% endblock javascript %}
+    <div class="col-xs-12 col-md-6">
+      <h2 class="text-xs-center">Producto más popular: <div class="div badge badge-success">{{ popular_cartridge_always.name }}: {{ popular_cartridge_always.frequency }}</div></h2> 
+    </div>
+  </div>
+  <div class="row mt-1">
+  <div class="col-xs-12 col-xl-10 push-xl-1">
+      <p class="text-align {% spaceless %}
+      {% endspaceless %}">Costo total de insumos estimados: {{ estimated_total_cost }}</p> 
+      <table class="table table-kitchen table-striped table-hover" align="right">     
+        <thead class="thead-inverse">
+          <tr>
+            <th>Nombre</th>
+            <th>Costo</th>
+            <th>Unidad</th>
+            <th>Cantidad por Unidad</th>
+            <th>Cantidad</th>
+            <th>Stock</th>
+            <th>Requeridos</th>
+            <th>Costo de Requeridos</th>                
+          </tr>
+        </thead>
+        <tbody>             
+          {% for required in required_supplies %}
+          <tr>                        
+            <td>{{ required.name }}</td>
+            <td>{{ required.cost }}</td>    
+            <td>{{ required.measurement }}</td>                                             
+            <td>{{ required.measurement_quantity }}</td>    
+            <td>{{ required.quantity }}</td>    
+            <td>{{ required.stock }}</td>                       
+            <td>{{ required.required }}</td>
+            <td>{{ required.full_cost }}</td>                       
+            <tr>                                            
+              {% endfor %}                                    
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endblock content %}
+    {% block javascript %}
+    {% endblock javascript %}

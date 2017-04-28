@@ -122,6 +122,10 @@ class UpdateSupply(UpdateView):
               'image']
     template_name = 'supplies/new_supply.html'
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.object = None
+
     def form_valid(self, form):
         self.object = form.save()
         return redirect('products:supplies')
@@ -142,6 +146,10 @@ class CreateCartridge(CreateView):
     fields = ['name', 'price', 'category', 'image']
     template_name = 'cartridges/new_cartridge.html'
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.object = None
+
     def form_valid(self, form):
         self.object = form.save()
         return redirect('/cartridges/')
@@ -152,6 +160,10 @@ class UpdateCartridge(UpdateView):
     fields = ['name', 'price', 'category', 'image']
     template_name = 'cartridges/new_cartridge.html'
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.object = None
+
     def form_valid(self, form):
         self.object = form.save()
         return redirect('/cartridges/')
@@ -161,8 +173,11 @@ class DeleteCartridge(DeleteView):
     model = Cartridge
     template_name = 'cartridges/delete_cartridge.html'
 
-    def delete(self, request, *args, **kwargs):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.object = self.get_object()
+
+    def delete(self, request, *args, **kwargs):
         self.object.delete()
         return redirect('/cartridges/')
 
@@ -171,6 +186,10 @@ class CreateSupplier(CreateView):
     model = Supplier
     fields = ['name', 'image']
     template_name = 'supplies/new_category.html'
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.object = None
 
     def form_valid(self, form):
         self.object = form.save()
@@ -495,8 +514,8 @@ def new_supplier(request):
 # -------------------------------------  Catering -------------------------------------
 @login_required(login_url='users:login')
 def catering(request):
+    
     products_helper = ProductsHelper()
-    helper = Helper()
 
     def get_popular_cartridge():
         all_tickets_details = TicketDetail.objects.all()
@@ -536,8 +555,8 @@ def catering(request):
     def get_popular_cartridge_today():
         start_date = date.today()
         limit_day = start_date + timedelta(days=1)
-        all_tickets_details = TicketDetail.objects.filter(ticket__created_at__range=[start_date, limit_day])
-        all_tickets_details = all_tickets_details
+        all_tickets_details = TicketDetail.objects.prefetch_related('ticket').filter(
+            ticket__created_at__range=[start_date, limit_day])
         all_cartridges = Cartridge.objects.all()
         popular_cartridge = None
         cartridges_frequency_list = {}
@@ -571,12 +590,16 @@ def catering(request):
                     }
         return popular_cartridge
 
-    print(get_popular_cartridge_today())
-    total_cost = 0
+    popular_cartridge_today = get_popular_cartridge_today()
+
+    popular_cartridge_always = get_popular_cartridge()
+
+    estimated_total_cost = 0
 
     required_supplies = products_helper.get_required_supplies()
 
     supplies_on_stock = products_helper.get_supplies_on_stock()
+
     for required in required_supplies:
 
         for supplies in supplies_on_stock:
@@ -587,16 +610,19 @@ def catering(request):
 
         required['required'] = max(0, required['quantity'] - required['stock'])
         required['full_cost'] = required['cost'] * (math.ceil(required['required'] / required['measurement_quantity']))
-        total_cost = total_cost + required['full_cost']
+        estimated_total_cost = estimated_total_cost + required['full_cost']
 
     template = 'catering/catering.html'
     title = 'Abastecimiento'
     context = {
         'title': title,
         'required_supplies': required_supplies,
-        'total_cost': total_cost,
-        'page_title': PAGE_TITLE
+        'estimated_total_cost': estimated_total_cost,
+        'page_title': PAGE_TITLE, 
+        'popular_cartridge_always': popular_cartridge_always,
+        'popular_cartridge_today': popular_cartridge_today,
     }
+    
     return render(request, template, context)
 
 
