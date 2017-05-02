@@ -25,20 +25,20 @@ import math
 
 class ProductsHelper(object):
     def __init__(self):
-        self.required_supplies_list = None
-        self.predictions = None
-        self.all_cartridges = None
-        self.today_popular_cartridge = None
-        self.always_popular_cartridge = None
-        self.all_tickets_details = None
+        self.__required_supplies_list = None
+        self.__predictions = None
+        self.__all_cartridges = None
+        self.__today_popular_cartridge = None
+        self.__always_popular_cartridge = None
+        self.__all_tickets_details = None
         super(ProductsHelper, self).__init__()
 
     def get_required_supplies(self):
-        self.required_supplies_list = []
-        self.predictions = self.get_prediction_supplies()
-        self.all_cartridges = Cartridge.objects.all()
-        for prediction in self.predictions:
-            for cartridge in self.all_cartridges:
+        self.__required_supplies_list = []
+        self.__predictions = self.get_prediction_supplies()
+        self.__all_cartridges = Cartridge.objects.all()
+        for prediction in self.__predictions:
+            for cartridge in self.__all_cartridges:
                 if prediction['name'] == cartridge.name:
                     ingredients = CartridgeRecipe.objects.filter(cartridge=cartridge)
 
@@ -59,10 +59,10 @@ class ProductsHelper(object):
                             'quantity': quantity,
                         }
 
-                        if len(self.required_supplies_list) == 0:
+                        if len(self.__required_supplies_list) == 0:
                             count = 1
                         else:
-                            for required_supplies in self.required_supplies_list:
+                            for required_supplies in self.__required_supplies_list:
                                 if required_supplies['name'] == name:
                                     required_supplies['quantity'] += quantity
                                     count = 0
@@ -70,46 +70,46 @@ class ProductsHelper(object):
                                 else:
                                     count = 1
                         if count == 1:
-                            self.required_supplies_list.append(required_supply_object)
+                            self.__required_supplies_list.append(required_supply_object)
 
-        return self.required_supplies_list
+        return self.__required_supplies_list
 
     def set_all_tickets_details(self, initial_date=None, final_date=None):
         if initial_date is None and final_date is None:
-            self.all_tickets_details = TicketDetail.objects.prefetch_related(
+            self.__all_tickets_details = TicketDetail.objects.prefetch_related(
                 'ticket').prefetch_related('cartridge').prefetch_related('package_cartridge').all()
         else:
-            self.all_tickets_details = TicketDetail.objects.prefetch_related(
+            self.__all_tickets_details = TicketDetail.objects.prefetch_related(
                 'ticket').prefetch_related('cartridge').prefetch_related('package_cartridge').filter(
                 ticket__created_at__range=[initial_date, final_date])
 
     def set_all_cartridges(self):
-        self.all_cartridges = Cartridge.objects.all()
+        self.__all_cartridges = Cartridge.objects.all()
 
     def set_always_popular_cartridge(self):
         cartridges_frequency_dict = {}
-        for cartridge in self.all_cartridges:
+        for cartridge in self.__all_cartridges:
             cartridges_frequency_dict[cartridge.id] = {
                 'frequency': 0,
                 'name': cartridge.name,
             }
-        for ticket_detail in self.all_tickets_details:
+        for ticket_detail in self.__all_tickets_details:
             if ticket_detail.cartridge:
                 ticket_detail_id = ticket_detail.cartridge.id
                 ticket_detail_frequency = ticket_detail.quantity
                 cartridges_frequency_dict[ticket_detail_id]['frequency'] += ticket_detail_frequency
 
         for element in cartridges_frequency_dict:
-            if self.always_popular_cartridge is None:
+            if self.__always_popular_cartridge is None:
                 """ Base case """
-                self.always_popular_cartridge = {
+                self.__always_popular_cartridge = {
                     'id': element,
                     'name': cartridges_frequency_dict[element]['name'],
                     'frequency': cartridges_frequency_dict[element]['frequency'],
                 }
             else:
-                if cartridges_frequency_dict[element]['frequency'] > self.always_popular_cartridge['frequency']:
-                    self.always_popular_cartridge = {
+                if cartridges_frequency_dict[element]['frequency'] > self.__always_popular_cartridge['frequency']:
+                    self.__always_popular_cartridge = {
                         'id': element,
                         'name': cartridges_frequency_dict[element]['name'],
                         'frequency': cartridges_frequency_dict[element]['frequency'],
@@ -122,29 +122,29 @@ class ProductsHelper(object):
         limit_day = helper.naive_to_datetime(start_date + timedelta(days=1))
         self.set_all_tickets_details(start_date, limit_day)
 
-        for cartridge in self.all_cartridges:
+        for cartridge in self.__all_cartridges:
             cartridges_frequency_dict[cartridge.id] = {
                 'frequency': 0,
                 'name': cartridge.name,
             }
 
-        for ticket_detail in self.all_tickets_details:
+        for ticket_detail in self.__all_tickets_details:
             if ticket_detail.cartridge:
                 ticket_detail_id = ticket_detail.cartridge.id
                 ticket_detail_frequency = ticket_detail.quantity
                 cartridges_frequency_dict[ticket_detail_id]['frequency'] += ticket_detail_frequency
 
         for element in cartridges_frequency_dict:
-            if self.today_popular_cartridge is None:
+            if self.__today_popular_cartridge is None:
                 """ Base case """
-                self.today_popular_cartridge = {
+                self.__today_popular_cartridge = {
                     'id': element,
                     'name': cartridges_frequency_dict[element]['name'],
                     'frequency': cartridges_frequency_dict[element]['frequency'],
                 }
             else:
-                if cartridges_frequency_dict[element]['frequency'] > self.today_popular_cartridge['frequency']:
-                    self.today_popular_cartridge = {
+                if cartridges_frequency_dict[element]['frequency'] > self.__today_popular_cartridge['frequency']:
+                    self.__today_popular_cartridge = {
                         'id': element,
                         'name': cartridges_frequency_dict[element]['name'],
                         'frequency': cartridges_frequency_dict[element]['frequency'],
@@ -181,17 +181,17 @@ class ProductsHelper(object):
         return prediction
 
     def get_all_tickets_details(self):
-        return self.all_tickets_details
+        return self.__all_tickets_details
 
     def get_all_cartridges(self):
-        return self.all_cartridges
+        return self.__all_cartridges
 
     def get_always_popular_cartridge(self):
         self.set_always_popular_cartridge()
-        return self.always_popular_cartridge
+        return self.__always_popular_cartridge
 
     def get_today_popular_cartridge(self):
-        return self.always_popular_cartridge
+        return self.__always_popular_cartridge
 
 
 class CreateSupply(CreateView):
@@ -625,9 +625,7 @@ def catering(request):
             }
 
         for ticket_detail in products_helper.get_all_tickets_details():
-            all_cartridges_dict[ticket_detail.cartridge.id]['quantity'] += ticket_detail.quantity
-            all_cartridges_dict[ticket_detail.cartridge.id]['total_tickets_appears'] +=
-            all_cartridges_dict[ticket_detail.cartridge.id]['average'] =
+            pass
         return True
 
     def get_always_popular_cartridge():
@@ -635,26 +633,24 @@ def catering(request):
 
     def get_today_popular_cartridge():
         products_helper.set_today_popular_cartridge()
-        return products_helper.today_popular_cartridge
+        return products_helper.get_today_popular_cartridge()
 
     average_sales = average_sales()
-    today_popular_cartridge = get_today_popular_cartridge()
-    always_popular_cartridge = get_always_popular_cartridge()
     required_supplies = products_helper.get_required_supplies()
     supplies_on_stock = products_helper.get_supplies_on_stock()
     estimated_total_cost = 0
 
-    for required in required_supplies:
-
-        for supplies in supplies_on_stock:
-            if supplies['name'] == required['name']:
-                required['stock'] = supplies['quantity']
+    for required_supply in required_supplies:
+        required_supply['stock'] = 0
+        for supply in supplies_on_stock:
+            if supply['name'] == required_supply['name']:
+                required_supply['stock'] = supply['quantity']
             else:
-                required['stock'] = 0
+                required_supply['stock'] = 0
 
-        required['required'] = max(0, required['quantity'] - required['stock'])
-        required['full_cost'] = required['cost'] * (math.ceil(required['required'] / required['measurement_quantity']))
-        estimated_total_cost = estimated_total_cost + required['full_cost']
+        required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
+        required_supply['full_cost'] = required_supply['cost'] * (math.ceil(required_supply['required'] / required_supply['measurement_quantity']))
+        estimated_total_cost = estimated_total_cost + required_supply['full_cost']
 
     template = 'catering/catering.html'
     title = 'Abastecimiento'
@@ -663,8 +659,8 @@ def catering(request):
         'required_supplies': required_supplies,
         'estimated_total_cost': estimated_total_cost,
         'page_title': PAGE_TITLE,
-        'always_popular_cartridge': always_popular_cartridge,
-        'today_popular_cartridge': today_popular_cartridge,
+        'always_popular_cartridge': get_always_popular_cartridge(),
+        'today_popular_cartridge': get_today_popular_cartridge(),
     }
 
     return render(request, template, context)
