@@ -139,7 +139,7 @@ def sales(request):
             min_year = all_tickets.aggregate(Min('created_at'))['created_at__min'].year
             max_year = all_tickets.aggregate(Max('created_at'))['created_at__max'].year
             years_list = []  # [2015:object, 2016:object, 2017:object, ...]
-        except ValueError:
+        except:
             return HttpResponse('Necesitas crear ventas para ver esta pantalla <a href="sales:new">Nueva Venta</a>')
 
         while max_year >= min_year:

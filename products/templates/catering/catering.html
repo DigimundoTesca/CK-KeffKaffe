@@ -3,10 +3,17 @@
 <div class="container-fluid">
   <div class="row mt-3 mb-2">
     <div class="col-xs-12 col-md-6">
-      <h2 class="text-xs-center">Producto popular de hoy: <div class="badge badge-info">{{ popular_cartridge_today.name }}</div></h2>
+      <h2 class="text-xs-center">Producto popular de hoy:
+        <span class="badge badge-info">{{ today_popular_cartridge.name }}
+        </span>
+      </h2>
     </div>
     <div class="col-xs-12 col-md-6">
-      <h2 class="text-xs-center">Producto más popular: <div class="div badge badge-success">{{ popular_cartridge_always.name }}: {{ popular_cartridge_always.frequency }}</div></h2> 
+      <h2 class="text-xs-center">Producto más popular:
+        <span class="div badge badge-success">
+          {{ always_popular_cartridge.name }}: {{ always_popular_cartridge.frequency }}
+        </span>
+      </h2>
     </div>
   </div>
   <div class="row mt-1">
