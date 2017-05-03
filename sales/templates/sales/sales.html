@@ -182,7 +182,6 @@
 <!--
 <script src="{% static 'js/sweetalert.min.js' %}">
 -->
-</script>
 <script src="{% static 'js/Chart.bundle.min.js' %}" defer></script>
 <script src="{% static 'js/papaparse.min.js' %}" defer></script>
 <script src="{% static 'js/blob.js' %}" defer></script>
@@ -190,6 +189,7 @@
 
 <script type="text/javascript" charset="utf-8" defer>
   $(function() {
+
     var ctx_week = document.getElementById("canvas-week-sales"),
         ctx_day = document.getElementById("canvas-day-sales");
     var earnings_week_chart,

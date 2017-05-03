@@ -16,10 +16,26 @@
 			</thead>
 			<tbody>				
 				{% for required in required_supplies %}
-					{% if required.stock <= 1 %}
-						<tr class = "Danger">
+					{% if required.measurement_quantity == 1 %}
+						{% if required.stock > 20 %}
+							<tr class = "bg-success">
+						{% endif %}
+						{% if required.stock <= 20 %}
+							<tr class = "bg-warning">
+						{% endif %}
+						{% if required.stock <= 10 %}
+							<tr class = "bg-danger">							
+						{% endif %}
 					{% else %}
-						<tr class = "Success">
+						{% if required.stock > 500 %}
+							<tr class = "bg-success">
+						{% endif %}
+						{% if required.stock <= 500 %}
+							<tr class = "bg-warning">
+						{% endif %}
+						{% if required.stock <= 200 %}
+							<tr class = "bg-danger">							
+						{% endif %}
 					{% endif %}
 						<td>{{ required.name }}</td>
 						<td>{{ required.cost }}</td>	

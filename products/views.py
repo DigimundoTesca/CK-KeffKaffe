@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
-from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm
+from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm, WarehouseForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse
 from sales.models import TicketDetail
@@ -405,7 +405,7 @@ def get_required_supplies():
     for prediction in predictions:
         for cartridge in cartridges:
             if prediction['name'] == cartridge.name:
-                ingredientes = CartridgeRecipe.objects.filter(cartridge=cartridge)              
+                ingredientes = CartridgeRecipe.objects.filter(cartridge=cartridge)                     
                 for ingrediente in ingredientes:
                     name = ingrediente.supply.name
                     cost = ingrediente.supply.presentation_cost
@@ -451,8 +451,7 @@ def get_supplies_on_stock():
         }
         
         stock_list.append(stock_object)
-
-    print(stock_object)
+    
     return stock_list
 
 def get_prediction_supplies():
@@ -499,6 +498,63 @@ def catering(request):
         'title': title,        
         'required_supplies' :required_supplies,
         'total_cost' : total_cost,
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
+
+@login_required(login_url='users:login')
+def warehouse(request):
+
+    template = 'catering/warehouse.html'
+    title = 'Movimientos de Almacen'
+    context = {        
+        'title': title,                
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
+
+@login_required(login_url='users:login')
+def warehouse_movements(request):
+
+    if request.method == 'POST':
+        form = WarehouseForm(request.POST, request.FILES)
+        if form.is_valid():
+            cartridge = form.save(commit=False)
+            cartridge.save()
+            return redirect('/warehouse/catering')
+    else:
+        form = WarehouseForm()
+
+    supply_list = Warehouse.objects.all()   
+
+    template = 'catering/catering_movements.html'
+    title = 'Movimientos de Almacen'
+    context = {               
+        'supplies': supply_list,
+        'title': title,                
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
+
+@login_required(login_url='users:login')
+def warehouse_add(request):   
+
+    if request.method == 'POST':
+        form = WarehouseForm(request.POST, request.FILES)
+        if form.is_valid():
+            cartridge = form.save(commit=False)
+            cartridge.save()
+            return redirect('/warehouse/catering')
+    else:
+        form = WarehouseForm()
+
+    supply_list = Supply.objects.all().order_by('name')   
+
+    template = 'catering/catering_add.html'
+    title = 'Agregar Insumos al Almacen'
+    context = {       
+        'form': form,  
+        'title': title,                
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
