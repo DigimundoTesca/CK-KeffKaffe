@@ -1,15 +1,7 @@
 {% extends "base/base_nav_footer.html" %}
 {% load static %}
 {% block link %}
-  <style type="text/css" media="screen">
-  #div1, #div2 {
-    float: left;
-    width: 100px;
-    height: 100px;
-    margin: 10px;    
-    border: 1px solid black;
-  }
-  </style>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">
 {% endblock link %}
 {% block content %}
   <!-- Container -->
@@ -19,32 +11,34 @@
         <div class="row">
           <div class="col-xs-12 col-md-4 col-lg-4">
             <div class="card card-block card-product-title card-outline-info">
-              <h3>Proveedor</h3>
+              <h3>Por comprar</h3>
             </div>
-            <div class="card col-xs-12 card-scroll card-outline-info" id="group-complements" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">
               <div class="card-block products-block">
                 {% for warehouse in supplies %}
                   {% if warehouse.status == "PR" %}
-                    <div class="card-block product-container" id="warehouse.supply-{{ warehouse.supply.pk }}" draggable="true" ondragstart="drag(event)">
+                    <div class="card-block product-container" id="warehouse.supply-{{ warehouse.supply.pk }}">
                       <h6 class="product-name">{{ warehouse.supply.name }}</h6>
-                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{ warehouse.supply.pk }}" class="product-img" alt="Nombre de la bebida" >                      
+                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{ warehouse.supply.pk }}" class="product-img-pr" width="200" height="200">    
+                      <h5 class="product_quantity" id="warehouse.supply.quantity-{{ warehouse.quantity }}" > Cantidad: {{ warehouse.quantity }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
-              </div>
+              </div>  
             </div>
           </div>
           <div class="col-xs-12 col-md-4 col-lg-4">
             <div class="card card-block card-product-title card-outline-info">
               <h3>En Almacen</h3>
             </div>
-            <div class="card col-xs-12 card-scroll card-outline-info" id="group-dishes" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="card col-xs-12 card-scroll card-outline-info" id="group-stock">
               <div class="card-block products-block"> 
                 {% for warehouse in supplies %}                      
                   {% if warehouse.status == "ST" %}                  
-                    <div class="card-block product-container" id="warehouse.supply-{{ warehouse.supply.pk }}" draggable="true" ondragstart="drag(event)">
+                    <div class="card-block product-container" id="warehouse.supply-{{ warehouse.supply.pk }}">
                       <h6 class="product-name">{{ warehouse.supply.name }}</h6>
-                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{ warehouse.supply.pk }}" class="product-img" alt="Nombre de la bebida" draggable="false">  
+                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{ warehouse.supply.pk }}" class="product-img" width="200" height="200">  
+                      <h5 class="product_quantity" id="warehouse.supply-{{ warehouse.supply.pk }}" > Cantidad: {{ warehouse.quantity }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -53,40 +47,98 @@
           </div>          
           <div class="col-xs-12 col-md-4 col-lg-4">
             <div class="card card-block card-product-title card-outline-info">
-              <h3>Ready for Assembly</h3>
+              <h3>En uso</h3>
             </div>
-            <div class="card col-xs-12 card-scroll card-outline-info" id="group-dishes" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="card col-xs-12 card-scroll card-outline-info" id="group-rfa">
               <div class="card-block products-block">
                 {% for warehouse in supplies %}                      
                   {% if warehouse.status == "AS" %}                  
-                    <div class="card-block product-container" id="warehouse.supply-{{ warehouse.supply.pk }}" draggable="true" ondragstart="drag(event)">
+                    <div class="card-block product-container" id="warehouse.supply-{{warehouse.supply.pk}}">
                       <h6 class="product-name">{{ warehouse.supply.name }}</h6>
-                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{ warehouse.supply.pk }}" class="product-img" alt="Nombre de la bebida" draggable="false">                      
+                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{warehouse.supply.pk}}" class="product-img" width="200" height="200">
+                      <h5 class="product_quantity" id="warehouse.supply-{{ warehouse.supply.pk }}" > Cantidad: {{ warehouse.quantity }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
               </div>
             </div>
-          </div>          
+          </div>                    
       </div>
     </div>
   </div>
 {% endblock content %}
 {% block javascript %}
-  <script type="text/javascript" charset="utf-8">
+<script type="text/javascript" charset="utf-8">
+
+$(function(){  
+
+  function get_cookie(name) {
+        var cookie_value = null;
+        if (document.cookie && document.cookie !== '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookie_value;
+  }
+
+  var csrf_token = get_cookie('csrftoken');
+  $(this).on('click', '.product-img-pr', function(event) {
+
+    var element = $(this);
+    var element_pk = element.attr('id').substring(21);    
+    var quantity = element.parent().children(".product_quantity").attr('id').substring(26);
+
+    swal({
+      title: '¿Que cantidad desea mover?',
+      input: 'range',
+      inputAttributes: {
+        min: 0,
+        max: quantity,
+        step: 1
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Submit',
+      showLoaderOnConfirm: true,
+      preConfirm: function (number) {
+        return new Promise(function (resolve, reject) {
+
+          $.ajax({
+              url: '{% url "products:wh_movements" %}',
+              type: 'POST',
+              data: {
+                'cantidad' : number,
+                'element_pk' : element_pk,
+                csrfmiddlewaretoken: csrf_token,
+              },
+              traditional: true,              
+              success: function(result) {
+                swal({
+                  title: "Éxito",
+                  text: "Listo",
+                  type: "success",
+                  showConfirmButton: false,                                    
+                });
+                location.reload(true)
+                setTimeout(rel, 1500);
+              }
+            });    
+                   
+        })
+      },
+      allowOutsideClick: false
+    })    
+  });
   
-  function allowDrop(ev) {
-  ev.preventDefault();
-  }
-  function drag(ev) {
-  ev.dataTransfer.setData("text", ev.target.id);
-  }
-  function drop(ev) {
-  ev.preventDefault();
-  var data = ev.dataTransfer.getData("text");
-  ev.target.appendChild(document.getElementById(data));
-  }
   
-  </script>
+});
+
+
+</script>
   
 {% endblock javascript %}

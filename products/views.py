@@ -517,15 +517,22 @@ def warehouse(request):
 def warehouse_movements(request):
 
     if request.method == 'POST':
-        form = WarehouseForm(request.POST, request.FILES)
-        if form.is_valid():
-            cartridge = form.save(commit=False)
-            cartridge.save()
-            return redirect('/warehouse/catering')
-    else:
-        form = WarehouseForm()
+
+        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
+        mod_wh.quantity -= float(request.POST['cantidad'])
+        mod_wh.save()
+
+        try:
+            sup_on_stock = Warehouse.objects.get(supply=mod_wh.supply,status="ST")
+            sup_on_stock.quantity += float(request.POST['cantidad'])
+            sup_on_stock.save()
+        except Warehouse.DoesNotExist:
+            Warehouse.objects.create(supply=mod_wh.supply,status="ST",quantity=request.POST['cantidad'],
+                                 waste=mod_wh.waste,cost=mod_wh.cost)
 
     supply_list = Warehouse.objects.all()   
+
+    
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
