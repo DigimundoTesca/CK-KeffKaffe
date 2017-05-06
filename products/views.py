@@ -400,7 +400,7 @@ def get_required_supplies():
     required_supplies_list = []    
 
     predictions = get_prediction_supplies()
-    cartridges = Cartridge.objects.all()     
+    cartridges = Cartridge.objects.all()         
     
     for prediction in predictions:
         for cartridge in cartridges:
@@ -423,6 +423,7 @@ def get_required_supplies():
                             'measurement' : measurement,
                             'measurement_quantity' : measurement_quantity,
                             'quantity' : quantity,
+                            'stock' : 0
                         }   
 
                     if(len(required_supplies_list)==0):                                                
@@ -438,15 +439,12 @@ def get_required_supplies():
                     if(count==1):
                         required_supplies_list.append(required_suppply_object)
 
-    supplies_on_stock = get_supplies_on_stock()
+    supplies_on_stock = Warehouse.objects.filter(status="ST")
 
     for required in required_supplies_list:        
-
         for supplies in supplies_on_stock:
-            if(supplies['name'] == required['name']):                
-                required['stock'] = supplies['quantity']                                       
-            else:
-                required['stock'] = 0   
+            if(supplies.supply == required['supply']):                
+                required['stock'] = supplies.quantity            
 
         required['required'] = max(0, required['quantity']-required['stock'])
         required['full_cost'] = required['cost']*(math.ceil(required['required']/required['measurement_quantity']))
@@ -486,13 +484,11 @@ def get_prediction_supplies():
 def catering(request):
 
     total_cost = 0;
-    required_supplies = get_required_supplies()
-    supplies_on_stock = get_supplies_on_stock()
+    required_supplies = get_required_supplies()    
     
     for required in required_supplies:        
         total_cost = total_cost + required['full_cost']
-        
-    
+            
     template = 'catering/catering.html'
     title = 'Abastecimiento'
     context = {        
@@ -518,8 +514,8 @@ def warehouse(request):
 def warehouse_movements(request):
 
     if request.method == 'POST':
-        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
-        mod_wh.quantity -= float(request.POST['cantidad'])
+        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])                
+        mod_wh.quantity -= float(request.POST['cantidad'])        
         mod_wh.save()
         try:
             sup_on_stock = Warehouse.objects.get(supply=mod_wh.supply,status="ST")
@@ -529,24 +525,20 @@ def warehouse_movements(request):
             Warehouse.objects.create(supply=mod_wh.supply,status="ST",quantity=request.POST['cantidad'],
                                  waste=mod_wh.waste,cost=mod_wh.cost)
 
+    predictions = get_required_supplies();    
 
-    predictions = get_required_supplies();
+    for prediction in predictions:
+        try:
+            sup_on_pro = Warehouse.objects.get(supply=prediction['supply'],status="PR")
+            print(prediction['required'])
+            sup_on_pro.quantity = float(prediction['required'])
+            sup_on_pro.save()            
+        except Warehouse.DoesNotExist:
+            Warehouse.objects.create(supply=prediction['supply'],status="PR",quantity=prediction['required'],
+                                 waste=0,cost=prediction['cost'])
+
     supply_list = Warehouse.objects.all();
-
-
-    for predictions in predictions:
-        for supplies in supply_list:            
-            try:
-                sup_on_stock = Warehouse.objects.get(supply=predictions['supply'],status="PR")
-                sup_on_stock.quantity = float(predictions['required'])
-                sup_on_stock.save()
-            except Warehouse.DoesNotExist:
-                Warehouse.objects.create(supply=predictions['supply'],status="PR",quantity=predictions['required'],
-                                 cost=predictions['cost'])
-
-
-    supply_list = Warehouse.objects.all();    
-    
+        
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {               
