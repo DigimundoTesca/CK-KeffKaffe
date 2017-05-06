@@ -407,6 +407,7 @@ def get_required_supplies():
             if prediction['name'] == cartridge.name:
                 ingredientes = CartridgeRecipe.objects.filter(cartridge=cartridge)                     
                 for ingrediente in ingredientes:
+                    supply = ingrediente.supply
                     name = ingrediente.supply.name
                     cost = ingrediente.supply.presentation_cost
                     measurement = ingrediente.supply.measurement_unit
@@ -416,6 +417,7 @@ def get_required_supplies():
                     cont = 0;
 
                     required_suppply_object = {
+                            'supply' : supply,
                             'name' : name,
                             'cost' : cost,
                             'measurement' : measurement,
@@ -436,14 +438,25 @@ def get_required_supplies():
                     if(count==1):
                         required_supplies_list.append(required_suppply_object)
 
-                        
+    supplies_on_stock = get_supplies_on_stock()
+
+    for required in required_supplies_list:        
+
+        for supplies in supplies_on_stock:
+            if(supplies['name'] == required['name']):                
+                required['stock'] = supplies['quantity']                                       
+            else:
+                required['stock'] = 0   
+
+        required['required'] = max(0, required['quantity']-required['stock'])
+        required['full_cost'] = required['cost']*(math.ceil(required['required']/required['measurement_quantity']))
 
     return required_supplies_list                    
 
 def get_supplies_on_stock():
 
     stock_list = []
-    elements = Warehouse.objects.all()    
+    elements = Warehouse.objects.filter(status="ST")
     for element in elements:
         stock_object = {
             'name' : element.supply.name,            
@@ -473,22 +486,10 @@ def get_prediction_supplies():
 def catering(request):
 
     total_cost = 0;
-
     required_supplies = get_required_supplies()
-
     supplies_on_stock = get_supplies_on_stock()
     
     for required in required_supplies:        
-
-        for supplies in supplies_on_stock:
-            if(supplies['name'] == required['name']):                
-                required['stock'] = supplies['quantity']                                       
-            else:
-                required['stock'] = 0                
-
-
-        required['required'] = max(0, required['quantity']-required['stock'])
-        required['full_cost'] = required['cost']*(math.ceil(required['required']/required['measurement_quantity']))
         total_cost = total_cost + required['full_cost']
         
     
@@ -517,11 +518,9 @@ def warehouse(request):
 def warehouse_movements(request):
 
     if request.method == 'POST':
-
         mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
         mod_wh.quantity -= float(request.POST['cantidad'])
         mod_wh.save()
-
         try:
             sup_on_stock = Warehouse.objects.get(supply=mod_wh.supply,status="ST")
             sup_on_stock.quantity += float(request.POST['cantidad'])
@@ -530,10 +529,24 @@ def warehouse_movements(request):
             Warehouse.objects.create(supply=mod_wh.supply,status="ST",quantity=request.POST['cantidad'],
                                  waste=mod_wh.waste,cost=mod_wh.cost)
 
-    supply_list = Warehouse.objects.all()   
 
+    predictions = get_required_supplies();
+    supply_list = Warehouse.objects.all();
+
+
+    for predictions in predictions:
+        for supplies in supply_list:            
+            try:
+                sup_on_stock = Warehouse.objects.get(supply=predictions['supply'],status="PR")
+                sup_on_stock.quantity = float(predictions['required'])
+                sup_on_stock.save()
+            except Warehouse.DoesNotExist:
+                Warehouse.objects.create(supply=predictions['supply'],status="PR",quantity=predictions['required'],
+                                 cost=predictions['cost'])
+
+
+    supply_list = Warehouse.objects.all();    
     
-
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {               

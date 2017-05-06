@@ -1,7 +1,7 @@
 {% extends "base/base_nav_footer.html" %}
 {% load static %}
 {% block link %}
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">  
 {% endblock link %}
 {% block content %}
   <!-- Container -->
@@ -16,11 +16,11 @@
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">
               <div class="card-block products-block">
                 {% for warehouse in supplies %}
-                  {% if warehouse.status == "PR" %}
+                  {% if warehouse.status == "PR" and warehouse.quantity > 0 %}
                     <div class="card-block product-container" id="warehouse.supply-{{ warehouse.supply.pk }}">
                       <h6 class="product-name">{{ warehouse.supply.name }}</h6>
-                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{ warehouse.supply.pk }}" class="product-img-pr" width="200" height="200">    
-                      <h5 class="product_quantity" id="warehouse.supply.quantity-{{ warehouse.quantity }}" > Cantidad: {{ warehouse.quantity }} </h4>
+                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.pr.supply-img-{{ warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="warehouse.supply.quantity-{{ warehouse.quantity }}" > Cantidad: {{ warehouse.quantity }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -34,7 +34,7 @@
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-stock">
               <div class="card-block products-block"> 
                 {% for warehouse in supplies %}                      
-                  {% if warehouse.status == "ST" %}                  
+                  {% if warehouse.status == "ST" and warehouse.quantity > 0 %}                  
                     <div class="card-block product-container" id="warehouse.supply-{{ warehouse.supply.pk }}">
                       <h6 class="product-name">{{ warehouse.supply.name }}</h6>
                       <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{ warehouse.supply.pk }}" class="product-img" width="200" height="200">  
@@ -52,7 +52,7 @@
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-rfa">
               <div class="card-block products-block">
                 {% for warehouse in supplies %}                      
-                  {% if warehouse.status == "AS" %}                  
+                  {% if warehouse.status == "AS" and warehouse.quantity > 0 %}                  
                     <div class="card-block product-container" id="warehouse.supply-{{warehouse.supply.pk}}">
                       <h6 class="product-name">{{ warehouse.supply.name }}</h6>
                       <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{warehouse.supply.pk}}" class="product-img" width="200" height="200">
@@ -61,9 +61,9 @@
                   {% endif %}
                 {% endfor %}
               </div>
-            </div>
-          </div>                    
-      </div>
+            </div>                       
+          </div>                                     
+      </div>      
     </div>
   </div>
 {% endblock content %}
@@ -88,18 +88,37 @@ $(function(){
   }
 
   var csrf_token = get_cookie('csrftoken');
-  $(this).on('click', '.product-img-pr', function(event) {
+
+  $("#group-stock").on("dragover",function(e){
+    e.preventDefault();
+  });
+  $(".product-img-pr").on("dragstart",function(e){    
 
     var element = $(this);
-    var element_pk = element.attr('id').substring(21);    
-    var quantity = element.parent().children(".product_quantity").attr('id').substring(26);
+    var element_id = element.attr('id').substring(24);
+    var element_quantity = element.parent().children(".provider_quantity").attr('id').substring(26);    
+    var str = element_id+","+element_quantity;   
+
+    e.originalEvent.dataTransfer.setData("text",str);    
+
+  });
+  $("#group-stock").on("drop",function(e){    
+    e.preventDefault();
+    var data = e.originalEvent.dataTransfer.getData("text");
+    var obj_wh = data.split(',');
+
+    var obj_id = obj_wh[0];
+    var obj_quantity = obj_wh[1];
+
+    console.log(obj_id);
+    console.log(obj_quantity);
 
     swal({
       title: '¿Que cantidad desea mover?',
       input: 'range',
       inputAttributes: {
         min: 0,
-        max: quantity,
+        max: obj_quantity,
         step: 1
       },
       showCancelButton: true,
@@ -113,7 +132,7 @@ $(function(){
               type: 'POST',
               data: {
                 'cantidad' : number,
-                'element_pk' : element_pk,
+                'element_pk' : obj_id,
                 csrfmiddlewaretoken: csrf_token,
               },
               traditional: true,              
@@ -133,8 +152,8 @@ $(function(){
       },
       allowOutsideClick: false
     })    
+
   });
-  
   
 });
 
