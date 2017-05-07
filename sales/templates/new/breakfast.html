@@ -146,7 +146,7 @@
             <div class="card card-scroll col-xs-4" id="printer-container">
               <div id="printer" style="margin: 0 auto">
                 <figure class="content-img">
-                  <img src="{% static 'images/si_black.jpg' %}" alt="logo-dabbawala">
+                  <img src="{% static 'images/logo.png' %}" alt="logo-dabbawala">
                 </figure>
                 <div class="ticket-order-container text-xs-center">
                   <span>ORDEN: </span><span id="ticket-order"></span>
@@ -1140,7 +1140,7 @@
                 csrfmiddlewaretoken: csrf_token,
               },
               traditional: true,
-              datatype: 'jsonp',
+              datatype: 'json',
               success: function(result) {
                 swal({
                   title: "Éxito",

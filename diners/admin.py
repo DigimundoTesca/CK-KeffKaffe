@@ -1,5 +1,5 @@
 from django.contrib import admin
-from diners.models import Diner, AccessLog
+from .models import Diner, AccessLog, ElementToEvaluate, SatisfactionRating
 
 from actions import export_as_excel
 
@@ -16,7 +16,24 @@ class DinerAdmin(admin.ModelAdmin):
 @admin.register(AccessLog)
 class AccessLogAdmin(admin.ModelAdmin):
     list_display = ('id', 'RFID', 'diner', 'access_to_room', )
-    ordering = ('access_to_room',) 
+    ordering = ('-access_to_room',) 
     list_filter = ('diner', 'RFID', 'access_to_room', )
     search_fields = ('RFID',)
     date_hierarchy = 'access_to_room'
+
+
+@admin.register(ElementToEvaluate)
+class ElementToEvaluateAdmin(admin.ModelAdmin):
+    list_display = ('id', 'element', )
+    ordering = ('id',) 
+
+@admin.register(SatisfactionRating)
+class SatisfactionRatingAdmin(admin.ModelAdmin):
+    list_display = ('id', 'creation_date', 'satisfaction_rating', 'shortened_suggestion', 'selected_elements')
+    ordering = ('-creation_date',) 
+    list_display_links = ('id', 'creation_date',)
+
+    def selected_elements(self, obj):
+        return ",\n".join([p.element for p in obj.elements.all()])
+
+    

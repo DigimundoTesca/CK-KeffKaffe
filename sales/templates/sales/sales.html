@@ -130,7 +130,7 @@
         <div class="printer-container">
           <div id="printer">
             <figure class="content-img">
-              <img src="{% static 'images/si_black.jpg' %}" alt="logo-dabbawala">
+              <img src="{% static 'images/logo.png' %}" alt="logo-dabbawala">
             </figure>
             <div class="ticket-order-container text-xs-center">
               <span>ORDEN</span>
@@ -182,7 +182,6 @@
 <!--
 <script src="{% static 'js/sweetalert.min.js' %}">
 -->
-</script>
 <script src="{% static 'js/Chart.bundle.min.js' %}" defer></script>
 <script src="{% static 'js/papaparse.min.js' %}" defer></script>
 <script src="{% static 'js/blob.js' %}" defer></script>
@@ -190,6 +189,7 @@
 
 <script type="text/javascript" charset="utf-8" defer>
   $(function() {
+
     var ctx_week = document.getElementById("canvas-week-sales"),
         ctx_day = document.getElementById("canvas-day-sales");
     var earnings_week_chart,

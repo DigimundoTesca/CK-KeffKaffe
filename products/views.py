@@ -9,8 +9,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
-from helpers import Helper
-from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm
+from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm, WarehouseForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse
 from sales.models import TicketDetail, Ticket
@@ -654,6 +653,73 @@ def catering(request):
         required_supply['full_cost'] = required_supply['cost'] * (math.ceil(required_supply['required'] / required_supply['measurement_quantity']))
         estimated_total_cost = estimated_total_cost + required_supply['full_cost']
 
+    predictions = get_prediction_supplies()
+    cartridges = Cartridge.objects.all()         
+    
+    for prediction in predictions:
+        for cartridge in cartridges:
+            if prediction['name'] == cartridge.name:
+                ingredientes = CartridgeRecipe.objects.filter(cartridge=cartridge)                     
+                for ingrediente in ingredientes:
+                    supply = ingrediente.supply
+                    name = ingrediente.supply.name
+                    cost = ingrediente.supply.presentation_cost
+                    measurement = ingrediente.supply.measurement_unit
+                    measurement_quantity = ingrediente.supply.measurement_quantity
+                    quantity = ingrediente.quantity   
+
+                    cont = 0;
+
+                    required_suppply_object = {
+                            'supply' : supply,
+                            'name' : name,
+                            'cost' : cost,
+                            'measurement' : measurement,
+                            'measurement_quantity' : measurement_quantity,
+                            'quantity' : quantity,
+                            'stock' : 0
+                        }   
+
+                    if(len(required_supplies_list)==0):                                                
+                        count=1;
+                    else:                                    
+                        for required_supplies in required_supplies_list:
+                            if required_supplies['name'] == name:                
+                                required_supplies['quantity'] += quantity                                    
+                                count=0
+                                break                                                 
+                            else:                                             
+                                count=1
+                    if(count==1):
+                        required_supplies_list.append(required_suppply_object)
+
+    supplies_on_stock = Warehouse.objects.filter(status="ST")
+
+    for required in required_supplies_list:        
+        for supplies in supplies_on_stock:
+            if(supplies.supply == required['supply']):                
+                required['stock'] = supplies.quantity            
+
+        required['required'] = max(0, required['quantity']-required['stock'])
+        required['full_cost'] = required['cost']*(math.ceil(required['required']/required['measurement_quantity']))
+
+    return required_supplies_list                    
+
+def get_supplies_on_stock():
+
+    stock_list = []
+    elements = Warehouse.objects.filter(status="ST")
+    for element in elements:
+        stock_object = {
+            'name' : element.supply.name,            
+            'quantity' :  element.quantity,
+        }
+        
+        stock_list.append(stock_object)
+    
+    return stock_list
+
+
     template = 'catering/catering.html'
     title = 'Abastecimiento'
     context = {
@@ -683,23 +749,79 @@ def analytics(request):
     TODO: Media para predicción.
     TODO: Ordenar por prioridad.
 '''
-
-
 def test(request):
-    variable_chida = '1'
-    # template = 'base/base_nav_footer.html'
-
-    def otra_funcion():
-        variable_chida = '2'
-        return variable_chida
-
-    def mi_funcion():
-        variable_chida = '3'
-        print(variable_chida)
-        variable_chida = otra_funcion()
-        print(variable_chida)
-
-    mi_funcion()
-
-    print('FIN: ', variable_chida)
     return HttpResponse('jeje')
+
+  
+@login_required(login_url='users:login')
+def warehouse(request):
+
+    template = 'catering/warehouse.html'
+    title = 'Movimientos de Almacen'
+    context = {        
+        'title': title,                
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
+
+@login_required(login_url='users:login')
+def warehouse_movements(request):
+
+    if request.method == 'POST':
+        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])                
+        mod_wh.quantity -= float(request.POST['cantidad'])        
+        mod_wh.save()
+        try:
+            sup_on_stock = Warehouse.objects.get(supply=mod_wh.supply,status="ST")
+            sup_on_stock.quantity += float(request.POST['cantidad'])
+            sup_on_stock.save()
+        except Warehouse.DoesNotExist:
+            Warehouse.objects.create(supply=mod_wh.supply,status="ST",quantity=request.POST['cantidad'],
+                                 waste=mod_wh.waste,cost=mod_wh.cost)
+
+    predictions = get_required_supplies();    
+
+    for prediction in predictions:
+        try:
+            sup_on_pro = Warehouse.objects.get(supply=prediction['supply'],status="PR")
+            print(prediction['required'])
+            sup_on_pro.quantity = float(prediction['required'])
+            sup_on_pro.save()            
+        except Warehouse.DoesNotExist:
+            Warehouse.objects.create(supply=prediction['supply'],status="PR",quantity=prediction['required'],
+                                 waste=0,cost=prediction['cost'])
+
+    supply_list = Warehouse.objects.all();
+        
+    template = 'catering/catering_movements.html'
+    title = 'Movimientos de Almacen'
+    context = {               
+        'supplies': supply_list,
+        'title': title,                
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
+
+  
+@login_required(login_url='users:login')
+def warehouse_add(request):   
+
+    if request.method == 'POST':
+        form = WarehouseForm(request.POST, request.FILES)
+        if form.is_valid():
+            cartridge = form.save(commit=False)
+            cartridge.save()
+            return redirect('/warehouse/catering')
+    else:
+        form = WarehouseForm()
+
+    supply_list = Supply.objects.all().order_by('name')   
+
+    template = 'catering/catering_add.html'
+    title = 'Agregar Insumos al Almacen'
+    context = {       
+        'form': form,  
+        'title': title,                
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
