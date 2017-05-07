@@ -79,6 +79,10 @@ class TicketDetail(models.Model):
 
     def __str__(self):
         return '%s' % self.id
+    def __str__(self):
+        return self.quantity
+    def __str__(self):
+        return '%s' % self.cartridge
 
     def extra_ingredients(self):
         ingredients = TicketExtraIngredient.objects.filter(ticket_detail=self.id)

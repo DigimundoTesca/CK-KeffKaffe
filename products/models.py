@@ -180,7 +180,7 @@ class ExtraIngredient(models.Model):
 
 
 class PackageCartridge(models.Model):
-    # Kinf of food
+    # Kind of food
     BREAKFAST = 'BF'
     FOOD = 'FO'
     
@@ -211,7 +211,6 @@ class PackageCartridge(models.Model):
 
     package_recipe.allow_tags = True
 
-
     class Meta:
         ordering = ('name',)
         verbose_name = 'Paquete'
@@ -230,3 +229,7 @@ class PackageCartridgeRecipe(models.Model):
         ordering = ('id',)
         verbose_name = 'Receta del Paquete'
         verbose_name_plural = 'Recetas de Paquetes'
+
+
+
+

@@ -12,7 +12,8 @@
         <div class="card-bloc text-xs-right">
           <a href="{% url 'products:cartridge_detail' cartridge.pk %}">Detalles</a><br>
           <a href="{% url 'products:cartridge_modify' cartridge.pk %}">Modificar</a><br>
-          <a href="{% url 'products:cartridge_delete' cartridge.pk %}">Delete</a>
+          <a href="{% url 'products:cartridge_delete' cartridge.pk %}">Delete</a><br>
+          <a href="{% url 'products:cartridge_recipe' cartridge.pk %}">Receta</a>
         </div>
       </div>
     </div>
