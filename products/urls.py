@@ -40,6 +40,11 @@ urlpatterns = [
 
     # Catering
     url(r'^catering/$', views.catering, name='catering'),
+
+    #Analytics
+    url(r'^analytics/$', views.analytics, name='analytics'),
+
+
 ]
 
 # test

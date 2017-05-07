@@ -625,7 +625,9 @@ def catering(request):
             }
 
         for ticket_detail in products_helper.get_all_tickets_details():
-            pass
+            print(products_helper.get_all_tickets_details)
+            if ticket_detail == products_helper.get_all_tickets_details():
+                pass
         return True
 
     def get_always_popular_cartridge():
@@ -665,6 +667,17 @@ def catering(request):
 
     return render(request, template, context)
 
+#-------------------------------------- Analytics---------------------------------------------
+
+def analytics(request):     
+
+    template = 'analytics/analytics.html'
+    title = 'Analytics'
+    context = {
+        'title':title,
+    }
+    return render(request, template, context)
+    
 
 ''' 
     TODO: Media para predicción.
