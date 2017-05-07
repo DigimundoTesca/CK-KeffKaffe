@@ -526,9 +526,11 @@
           swal.enableLoading();
         },
         success: function(result, status, XHR) {
-          console.log(result);
-          diner_details = Papa.unparse(result.diner_logs);
-          console.log(diner_details);
+          
+          diner_details = Papa.unparse({
+              fields: ["Id", "Nombre", "RFID", "SAP", "Hora de Acceso", "Fecha de Acceso"],
+              data: result.diner_logs
+          });
 
           var blob = new Blob([ diner_details ], {
             type: "text/csv;charset=UTF-8" }

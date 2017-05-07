@@ -44,7 +44,7 @@ class ProcessedProduct(models.Model):
         verbose_name_plural = 'Productos Procesados'
 
 
-class Warehouse(models.Model):
+class Warehouse(models.Model):  
     PROVIDER = 'PR'
     STOCK = 'ST'
     ASSEMBLED = 'AS'
