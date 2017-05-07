@@ -159,3 +159,5 @@ staticfiles/
 media/
 # Databases
 *.sqlite3
+.Rproj.user
+.Rhistory
