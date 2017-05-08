@@ -4,7 +4,9 @@ from users.models import User as UserProfile, Rol, CustomerProfile, UserMovement
 
 
 class UserProfileAdmin(admin.ModelAdmin):
-	pass
+    list_display = ('id', 'username', 'email', 'is_staff', 'is_active', 'is_superuser', )
+    list_display_links = ('id', 'username', )
+    list_editable = ('email', 'is_staff', 'is_active', 'is_superuser')
 
 
 class RolAdmin(admin.ModelAdmin):
