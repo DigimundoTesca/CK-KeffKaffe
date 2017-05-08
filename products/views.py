@@ -25,15 +25,48 @@ import math
 
 class ProductsHelper(object):
     def __init__(self):
-        self.__required_supplies_list = None
-        self.__predictions = None
         self.__all_cartridges = None
-        self.__today_popular_cartridge = None
-        self.__always_popular_cartridge = None
-        self.__all_tickets_details = None
-        self.__elements_in_warehouse = None
         self.__all_cartridges_recipes = None
+        self.__all_tickets_details = None
+        self.__all_supplies = None
+        self.__always_popular_cartridge = None
+        self.__elements_in_warehouse = None
+        self.__predictions = None
+        self.__required_supplies_list = None
+        self.__today_popular_cartridge = None
         super(ProductsHelper, self).__init__()
+
+    def get_all_cartridges(self):
+        return self.__all_cartridges
+
+    def get_all_tickets_details(self):
+        return self.__all_tickets_details
+
+    def get_all_supplies(self):
+        if self.__all_supplies is None:
+            self.set_all_supplies()
+        return self.__all_supplies
+
+    def get_always_popular_cartridge(self):
+        self.set_always_popular_cartridge()
+        return self.__always_popular_cartridge
+
+    def get_prediction_supplies_list(self):
+        if self.__all_tickets_details is None:
+            self.set_all_tickets_details()
+
+        all_tickets_details = self.__all_tickets_details
+        prediction_list = []
+        """:type all_tickets_details: list"""
+        for ticket_details in all_tickets_details:
+            cartridge_object = {
+                'name': ticket_details.cartridge.name,
+                'cantidad': 1,
+            }
+
+            prediction_list.append(cartridge_object)
+
+        return prediction_list
 
     def get_required_supplies(self):
         if self.__elements_in_warehouse is None:
@@ -45,8 +78,8 @@ class ProductsHelper(object):
         if self.__all_cartridges_recipes is None:
             self.set_all_cartridges_recipes()
 
-        all_cartridges = self.__all_cartridges
         required_supplies_list = []
+        all_cartridges = self.__all_cartridges
         predictions = self.get_prediction_supplies_list()
         supplies_on_stock = self.__elements_in_warehouse.filter(status='ST')
 
@@ -111,47 +144,27 @@ class ProductsHelper(object):
 
         return stock_list
 
-    def get_prediction_supplies_list(self):
-        if self.__all_tickets_details is None:
-            self.set_all_tickets_details()
-
-        all_tickets_details = self.__all_tickets_details
-        prediction_list = []
-        """:type all_tickets_details: list"""
-        for ticket_details in all_tickets_details:
-            cartridge_object = {
-                'name': ticket_details.cartridge.name,
-                'cantidad': 1,
-            }
-
-            prediction_list.append(cartridge_object)
-
-        return prediction_list
-
-    def get_all_tickets_details(self):
-        return self.__all_tickets_details
-
-    def get_all_cartridges(self):
-        return self.__all_cartridges
-
-    def get_always_popular_cartridge(self):
-        self.set_always_popular_cartridge()
-        return self.__always_popular_cartridge
-
     def get_today_popular_cartridge(self):
         return self.__always_popular_cartridge
 
-    def set_all_tickets_details(self, initial_date=None, final_date=None):
-        if initial_date is None and final_date is None:
-            self.__all_tickets_details = TicketDetail.objects.prefetch_related(
-                'ticket').prefetch_related('cartridge').prefetch_related('package_cartridge').all()
-        else:
-            self.__all_tickets_details = TicketDetail.objects.prefetch_related(
-                'ticket').prefetch_related('cartridge').prefetch_related('package_cartridge').filter(
-                ticket__created_at__range=[initial_date, final_date])
-
     def set_all_cartridges(self):
         self.__all_cartridges = Cartridge.objects.all()
+
+    def set_all_tickets_details(self, initial_date=None, final_date=None):
+        if initial_date is None and final_date is None:
+            self.__all_tickets_details = TicketDetail.objects.select_related(
+                'ticket').select_related('cartridge').select_related('package_cartridge').all()
+        else:
+            self.__all_tickets_details = TicketDetail.objects.select_related(
+                'ticket').select_related('cartridge').select_related('package_cartridge').filter(
+                ticket__created_at__range=[initial_date, final_date])
+
+    def set_all_cartridges_recipes(self):
+        self.__all_cartridges_recipes = CartridgeRecipe.objects.select_related('cartridge').all()
+
+    def set_all_supplies(self):
+        self.__all_supplies = \
+            Supply.objects.select_related('category').select_related('supplier').select_related('location').all()
 
     def set_always_popular_cartridge(self):
         cartridges_frequency_dict = {}
@@ -181,6 +194,9 @@ class ProductsHelper(object):
                         'name': cartridges_frequency_dict[element]['name'],
                         'frequency': cartridges_frequency_dict[element]['frequency'],
                     }
+
+    def set_elements_in_warehouse(self):
+        self.__elements_in_warehouse = Warehouse.objects.select_related('supply').all()
 
     def set_today_popular_cartridge(self):
         cartridges_frequency_dict = {}
@@ -217,11 +233,7 @@ class ProductsHelper(object):
                         'frequency': cartridges_frequency_dict[element]['frequency'],
                     }
 
-    def set_elements_in_warehouse(self):
-        self.__elements_in_warehouse = Warehouse.objects.all()
 
-    def set_all_cartridges_recipes(self):
-        self.__all_cartridges_recipes = CartridgeRecipe.objects.select_related('cartridge').all()
 # -------------------------------------  Profile -------------------------------------
 
 
@@ -263,11 +275,11 @@ def new_supplier(request):
 # -------------------------------------  Supplies -------------------------------------
 @login_required(login_url='users:login')
 def supplies(request):
-    supplies_objects = Supply.objects.order_by('id')
+    products_helper = ProductsHelper()
     template = 'supplies/supplies.html'
     title = 'Insumos'
     context = {
-        'supplies': supplies_objects,
+        'supplies': products_helper.get_all_supplies().order_by('id'),
         'title': title,
         'page_title': PAGE_TITLE
     }
@@ -527,11 +539,10 @@ def catering(request):
 # -------------------------------------- Warehouse ---------------------------------------------
 @login_required(login_url='users:login')
 def warehouse(request):
-
     template = 'catering/warehouse.html'
     title = 'Movimientos de Almacen'
-    context = {        
-        'title': title,                
+    context = {
+        'title': title,
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
