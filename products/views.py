@@ -123,11 +123,14 @@ class ProductsHelper(object):
         for required_supply in required_supplies_list:
             for supply_on_stock in supplies_on_stock:
                 if supply_on_stock.supply == required_supply['supply']:
+                    print('llegamos al if xdxdxd', '*'*40)
                     required_supply['stock'] = supply_on_stock.quantity
                     required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
                     required_supply['full_cost'] = \
                         required_supply['cost'] * \
                         math.ceil(required_supply['required'] / required_supply['measurement_quantity'])
+                    print('TEST: \t')
+                    print(required_supply)
 
         return required_supplies_list
 
@@ -551,7 +554,6 @@ def warehouse(request):
 
 @login_required(login_url='users:login')
 def warehouse_movements(request):
-    """
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()
 
@@ -587,9 +589,6 @@ def warehouse_movements(request):
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
-    return render(request, template, context)
-    """
-    return HttpResponse('POR REPARAR')
 
 
 def products_analytics(request):

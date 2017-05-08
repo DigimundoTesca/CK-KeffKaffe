@@ -53,6 +53,7 @@ class PackageCartridgeRecipeInline(admin.TabularInline):
             kwargs['queryset'] = Cartridge.objects.order_by('name')
         return super(PackageCartridgeRecipeInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
+
 @admin.register(PackageCartridge)
 class AdminPackageCartridge(admin.ModelAdmin):
     list_display = ('id', 'name', 'price', 'kind_of_food', 'is_active', 'package_recipe')

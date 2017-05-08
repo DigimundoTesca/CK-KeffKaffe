@@ -44,7 +44,20 @@ class ProcessedProduct(models.Model):
         verbose_name_plural = 'Productos Procesados'
 
 
-class Warehouse(models.Model):  
+class Warehouse(models.Model):
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+    cost = models.FloatField(default=0)
+
+    def __str__(self):
+        return '%s' % self.id
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Insumo en Almacén'
+        verbose_name_plural = 'Insumos en el Almacén'
+
+
+class WarehouseDetails(models.Model):
     PROVIDER = 'PR'
     STOCK = 'ST'
     ASSEMBLED = 'AS'
@@ -56,18 +69,16 @@ class Warehouse(models.Model):
         (SOLD, 'Sold'),
     )
 
-    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+    warehouse = models.ForeignKey(Warehouse, default=1, on_delete=models.CASCADE)
     status = models.CharField(choices=STATUS, default=PROVIDER, max_length=15)
     created_at = models.DateField(editable=False, auto_now_add=True)
     expiry_date = models.DateField(editable=True, auto_now_add=True)
     quantity = models.FloatField(default=0)
-    waste = models.FloatField(default=0)
-    cost = models.FloatField(default=0)
 
     def __str__(self):
-        return '%s' % self.id
+        return '%s' % self.warehouse.name
 
     class Meta:
         ordering = ('id',)
-        verbose_name = 'Insumo en Almacén'
-        verbose_name_plural = 'Insumos en el Almacén'
+        verbose_name = 'Insumo en Almacén - Detalles'
+        verbose_name_plural = 'Insumos en el Almacén - Detalles'
