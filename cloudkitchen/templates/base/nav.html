@@ -1,9 +1,5 @@
 <!--
-<nav class="navbar fixed-top navbar-light bg-faded msg-warning">
-  <marquee behavior="" direction="">
-    Su compañia tiene un adeudo con nosotros. Favor de ponerse al corriente :'v
-  </marquee>
-</nav>
+TODO: Fix navs id's
 -->
 <nav class="navbar navbar-full navbar-dark navbar-base">
   <div class="container-fluid">
@@ -18,17 +14,17 @@
       <li class="nav-item" id="link-new-food">
         <a class="nav-link" href="{% url 'sales:new_food'  %}">Comidas</a>
       </li>
-      <li class="nav-item dropdown" id="link-kitchen">
-        <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Cocina</a>
+      <li class="nav-item dropdown" >
+        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Cocina</a>
         <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
           <a class="dropdown-item" href="{% url 'kitchen:kitchen' %}">Cocina</a>
           <a class="dropdown-item" href="{% url 'kitchen:assembly' %}">Ensamble</a>
         </div>
       </li>
-      <li class="nav-item dropdown" id="link-products">
-        <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Almacen</a>
+      <li class="nav-item dropdown" >
+        <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Almacen</a>
         <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
-          <a class="dropdown-item" href="{% url 'products:analytics' %}">Analytics</a>          
+          <a class="dropdown-item" href="{% url 'products:analytics' %}">Analytics</a>
           <a class="dropdown-item" href="{% url 'products:supplies' %}">Insumos</a>
           <a class="dropdown-item" href="{% url 'products:cartridges' %}">Productos</a>          
           <a class="dropdown-item" href="{% url 'products:wh_movements' %}">Movimientos</a>          
@@ -37,15 +33,15 @@
           <a class="dropdown-item" href="{% url 'products:suppliers' %}">Proveedores</a>
         </div>
       </li>
-      <li class="nav-item dropdown" id="link-diners">
-        <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Comedor</a>
+      <li class="nav-item dropdown" >
+        <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Comedor</a>
         <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
           <a class="dropdown-item" href="{% url 'diners:diners' %}">Accesos de hoy</a>
           <a class="dropdown-item" href="{% url 'diners:diners_logs' %}">Historial de Accesos</a>
         </div>
       </li>
-      <li class="nav-item dropdown" id="link-diners">
-        <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Satisfacción</a>
+      <li class="nav-item dropdown" >
+        <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Satisfacción</a>
         <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
           <a class="dropdown-item" href="{% url 'diners:satisfaction_rating' %}">Calificador</a>
           <a class="dropdown-item" href="{% url 'diners:analytics' %}">Rating</a>

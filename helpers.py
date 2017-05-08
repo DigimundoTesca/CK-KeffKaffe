@@ -15,21 +15,19 @@ class Helper(object):
             'SATURDAY': 'Sábado',
             'SUNDAY': 'Domingo'
         }
-        super(Helper, self)._init_()
 
     def naive_to_datetime(self, nd):
         if type(nd) == datetime:
             if nd.tzinfo is not None and nd.tzinfo.utcoffset(nd) is not None:  # Is Aware
                 return nd
             else:  # Is Naive
-                tz_2 = pytz.timezone('America/Mexico_City')
-                return tz_2.localize(nd)
+                return self.tz.localize(nd)
 
         elif type(nd) == date:
             d = nd
             t = time(0, 0)
             new_date = datetime.combine(d, t)
-            return pytz.timezone('America/Mexico_City').localize(new_date)
+            return self.tz.localize(new_date)
 
     def get_name_day(self, datetime_now):
         name_day = date(datetime_now.year, datetime_now.month, datetime_now.day)
