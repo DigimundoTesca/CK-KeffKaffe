@@ -575,32 +575,9 @@ def warehouse_movements(request):
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
+    return render(request, template, context)
     """
     return HttpResponse('POR REPARAR')
-
-  
-@login_required(login_url='users:login')
-def warehouse_add(request):   
-
-    if request.method == 'POST':
-        form = WarehouseForm(request.POST, request.FILES)
-        if form.is_valid():
-            cartridge = form.save(commit=False)
-            cartridge.save()
-            return redirect('/warehouse/catering')
-    else:
-        form = WarehouseForm()
-
-    supply_list = Supply.objects.all().order_by('name')   
-
-    template = 'catering/catering_add.html'
-    title = 'Agregar Insumos al Almacen'
-    context = {       
-        'form': form,  
-        'title': title,                
-        'page_title': PAGE_TITLE
-    }
-    return render(request, template, context)
 
 
 def products_analytics(request):
