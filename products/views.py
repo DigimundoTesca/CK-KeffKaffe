@@ -160,7 +160,8 @@ class ProductsHelper(object):
                 ticket__created_at__range=[initial_date, final_date])
 
     def set_all_cartridges_recipes(self):
-        self.__all_cartridges_recipes = CartridgeRecipe.objects.select_related('cartridge').all()
+        self.__all_cartridges_recipes = \
+            CartridgeRecipe.objects.select_related('cartridge').select_related('supply').all()
 
     def set_all_supplies(self):
         self.__all_supplies = \
