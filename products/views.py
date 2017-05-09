@@ -40,6 +40,8 @@ class ProductsHelper(object):
         return self.__all_cartridges
 
     def get_all_tickets_details(self):
+        if self.__all_tickets_details is None:
+            self.set_all_tickets_details()
         return self.__all_tickets_details
 
     def get_all_supplies(self):
@@ -54,6 +56,7 @@ class ProductsHelper(object):
     def get_prediction_supplies_list(self):
         if self.__all_tickets_details is None:
             self.set_all_tickets_details()
+        return self.__all_tickets_details
 
         all_tickets_details = self.__all_tickets_details
         prediction_list = []
@@ -123,14 +126,11 @@ class ProductsHelper(object):
         for required_supply in required_supplies_list:
             for supply_on_stock in supplies_on_stock:
                 if supply_on_stock.supply == required_supply['supply']:
-                    print('llegamos al if xdxdxd', '*'*40)
                     required_supply['stock'] = supply_on_stock.quantity
                     required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
                     required_supply['full_cost'] = \
                         required_supply['cost'] * \
                         math.ceil(required_supply['required'] / required_supply['measurement_quantity'])
-                    print('TEST: \t')
-                    print(required_supply)
 
         return required_supplies_list
 
@@ -512,6 +512,17 @@ def catering(request):
     supplies_on_stock = products_helper.get_supplies_on_stock_list()
     estimated_total_cost = 0
 
+    def get_average():
+        initial_date = datetime.today()
+        final_date = initial_date + timedelta(days=7)
+        ticket_detail_object = {}
+        all_tickets_details = products_helper.get_all_tickets_details(initial_date, final_date)
+        for ticket_detail in all_tickets_details:
+            if ticket_detail.cartridge.id == ticket_detail.cartridge.id:
+                ticket_detail.quantity += 1
+
+            print(ticket_detail)
+
     for required_supply in required_supplies:
         required_supply['stock'] = 0
         for supply in supplies_on_stock:
@@ -527,7 +538,7 @@ def catering(request):
 
     template = 'catering/catering.html'
     title = 'Abastecimiento'
-
+    get_average()
     context = {
         'title': title,
         'required_supplies': required_supplies,
@@ -570,7 +581,6 @@ def warehouse_movements(request):
                                      waste=mod_wh.waste, cost=mod_wh.cost)
 
     for prediction in predictions:
-        print(prediction)
         try:
             sup_on_pro = Warehouse.objects.get(supply=prediction['supply'], status="PR")
             sup_on_pro.quantity = float(prediction['required'])
