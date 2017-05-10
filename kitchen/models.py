@@ -45,11 +45,10 @@ class ProcessedProduct(models.Model):
 
 
 class Warehouse(models.Model):
-    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
-    cost = models.FloatField(default=0)
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)    
 
     def __str__(self):
-        return '%s' % self.id
+        return '%s' % self.supply.name
 
     class Meta:
         ordering = ('id',)
@@ -69,6 +68,7 @@ class WarehouseDetails(models.Model):
         (SOLD, 'Sold'),
     )
 
+    cost = models.FloatField(default=0)
     warehouse = models.ForeignKey(Warehouse, default=1, on_delete=models.CASCADE)
     status = models.CharField(choices=STATUS, default=PROVIDER, max_length=15)
     created_at = models.DateField(editable=False, auto_now_add=True)
@@ -76,7 +76,7 @@ class WarehouseDetails(models.Model):
     quantity = models.FloatField(default=0)
 
     def __str__(self):
-        return '%s' % self.warehouse.name
+        return '%s' % self.warehouse.supply
 
     class Meta:
         ordering = ('id',)
