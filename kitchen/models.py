@@ -46,7 +46,8 @@ class ProcessedProduct(models.Model):
 
 class Warehouse(models.Model):
     supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)    
-
+    cost = models.FloatField(default=0)
+    
     def __str__(self):
         return '%s' % self.supply.name
 
@@ -67,8 +68,7 @@ class WarehouseDetails(models.Model):
         (ASSEMBLED, 'Assembled'),
         (SOLD, 'Sold'),
     )
-
-    cost = models.FloatField(default=0)
+    
     warehouse = models.ForeignKey(Warehouse, default=1, on_delete=models.CASCADE)
     status = models.CharField(choices=STATUS, default=PROVIDER, max_length=15)
     created_at = models.DateField(editable=False, auto_now_add=True)

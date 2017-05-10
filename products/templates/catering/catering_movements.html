@@ -19,8 +19,8 @@
                   {% if supplies.status == "PR" and supplies.quantity > 0 %}
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
                       <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
-                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.warehouse.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
+                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -38,7 +38,7 @@
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
                       <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
                       <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.warehouse.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -56,7 +56,7 @@
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
                       <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
                       <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.warehouse.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -95,8 +95,9 @@ $(function(){
   $(".product-img-pr").on("dragstart",function(e){    
 
     var element = $(this);
-    var element_id = element.attr('id').substring(24);
-    var element_quantity = element.parent().children(".provider_quantity").attr('id').substring(26);    
+    var element_id = element.attr('id').substring(23);
+    var element_quantity = element.parent().children(".provider_quantity").attr('id').substring(35);  
+    console.log(element_quantity)  
     var str = element_id+","+element_quantity;   
 
     e.originalEvent.dataTransfer.setData("text",str);    

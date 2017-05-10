@@ -14,10 +14,10 @@ class AdminProcessedCartridge(admin.ModelAdmin):
 
 @admin.register(Warehouse)
 class AdminWarehouse(admin.ModelAdmin):
-    list_display = ('supply','id')
+    list_display = ('supply','id','cost')
 
 
 @admin.register(WarehouseDetails)
 class AdminWarehouseDetails(admin.ModelAdmin):
-    list_display = ('warehouse', 'status', 'created_at', 'expiry_date', 'quantity', 'cost')
+    list_display = ('warehouse', 'status', 'created_at', 'expiry_date', 'quantity')
 

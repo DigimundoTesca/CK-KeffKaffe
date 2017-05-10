@@ -165,9 +165,9 @@ class ProductsHelper(object):
     def get_today_popular_cartridge(self):
         return self.__always_popular_cartridge
 
-    def get_all_warehouse_details():
+    def get_all_warehouse_details(self):
         if self.__all_warehouse_details is None:
-            set_all_warehouse_details()
+            self.set_all_warehouse_details()
         return self.__all_warehouse_details
 
     def set_all_cartridges(self):
@@ -568,31 +568,29 @@ def warehouse(request):
 def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()
+    supplies_on_stock = WarehouseDetails.objects.all()    
 
     if request.method == 'POST':
-        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
-        mod_wh.quantity -= float(request.POST['cantidad'])
-        mod_wh.save()
+        mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
+        mod_wh.status = "ST"
+        mod_wh.save()        
+
+    for prediction in predictions:        
         try:
-            sup_on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
-            sup_on_stock.quantity += float(request.POST['cantidad'])
-            sup_on_stock.save()
+            sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])
+            try:
+                detail = WarehouseDetails.objects.get(warehouse=sup_on_stock)
+                detail.quantity = prediction['quantity']
+            except WarehouseDetails.DoesNotExist:
+                    WarehouseDetails.objects.create(warehouse=sup_on_stock,status="PR",quantity=prediction['quantity'])
         except Warehouse.DoesNotExist:
-            Warehouse.objects.create(supply=mod_wh.supply, status="ST", quantity=request.POST['cantidad'],
-                                     waste=mod_wh.waste, cost=mod_wh.cost)
-
-
-    supply_list = WarehouseDetails.objects.filter(status="ST")
-
-    for supplies in supply_list:       
-        for prediction in predictions:
-            
+            Warehouse.objects.create(supply=prediction['supply'],cost=prediction['cost'])
 
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {
-        'supply_list': supply_list,
+        'supply_list': supplies_on_stock,
         'title': title,
         'page_title': PAGE_TITLE
     }
