@@ -24,6 +24,9 @@ import math
 # -------------------------------------  Class based Views -------------------------------------
 
 class ProductsHelper(object):
+
+    # --Getters --#
+
     def __init__(self):
         self.__all_cartridges = None
         self.__all_cartridges_recipes = None
@@ -56,25 +59,11 @@ class ProductsHelper(object):
         return self.__always_popular_cartridge
 
     def get_prediction_supplies_list(self):
-        if self.__all_tickets_details is None:
-            self.set_all_tickets_details()  
-
-        all_tickets_details = self.__all_tickets_details
-        prediction_list = []
-        """:type all_tickets_details: list"""
-        for ticket_details in all_tickets_details:
-            cartridge_object = {
-                'name': ticket_details.cartridge.name,
-                'cantidad': 1,
-            }
-
-            prediction_list.append(cartridge_object)
-
-        return prediction_list
+        return self.__predictions
 
     def get_required_supplies(self):
         if self.__elements_in_warehouse is None:
-            self.set_elements_in_warehouse()
+            self.set_elements_in_warehouse()            
 
         if self.__all_cartridges is None:
             self.set_all_cartridges()
@@ -85,11 +74,13 @@ class ProductsHelper(object):
         if self.__all_warehouse_details is None:
             self.set_all_warehouse_details()
 
+        if self.__predictions is None:
+            self.set_predictions()
+
         required_supplies_list = []
-        all_cartridges = self.__all_cartridges
-        all_warehouse_details = self.__all_warehouse_details
-        predictions = self.get_prediction_supplies_list()
-        supplies_on_stock = self.__all_warehouse_details.filter(status='ST')
+        all_cartridges = self.__all_cartridges        
+        predictions = self.__predictions
+        supplies_on_stock = self.__all_warehouse_details.filter(status="ST")
 
         for prediction in predictions:
             for cartridge in all_cartridges:
@@ -111,10 +102,7 @@ class ProductsHelper(object):
                             'cost': cost,
                             'measurement': measurement,
                             'measurement_quantity': measurement_quantity,
-                            'quantity': quantity,
-                            'stock': 0,
-                            'required' : 0,
-                            'full_cost' : 0
+                            'quantity': quantity                            
                         }
 
                         if len(required_supplies_list) == 0:
@@ -131,15 +119,15 @@ class ProductsHelper(object):
                             required_supplies_list.append(required_supply_object)
 
         for required_supply in required_supplies_list:
-
             for supply_on_stock in supplies_on_stock:
 
-                if supply_on_stock.warehouse.supply == required_supply['name']:  
+                if supply_on_stock.warehouse.supply == required_supply['supply']:  
                     required_supply['stock'] = supply_on_stock.quantity
                     required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
                     required_supply['full_cost'] = \
-                        required_supply['cost'] * \
+                    required_supply['cost'] * \
                         math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
+                    break
                 else:
                     required_supply['stock'] = 0
                     required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
@@ -169,6 +157,26 @@ class ProductsHelper(object):
         if self.__all_warehouse_details is None:
             self.set_all_warehouse_details()
         return self.__all_warehouse_details
+
+    # --Setters --#
+
+    def set_predictions(self):
+        if self.__all_tickets_details is None:
+            self.set_all_tickets_details()
+
+        all_tickets_details = self.__all_tickets_details
+
+        prediction_list = []
+        
+        for ticket_details in all_tickets_details:
+            cartridge_object = {
+                'name': ticket_details.cartridge.name,
+                'cantidad': 1,
+            }
+
+            prediction_list.append(cartridge_object)
+
+        self.__predictions = prediction_list
 
     def set_all_cartridges(self):
         self.__all_cartridges = Cartridge.objects.all()
@@ -532,10 +540,7 @@ def catering(request):
     """
     products_helper = ProductsHelper()
     required_supplies = products_helper.get_required_supplies()    
-    estimated_total_cost = 0
-
-    for required_supply in required_supplies:        
-        estimated_total_cost = estimated_total_cost + required_supply['full_cost']
+    estimated_total_cost = 0    
 
     template = 'catering/catering.html'
     title = 'Abastecimiento'
@@ -568,7 +573,7 @@ def warehouse(request):
 def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()
-    supplies_on_stock = WarehouseDetails.objects.all()    
+    supplies_on_stock = WarehouseDetails.objects.order_by('warehouse')    
 
     if request.method == 'POST':
         mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
@@ -576,16 +581,16 @@ def warehouse_movements(request):
         mod_wh.save()        
 
     for prediction in predictions:        
-        try:
-            sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])
+        if(prediction['required']>0):
             try:
-                detail = WarehouseDetails.objects.get(warehouse=sup_on_stock)
-                detail.quantity = prediction['quantity']
-            except WarehouseDetails.DoesNotExist:
-                    WarehouseDetails.objects.create(warehouse=sup_on_stock,status="PR",quantity=prediction['quantity'])
-        except Warehouse.DoesNotExist:
-            Warehouse.objects.create(supply=prediction['supply'],cost=prediction['cost'])
-
+                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])   
+                try:
+                    detail = WarehouseDetails.objects.get(warehouse=sup_on_stock,status="PR")
+                    detail.quantity = prediction['quantity']
+                except WarehouseDetails.DoesNotExist:
+                        WarehouseDetails.objects.create(warehouse=sup_on_stock,status="PR",quantity=prediction['required'])
+            except Warehouse.DoesNotExist:
+                Warehouse.objects.create(supply=prediction['supply'],cost=prediction['cost'])                
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
