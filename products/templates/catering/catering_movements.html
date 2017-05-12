@@ -4,6 +4,7 @@
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">  
 {% endblock link %}
 {% block content %}
+
   <!-- Container -->
   <div class="container-fluid container-sales">
     <div class="row">
@@ -40,7 +41,7 @@
                       <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
                       <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
                       <h5 class="provider_quantity" id="supplies.warehouse.supply-{{ supplies.optimal_duration 
-                      }}" > Duracion Optima: {{ supplies.warehouse.supply.optimal_duration }} </h4>
+                      }}" > Fecha de Expiracion: {{ supplies.expiry_date }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -64,10 +65,12 @@
                 {% endfor %}
               </div>
             </div>                       
-          </div>                                     
+          </div>  
+        </div>                          
       </div>      
     </div>
   </div>
+
 {% endblock content %}
 {% block javascript %}
 <script type="text/javascript" charset="utf-8">
