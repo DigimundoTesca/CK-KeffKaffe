@@ -1,10 +1,9 @@
-import json, pytz
-from datetime import datetime, date, timedelta, time
-import time as python_time
+import json
+from datetime import datetime, date, timedelta
 
 from decimal import Decimal
 
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -12,121 +11,41 @@ from django.db.models import Max, Min
 
 from branchoffices.models import CashRegister
 from cloudkitchen.settings.base import PAGE_TITLE
-from products.models import Cartridge, PackageCartridge, PackageCartridgeRecipe, \
-    ExtraIngredient
+from helpers import Helper
+from products.models import Cartridge, PackageCartridge, PackageCartridgeRecipe, ExtraIngredient
 from sales.models import Ticket, TicketDetail, TicketExtraIngredient
 from users.models import User as UserProfile
 
 
-class HelperClass(object):
-    """ Start auxiliary class: Helpers Class """
-
+class SalesHelper(object):
     def __init__(self):
-        self.tz = pytz.timezone('America/Mexico_City')
-        super(HelperClass, self).__init__()
+        self.__all_tickets = None
+        self.__all_tickets_details = None
+        super(SalesHelper, self).__init__()
 
-    def naive_to_datetime(self, nd):
-        if type(nd) == datetime:
-            if nd.tzinfo is not None and nd.tzinfo.utcoffset(nd) is not None:  # Is Aware
-                return nd
-            else:  # Is Naive
-                return self.tz.localize(nd)
+    def get_all_tickets(self):
+        if self.__all_tickets is None:
+            self.set_all_tickets()
+        return self.__all_tickets
 
-        elif type(nd) == date:
-            d = nd
-            t = time(0, 0)
-            new_date = datetime.combine(d, t)
-            return pytz.timezone('America/Mexico_City').localize(new_date)
+    def set_all_tickets(self):
+        self.__all_tickets = Ticket.objects.select_related('seller').select_related('cash_register').all()
 
-    def parse_to_datetime(self, dt):
-        day = int(dt.split('-')[0])
-        month = int(dt.split('-')[1])
-        year = int(dt.split('-')[2])
-        parse_date = date(year, month, day)
-        return self.naive_to_datetime(parse_date)
+    def get_all_tickets_details(self):
+        if self.__all_tickets_details is None:
+            self.set_all_tickets_details()
+        return self.__all_tickets_details
 
-    @staticmethod
-    def get_name_day(datetime_now):
-        days_list = {
-            'MONDAY': 'Lunes',
-            'TUESDAY': 'Martes',
-            'WEDNESDAY': 'Miércoles',
-            'THURSDAY': 'Jueves',
-            'FRIDAY': 'Viernes',
-            'SATURDAY': 'Sábado',
-            'SUNDAY': 'Domingo'
-        }
-        name_day = date(datetime_now.year, datetime_now.month, datetime_now.day)
-        return days_list[name_day.strftime('%A').upper()]
-
-    def get_number_day(self, day):
-        days = {
-            'Lunes': 0, 'Martes': 1, 'Miércoles': 2, 'Jueves': 3, 'Viernes': 4, 'Sábado': 5, 'Domingo': 6,
-        }
-        return days[self.get_name_day(day)]
-
-    @staticmethod
-    def get_week_number(dt):
-        return dt.isocalendar()[1]
-
-    def start_datetime(self, back_days):
-        start_date = date.today() - timedelta(days=back_days)
-        return self.naive_to_datetime(start_date)
-
-    def end_datetime(self, back_days):
-        end_date = self.start_datetime(back_days) + timedelta(days=1)
-        return self.naive_to_datetime(end_date)
-
-    def get_start_week_day(self, day):
-        format = "%w"
-        number_day = int(self.naive_to_datetime(day).strftime(format))
-        if number_day == 0:
-            number_day = 7
-        else:
-            day = self.naive_to_datetime(day) - timedelta(days=number_day - 1)
-
-    @staticmethod
-    def items_list_to_int(list_to_cast):
-        """
-        Evaluates each of the elements of the list received and casts them to integers
-        """
-        cast_list = []
-        for item in range(0, len(list_to_cast)):
-            cast_list.append(int(list_to_cast[item]))
-
-        return cast_list
-
-    def are_equal_lists(self, list_1, list_2):
-        """
-         Checks if two lists are identical
-        """
-        list_1 = self.items_list_to_int(list_1)
-        list_2 = self.items_list_to_int(list_2)
-
-        list_1.sort()
-        list_2.sort()
-
-        if len(list_1) != len(list_2):
-            return False
-        else:
-            for element in range(0, len(list_1)):
-                if list_1[element] != list_2[element]:
-                    return False
-
-        return True
-
-
-"""
-Start of views
-"""
+    def set_all_tickets_details(self):
+        self.__all_tickets_details = TicketDetail.objects.select_related('ticket').select_related('ticket__seller').\
+            select_related('cartridge').select_related('package_cartridge').all()
 
 
 # -------------------------------------  Sales -------------------------------------
 @login_required(login_url='users:login')
 def sales(request):
-    helper = HelperClass()
-    all_tickets = Ticket.objects.all()
-    all_ticket_details = TicketDetail.objects.all()
+    sales_helper = SalesHelper()
+    helper = Helper()
 
     def get_dates_range():
         """
@@ -136,8 +55,8 @@ def sales(request):
             start date and final date. Ranges of each week.
         """
         try:
-            min_year = all_tickets.aggregate(Min('created_at'))['created_at__min'].year
-            max_year = all_tickets.aggregate(Max('created_at'))['created_at__max'].year
+            min_year = sales_helper.get_all_tickets().aggregate(Min('created_at'))['created_at__min'].year
+            max_year = sales_helper.get_all_tickets().aggregate(Max('created_at'))['created_at__max'].year
             years_list = []  # [2015:object, 2016:object, 2017:object, ...]
         except:
             return HttpResponse('Necesitas crear ventas para ver esta pantalla <a href="sales:new">Nueva Venta</a>')
@@ -148,15 +67,15 @@ def sales(request):
                 'weeks_list': []
             }
 
-            tickets_per_year = all_tickets.filter(
-                created_at__range=[helper.naive_to_datetime(date(max_year, 1, 1)), helper.naive_to_datetime(date(max_year, 12, 31))])
+            tickets_per_year = sales_helper.get_all_tickets().filter(
+                created_at__range=[helper.naive_to_datetime(date(max_year, 1, 1)),
+                                   helper.naive_to_datetime(date(max_year, 12, 31))])
 
             for ticket in tickets_per_year:
                 if len(year_object['weeks_list']) == 0:
                     """
                     Creates a new week_object in the weeks_list of the actual year_object
                     """
-                    start_week_day = helper.get_start_week_day(ticket.created_at.date())
                     week_object = {
                         'week_number': ticket.created_at.isocalendar()[1],
                         'start_date': ticket.created_at.date().strftime("%d-%m-%Y"),
@@ -176,10 +95,8 @@ def sales(request):
                     for week_object in year_object['weeks_list']:
                         if week_object['week_number'] == ticket.created_at.isocalendar()[1]:
                             # There's a same week number
-                            existing_week = True
                             if datetime.strptime(week_object['start_date'],
                                                  "%d-%m-%Y").date() > ticket.created_at.date():
-                                exists = True
                                 week_object['start_date'] = ticket.created_at.date().strftime("%d-%m-%Y")
                             elif datetime.strptime(week_object['end_date'],
                                                    "%d-%m-%Y").date() < ticket.created_at.date():
@@ -213,7 +130,7 @@ def sales(request):
         total_earnings = 0
 
         while count <= total_days:
-            tickets = all_tickets.filter(created_at__range=[start_date, limit_day])
+            tickets = sales_helper.get_all_tickets().filter(created_at__range=[start_date, limit_day])
             day_object = {
                 'date': str(start_date.date().strftime('%d-%m-%Y')),
                 'day_name': None,
@@ -222,7 +139,7 @@ def sales(request):
             }
 
             for ticket in tickets:
-                for ticket_detail in all_ticket_details:
+                for ticket_detail in sales_helper.get_all_tickets_details():
                     if ticket_detail.ticket == ticket:
                         total_earnings += ticket_detail.price
 
@@ -231,7 +148,7 @@ def sales(request):
 
             week_sales_list.append(day_object)
 
-            # Reset datas
+            # Reset data
             limit_day += timedelta(days=1)
             start_date += timedelta(days=1)
             total_earnings = 0
@@ -257,10 +174,11 @@ def sales(request):
                 'number_day': helper.get_number_day(helper.start_datetime(days_to_count).date()),
             }
 
-            tickets = all_tickets.filter(created_at__range=[helper.start_datetime(days_to_count), helper.end_datetime(days_to_count)])
+            tickets = sales_helper.get_all_tickets().filter(
+                created_at__range=[helper.start_datetime(days_to_count), helper.end_datetime(days_to_count)])
 
             for ticket in tickets:
-                for ticket_detail in all_ticket_details:
+                for ticket_detail in sales_helper.get_all_tickets_details():
                     if ticket_detail.ticket == ticket:
                         total_earnings += ticket_detail.price
 
@@ -279,7 +197,7 @@ def sales(request):
     def get_tickets_today():
         tickets_details = TicketDetail.objects.select_related(
             'ticket', 'ticket__seller', 'cartridge', 'package_cartridge').filter()
-        tickets = Ticket.objects.filter(created_at__gte=helper.naive_to_datetime(date.today()))
+        tickets = sales_helper.get_all_tickets().filter(created_at__gte=helper.naive_to_datetime(date.today()))
         tickets_list = []
 
         for ticket in tickets:
@@ -313,8 +231,9 @@ def sales(request):
         return tickets_list
 
     def get_tickets(initial_date, final_date):
-        tickets = all_tickets.filter(created_at__range=(initial_date, final_date)).order_by('-created_at')
-        tickets_details = all_ticket_details
+        tickets = sales_helper.get_all_tickets().\
+            filter(created_at__range=(initial_date, final_date)).order_by('-created_at')
+        tickets_details = sales_helper.get_all_tickets_details()
         tickets_list = []
 
         for ticket in tickets:
@@ -366,7 +285,7 @@ def sales(request):
             sales_day_list = []
             start_day = helper.naive_to_datetime(datetime.strptime(request.POST['date'], '%d-%m-%Y').date())
             end_date = helper.naive_to_datetime(start_day + timedelta(days=1))
-            tickets_objects = all_tickets.filter(created_at__range=[start_day, end_date])
+            tickets_objects = sales_helper.get_all_tickets().filter(created_at__range=[start_day, end_date])
 
             for ticket in tickets_objects:
                 """
@@ -377,7 +296,7 @@ def sales(request):
                     'datetime': timezone.localtime(ticket.created_at),
                     'earnings': 0
                 }
-                for ticket_detail in all_ticket_details:
+                for ticket_detail in sales_helper.get_all_tickets_details():
                     if ticket_detail.ticket == ticket:
                         earnings_sale_object['earnings'] += ticket_detail.price
                 sales_day_list.append(earnings_sale_object)
@@ -393,7 +312,7 @@ def sales(request):
             }
 
             # Get cartridges details
-            for ticket_detail in all_ticket_details:
+            for ticket_detail in sales_helper.get_all_tickets_details():
                 if ticket_detail.ticket.id == ticket_id:
                     ticket_object['ticket_order'] = ticket_detail.ticket.order_number;
 
@@ -424,8 +343,8 @@ def sales(request):
         if request.POST['type'] == 'tickets':
             tickets_objects_list = []
 
-            for ticket in all_tickets:
-                for ticket_detail in all_ticket_details:
+            for ticket in sales_helper.get_all_tickets():
+                for ticket_detail in sales_helper.get_all_tickets_details():
                     if ticket_detail.ticket == ticket:
                         ticket_object = {
                             'ID': ticket.id,
@@ -478,7 +397,7 @@ def sales(request):
         'sales_week': get_sales_actual_week(),
         'today_name': helper.get_name_day(datetime.now()),
         'today_number': helper.get_number_day(datetime.now()),
-        'week_number': helper.get_week_number(date.today()),
+        'week_number': helper.get_week_number(datetime.now()),
         'tickets': get_tickets_today(),
         'dates_range': get_dates_range(),
 
@@ -497,7 +416,7 @@ def delete_sale(request):
 
 @login_required(login_url='users:login')
 def new_sale(request):
-    helper = HelperClass()
+    helper = SalesHelper()
     if request.method == 'POST':
         if request.POST['ticket']:
             username = request.user

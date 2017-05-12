@@ -4,7 +4,7 @@ import pytz
 
 
 class Helper(object):
-    def _init_(self):
+    def __init__(self):
         self.tz = pytz.timezone('America/Mexico_City')
         self.days_list = {
             'MONDAY': 'Lunes',
@@ -15,6 +15,7 @@ class Helper(object):
             'SATURDAY': 'Sábado',
             'SUNDAY': 'Domingo'
         }
+        super(Helper, self).__init__()
 
     def naive_to_datetime(self, nd):
         if type(nd) == datetime:
@@ -30,7 +31,9 @@ class Helper(object):
             return self.tz.localize(new_date)
 
     def get_name_day(self, datetime_now):
+        print(datetime_now)
         name_day = date(datetime_now.year, datetime_now.month, datetime_now.day)
+        print(name_day.strftime('%A').upper())
         return self.days_list[name_day.strftime('%A').upper()]
 
     def get_number_day(self, dt):
@@ -74,8 +77,8 @@ class Helper(object):
         return True
 
     @staticmethod
-    def get_week_number():
-        return date.today().isocalendar()[1]
+    def get_week_number(dt):
+        return dt.isocalendar()[1]
 
     @staticmethod
     def items_list_to_int(list_to_cast):

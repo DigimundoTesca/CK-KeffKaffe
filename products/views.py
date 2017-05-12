@@ -37,9 +37,13 @@ class ProductsHelper(object):
         super(ProductsHelper, self).__init__()
 
     def get_all_cartridges(self):
+        if self.__all_cartridges is None:
+            self.set_all_cartridges()
         return self.__all_cartridges
 
     def get_all_tickets_details(self):
+        if self.__all_tickets_details is None:
+            self.set_all_tickets_details()
         return self.__all_tickets_details
 
     def get_all_supplies(self):
@@ -415,6 +419,15 @@ def categories_supplies(request, categ):
 @login_required(login_url='users:login')
 def cartridges(request):
     cartridges_list = Cartridge.objects.order_by('id')
+
+    tickets = Ticket.objects.all()
+    tickets_d = TicketDetail.objects.select_related('ticket').all()
+
+    for ticket in tickets:
+        for td in tickets_d:
+            if td.ticket.id == ticket.id:
+                print('holisss son iguales :v:v')
+
     template = 'cartridges/cartridges.html'
     title = 'Cartuchos'
     context = {
