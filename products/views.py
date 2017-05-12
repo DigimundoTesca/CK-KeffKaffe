@@ -12,7 +12,7 @@ from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper
 from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm, WarehouseForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
-from kitchen.models import Warehouse
+from kitchen.models import Warehouse, WarehouseDetails
 from sales.models import TicketDetail, Ticket
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
@@ -24,6 +24,9 @@ import math
 # -------------------------------------  Class based Views -------------------------------------
 
 class ProductsHelper(object):
+
+    # --Getters --#
+
     def __init__(self):
         self.__all_cartridges = None
         self.__all_cartridges_recipes = None
@@ -31,9 +34,10 @@ class ProductsHelper(object):
         self.__all_supplies = None
         self.__always_popular_cartridge = None
         self.__elements_in_warehouse = None
+        self.__all_warehouse_details = None
         self.__predictions = None
         self.__required_supplies_list = None
-        self.__today_popular_cartridge = None
+        self.__today_popular_cartridge = None        
         super(ProductsHelper, self).__init__()
 
     def get_all_cartridges(self):
@@ -41,6 +45,9 @@ class ProductsHelper(object):
 
     def get_all_tickets_details(self):
         return self.__all_tickets_details
+
+    def get_all_warehouse_detaills(self):
+        return self.__all_warehouse_details
 
     def get_all_supplies(self):
         if self.__all_supplies is None:
@@ -52,25 +59,11 @@ class ProductsHelper(object):
         return self.__always_popular_cartridge
 
     def get_prediction_supplies_list(self):
-        if self.__all_tickets_details is None:
-            self.set_all_tickets_details()
-
-        all_tickets_details = self.__all_tickets_details
-        prediction_list = []
-        """:type all_tickets_details: list"""
-        for ticket_details in all_tickets_details:
-            cartridge_object = {
-                'name': ticket_details.cartridge.name,
-                'cantidad': 1,
-            }
-
-            prediction_list.append(cartridge_object)
-
-        return prediction_list
+        return self.__predictions
 
     def get_required_supplies(self):
         if self.__elements_in_warehouse is None:
-            self.set_elements_in_warehouse()
+            self.set_elements_in_warehouse()            
 
         if self.__all_cartridges is None:
             self.set_all_cartridges()
@@ -78,10 +71,16 @@ class ProductsHelper(object):
         if self.__all_cartridges_recipes is None:
             self.set_all_cartridges_recipes()
 
+        if self.__all_warehouse_details is None:
+            self.set_all_warehouse_details()
+
+        if self.__predictions is None:
+            self.set_predictions()
+
         required_supplies_list = []
-        all_cartridges = self.__all_cartridges
-        predictions = self.get_prediction_supplies_list()
-        supplies_on_stock = self.__elements_in_warehouse.filter(status='ST')
+        all_cartridges = self.__all_cartridges        
+        predictions = self.__predictions
+        supplies_on_stock = self.__all_warehouse_details.filter(status="ST")
 
         for prediction in predictions:
             for cartridge in all_cartridges:
@@ -103,8 +102,7 @@ class ProductsHelper(object):
                             'cost': cost,
                             'measurement': measurement,
                             'measurement_quantity': measurement_quantity,
-                            'quantity': quantity,
-                            'stock': 0
+                            'quantity': quantity                            
                         }
 
                         if len(required_supplies_list) == 0:
@@ -122,16 +120,21 @@ class ProductsHelper(object):
 
         for required_supply in required_supplies_list:
             for supply_on_stock in supplies_on_stock:
-                if supply_on_stock.supply == required_supply['supply']:
-                    print('llegamos al if xdxdxd', '*'*40)
+
+                if supply_on_stock.warehouse.supply == required_supply['supply']:  
                     required_supply['stock'] = supply_on_stock.quantity
                     required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
                     required_supply['full_cost'] = \
+                    required_supply['cost'] * \
+                        math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
+                    break
+                else:
+                    required_supply['stock'] = 0
+                    required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
+                    required_supply['full_cost'] = \
                         required_supply['cost'] * \
-                        math.ceil(required_supply['required'] / required_supply['measurement_quantity'])
-                    print('TEST: \t')
-                    print(required_supply)
-
+                        math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
+                
         return required_supplies_list
 
     def get_supplies_on_stock_list(self):
@@ -149,6 +152,31 @@ class ProductsHelper(object):
 
     def get_today_popular_cartridge(self):
         return self.__always_popular_cartridge
+
+    def get_all_warehouse_details(self):
+        if self.__all_warehouse_details is None:
+            self.set_all_warehouse_details()
+        return self.__all_warehouse_details
+
+    # --Setters --#
+
+    def set_predictions(self):
+        if self.__all_tickets_details is None:
+            self.set_all_tickets_details()
+
+        all_tickets_details = self.__all_tickets_details
+
+        prediction_list = []
+        
+        for ticket_details in all_tickets_details:
+            cartridge_object = {
+                'name': ticket_details.cartridge.name,
+                'cantidad': 1,
+            }
+
+            prediction_list.append(cartridge_object)
+
+        self.__predictions = prediction_list
 
     def set_all_cartridges(self):
         self.__all_cartridges = Cartridge.objects.all()
@@ -201,6 +229,9 @@ class ProductsHelper(object):
 
     def set_elements_in_warehouse(self):
         self.__elements_in_warehouse = Warehouse.objects.select_related('supply').all()
+
+    def set_all_warehouse_details(self):
+        self.__all_warehouse_details = WarehouseDetails.objects.all();
 
     def set_today_popular_cartridge(self):
         cartridges_frequency_dict = {}
@@ -508,22 +539,8 @@ def catering(request):
     TODO: Ordenar por prioridad.
     """
     products_helper = ProductsHelper()
-    required_supplies = products_helper.get_required_supplies()
-    supplies_on_stock = products_helper.get_supplies_on_stock_list()
-    estimated_total_cost = 0
-
-    for required_supply in required_supplies:
-        required_supply['stock'] = 0
-        for supply in supplies_on_stock:
-            if supply['name'] == required_supply['name']:
-                required_supply['stock'] = supply['quantity']
-            else:
-                required_supply['stock'] = 0
-
-        required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
-        required_supply['full_cost'] = \
-            required_supply['cost'] * (math.ceil(required_supply['required'] / required_supply['measurement_quantity']))
-        estimated_total_cost = estimated_total_cost + required_supply['full_cost']
+    required_supplies = products_helper.get_required_supplies()    
+    estimated_total_cost = 0    
 
     template = 'catering/catering.html'
     title = 'Abastecimiento'
@@ -556,35 +573,29 @@ def warehouse(request):
 def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()
+    supplies_on_stock = WarehouseDetails.objects.order_by('warehouse')    
 
     if request.method == 'POST':
-        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
-        mod_wh.quantity -= float(request.POST['cantidad'])
-        mod_wh.save()
-        try:
-            sup_on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
-            sup_on_stock.quantity += float(request.POST['cantidad'])
-            sup_on_stock.save()
-        except Warehouse.DoesNotExist:
-            Warehouse.objects.create(supply=mod_wh.supply, status="ST", quantity=request.POST['cantidad'],
-                                     waste=mod_wh.waste, cost=mod_wh.cost)
+        mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
+        mod_wh.status = "ST"
+        mod_wh.save()        
 
-    for prediction in predictions:
-        print(prediction)
-        try:
-            sup_on_pro = Warehouse.objects.get(supply=prediction['supply'], status="PR")
-            sup_on_pro.quantity = float(prediction['required'])
-            sup_on_pro.save()
-        except Warehouse.DoesNotExist:
-            Warehouse.objects.create(supply=prediction['supply'], status="PR", quantity=prediction['required'],
-                                     waste=0, cost=prediction['cost'])
-
-    supply_list = Warehouse.objects.all()
+    for prediction in predictions:        
+        if(prediction['required']>0):
+            try:
+                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])   
+                try:
+                    detail = WarehouseDetails.objects.get(warehouse=sup_on_stock,status="PR")
+                    detail.quantity = prediction['quantity']
+                except WarehouseDetails.DoesNotExist:
+                        WarehouseDetails.objects.create(warehouse=sup_on_stock,status="PR",quantity=prediction['required'])
+            except Warehouse.DoesNotExist:
+                Warehouse.objects.create(supply=prediction['supply'],cost=prediction['cost'])                
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {
-        'supplies': supply_list,
+        'supply_list': supplies_on_stock,
         'title': title,
         'page_title': PAGE_TITLE
     }
