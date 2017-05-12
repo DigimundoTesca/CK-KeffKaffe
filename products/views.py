@@ -81,12 +81,14 @@ class ProductsHelper(object):
         all_cartridges = self.__all_cartridges        
         predictions = self.__predictions
         supplies_on_stock = self.__all_warehouse_details.filter(status="ST")
+        
+        ingredients = CartridgeRecipe.objects.select_related('cartridge').select_related('supply').all();
 
         for prediction in predictions:
             for cartridge in all_cartridges:
-                if prediction['name'] == cartridge.name:
-                    ingredients = self.__all_cartridges_recipes.filter(cartridge=cartridge)
-                    for ingredient in ingredients:
+                if prediction['cartridge'] == cartridge:
+                    ingredientes = ingredients.filter(cartridge=cartridge)
+                    for ingredient in ingredientes:
                         supply = ingredient.supply
                         name = ingredient.supply.name
                         cost = ingredient.supply.presentation_cost
@@ -102,7 +104,10 @@ class ProductsHelper(object):
                             'cost': cost,
                             'measurement': measurement,
                             'measurement_quantity': measurement_quantity,
-                            'quantity': quantity                            
+                            'quantity': quantity,   
+                            'stock': 0,
+                            'required': 0,
+                            'full_cost': 0,
                         }
 
                         if len(required_supplies_list) == 0:
@@ -118,21 +123,29 @@ class ProductsHelper(object):
                         if count == 1:
                             required_supplies_list.append(required_supply_object)
 
-        for required_supply in required_supplies_list:
-            for supply_on_stock in supplies_on_stock:
-
-                if supply_on_stock.warehouse.supply == required_supply['supply']:  
-                    required_supply['stock'] = supply_on_stock.quantity
-                    required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
-                    required_supply['full_cost'] = \
-                    required_supply['cost'] * \
-                        math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
-                    break
-                else:
-                    required_supply['stock'] = 0
-                    required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
-                    required_supply['full_cost'] = \
+        for required_supply in required_supplies_list:                       
+            if len(supplies_on_stock)>0:
+                for supply_on_stock in supplies_on_stock:
+                    if supply_on_stock.warehouse.supply == required_supply['supply']:                          
+                        required_supply['stock'] = supply_on_stock.quantity
+                        required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
+                        required_supply['full_cost'] = \
                         required_supply['cost'] * \
+                            math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
+                        break           
+                    else:                                                
+                        required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
+                        required_supply['full_cost'] = \
+                        required_supply['cost'] * \
+                            math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
+                        required_supply['full_cost'] = \
+                        required_supply['cost'] * \
+                            math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
+
+            else:       
+                required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
+                required_supply['full_cost'] = \
+                required_supply['cost'] * \
                         math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
                 
         return required_supplies_list
@@ -170,7 +183,7 @@ class ProductsHelper(object):
         
         for ticket_details in all_tickets_details:
             cartridge_object = {
-                'name': ticket_details.cartridge.name,
+                'cartridge': ticket_details.cartridge,
                 'cantidad': 1,
             }
 
@@ -231,7 +244,7 @@ class ProductsHelper(object):
         self.__elements_in_warehouse = Warehouse.objects.select_related('supply').all()
 
     def set_all_warehouse_details(self):
-        self.__all_warehouse_details = WarehouseDetails.objects.all();
+        self.__all_warehouse_details = WarehouseDetails.objects.prefetch_related('warehouse__supply').all();
 
     def set_today_popular_cartridge(self):
         cartridges_frequency_dict = {}
@@ -572,21 +585,31 @@ def warehouse(request):
 @login_required(login_url='users:login')
 def warehouse_movements(request):
     products_helper = ProductsHelper()
-    predictions = products_helper.get_required_supplies()
-    supplies_on_stock = WarehouseDetails.objects.order_by('warehouse')    
+    predictions = products_helper.get_required_supplies()    
+    supplies_on_stock = products_helper.get_all_warehouse_details()
 
-    if request.method == 'POST':
+    if request.method == 'POST':        
+        number = request.POST['cantidad']
         mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
-        mod_wh.status = "ST"
+        mod_wh.quantity -= float(number)
         mod_wh.save()        
 
-    for prediction in predictions:        
-        if(prediction['required']>0):
+        created_detaill = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse,status="ST",quantity=number)
+
+        start_date = str(created_detaill.created_at)
+        date = datetime.strptime(start_date, "%Y-%m-%d")
+        modified_date = date + timedelta(days=created_detaill.warehouse.supply.optimal_duration)
+        created_detaill.expiry_date = modified_date
+        created_detaill.save()
+
+    
+    for prediction in predictions:                    
+        if(prediction['required']>0):            
             try:
                 sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])   
                 try:
                     detail = WarehouseDetails.objects.get(warehouse=sup_on_stock,status="PR")
-                    detail.quantity = prediction['quantity']
+                    detail.quantity = prediction['required']
                 except WarehouseDetails.DoesNotExist:
                         WarehouseDetails.objects.create(warehouse=sup_on_stock,status="PR",quantity=prediction['required'])
             except Warehouse.DoesNotExist:

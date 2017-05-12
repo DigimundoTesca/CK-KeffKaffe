@@ -36,7 +36,23 @@
         </thead>
         <tbody>             
           {% for required in required_supplies %}
-          <tr>                        
+          {% if required.measurement_quantity == 1  %}
+            {% if required.stock <= 50 %}
+              <tr class="table-danger">     
+            {% elif required.stock <= 25 %}
+              <tr class="table-warning">     
+            {% elif required.stock <= 10 %}
+              <tr class="table-success">    
+            {% endif %}
+          {% else %}
+            {% if required.stock <= 500 %}
+              <tr class="table-danger">     
+            {% elif required.stock <= 1000 %}
+              <tr class="table-warning">     
+            {% elif required.stock <= 2000 %}
+              <tr class="table-success">     
+            {% endif %}
+          {% endif %}                    
             <td>{{ required.name }}</td>
             <td>{{ required.cost }}</td>    
             <td>{{ required.measurement }}</td>                                             
@@ -46,7 +62,7 @@
             <td>{{ required.required }}</td>
             <td>{{ required.full_cost }}</td>                       
             <tr>                                            
-              {% endfor %}                                    
+          {% endfor %}                                    
             </tbody>
           </table>
         </div>
