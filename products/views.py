@@ -12,7 +12,7 @@ from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper
 from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm, WarehouseForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
-from kitchen.models import Warehouse
+from kitchen.models import Warehouse, WarehouseDetails
 from sales.models import TicketDetail, Ticket
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
@@ -23,7 +23,178 @@ import math
 
 # -------------------------------------  Class based Views -------------------------------------
 
+
+class LeastSquares(object):
+    """
+    Object to obtain the least squares in a general way 
+    :type x: period list
+    :type y: 
+    The formula to obtains A:
+        Average(Y) - B(Average(X))
+
+    The formula to obtains B:
+        Sum(X * Y) - ((Sum(X)*Sum(Y))/n)/(Sum(X^2) - (Sum(X)^2)/n 
+
+        * Where n = lenght of the list for period
+
+    The formula to do de forecast it's gonna be:
+        A + B(Period)
+    """
+    def __init__(self, x:list, y:list):
+
+        super(LeastSquares, self).__init__()
+        if len(x) != len(y):
+            raise NameError('Las listas deben tener misma longitud.')
+
+        self.__x = x
+        self.__y = y
+        self.__periodic_list = []
+        self.__n = len(self.__x)
+        self.set_periodic_list()
+    
+    def get_sum_x(self):
+        """
+        Obtains the sum of the elements in the list X
+        """
+        return sum(self.__x)
+    
+    def get_sum_y(self):
+        """
+        Obtains the sum of the elements in the list Y
+        """
+        return sum(self.__y)
+
+    def get_x_average(self):
+        """
+        Obtains the average of the elements in the X list
+        """
+        return math.ceil(self.get_sum_x() / len(self.__x))
+
+    def get_y_average(self):
+        """
+        Obtains the average of the elements in the Y list
+        """
+        return math.ceil(self.get_sum_y() / len(self.__y))
+
+    def get_sum_x_pow(self):
+        """
+        Obtains the sum of the square pow from the elements of X
+        """
+        auxiliar_list = []
+        count = 0
+
+        for day in self.__x:
+            auxiliar_list.append(self.__x[count]**2)
+            count += 1
+        return sum(auxiliar_list)
+
+    def get_sum_y_pow(self):
+        """
+        Obtains the sum of the square pow from the elements of X
+        """
+        auxiliar_list = []
+        count = 0
+
+        for element in self.__y:
+            auxiliar_list.append(self.__y[count]**2)
+            count += 1
+        return sum(auxiliar_list)
+
+    def get_sum_x_y_prod(self):
+        """
+        Obtains the sum of the product between elements in the list of X and Y
+        """
+        count = 0
+        auxiliar_list = [] 
+
+        for item in self.__x:
+            auxiliar_list.append(self.__x[count]*self.__y[count])
+            count += 1
+        return sum(auxiliar_list)
+
+    def set_periodic_list(self):
+        """
+        This method gives the indicators to know if the given lists are or not periodic
+        """
+        difference_list = []
+        count = 0
+        is_periodic = True
+
+        for _ in self.__x:
+            if count != 0:
+                difference_list.append(self.__x[count] - self.__x[count - 1])
+            
+            count += 1
+
+        count = 0
+
+        for item in difference_list:
+            if count != 0:
+                if difference_list[count] != difference_list[count-1]:
+                    is_periodic = False
+                    break
+            count += 1
+
+        if is_periodic:
+            count = 0
+            periodic_value = difference_list[0]
+
+            for _ in self.__x:
+                self.__periodic_list.append(self.__x[len(self.__x) - 1] + periodic_value * (count + 1))
+                count += 1
+        else:
+            raise NameError('Tu lista de Periodo no es continua')
+
+    def get_A(self):
+        """
+        This give us the valor of A for the mathematical method
+        """
+        return math.ceil(self.get_y_average() - self.get_B() * self.get_x_average())
+
+    def get_B(self):
+        """
+        This give us the valor of B for the mathematical method
+        """
+        return math.ceil((self.get_sum_x_y_prod() - (self.get_sum_x() * self.get_sum_y() / self.__n) ) / (self.get_sum_x_pow() - (self.get_sum_x() ** 2) / self.__n ))
+
+    def get_forecast(self):
+        """
+        This method give us the forecast for next week or case that we are gonna evaluate
+        """
+        forecast_list = []
+        count = 0
+
+        for item in self.__x:
+            forecast_list.append(self.get_A() + self.get_B() * self.__periodic_list[count])
+            count += 1
+
+        return forecast_list
+
+
+def main():
+    lista_x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    lista_y = [90, 106, 152, 244, 302, 274, 162, 194, 312, 359, 215, 126]
+
+    xd = LeastSquares(lista_x, lista_y)
+    print('Suma de x:\t\t', xd.get_sum_x())
+    print('Suma de y:\t\t', xd.get_sum_y())
+    print('Suma de x al cuadrado:\t', xd.get_sum_x_pow())
+    print('Promedio de x:\t\t', xd.get_x_average())
+    print('Promedio de y:\t\t', xd.get_y_average())
+    print('Suma de y al cuadrado:\t', xd.get_sum_y_pow())
+    print('Suma del producto del X y Y:\t', xd.get_sum_x_y_prod())
+    print('*'*50)
+    print('A:\t\t', xd.get_A())
+    print('B:\t\t', xd.get_B())
+    print('Pronostico:\t', xd.get_forecast())
+
+
+if __name__ == '__main__':
+    main()
+
 class ProductsHelper(object):
+    # --Getters --#
+
     def __init__(self):
         self.__all_cartridges = None
         self.__all_cartridges_recipes = None
@@ -31,6 +202,7 @@ class ProductsHelper(object):
         self.__all_supplies = None
         self.__always_popular_cartridge = None
         self.__elements_in_warehouse = None
+        self.__all_warehouse_details = None
         self.__predictions = None
         self.__required_supplies_list = None
         self.__today_popular_cartridge = None
@@ -44,6 +216,9 @@ class ProductsHelper(object):
             self.set_all_tickets_details()
         return self.__all_tickets_details
 
+    def get_all_warehouse_detaills(self):
+        return self.__all_warehouse_details
+
     def get_all_supplies(self):
         if self.__all_supplies is None:
             self.set_all_supplies()
@@ -54,22 +229,7 @@ class ProductsHelper(object):
         return self.__always_popular_cartridge
 
     def get_prediction_supplies_list(self):
-        if self.__all_tickets_details is None:
-            self.set_all_tickets_details()
-        return self.__all_tickets_details
-
-        all_tickets_details = self.__all_tickets_details
-        prediction_list = []
-        """:type all_tickets_details: list"""
-        for ticket_details in all_tickets_details:
-            cartridge_object = {
-                'name': ticket_details.cartridge.name,
-                'cantidad': 1,
-            }
-
-            prediction_list.append(cartridge_object)
-
-        return prediction_list
+        return self.__predictions
 
     def get_required_supplies(self):
         if self.__elements_in_warehouse is None:
@@ -81,13 +241,17 @@ class ProductsHelper(object):
         if self.__all_cartridges_recipes is None:
             self.set_all_cartridges_recipes()
 
-        required_supplies_list = []
-        all_cartridges = self.__all_cartridges
-        predictions = self.get_prediction_supplies_list()
-        supplies_on_stock = self.__elements_in_warehouse.filter(status='ST')
+        if self.__all_warehouse_details is None:
+            self.set_all_warehouse_details()
 
-        for prediction in predictions:
-            for cartridge in all_cartridges:
+        if self.__predictions is None:
+            self.set_predictions()
+
+        required_supplies_list = []
+        supplies_on_stock = self.__all_warehouse_details.filter(status="ST")
+
+        for prediction in self.__predictions:
+            for cartridge in self.__all_cartridges:
                 if prediction['name'] == cartridge.name:
                     ingredients = self.__all_cartridges_recipes.filter(cartridge=cartridge)
                     for ingredient in ingredients:
@@ -106,8 +270,7 @@ class ProductsHelper(object):
                             'cost': cost,
                             'measurement': measurement,
                             'measurement_quantity': measurement_quantity,
-                            'quantity': quantity,
-                            'stock': 0
+                            'quantity': quantity
                         }
 
                         if len(required_supplies_list) == 0:
@@ -125,8 +288,16 @@ class ProductsHelper(object):
 
         for required_supply in required_supplies_list:
             for supply_on_stock in supplies_on_stock:
-                if supply_on_stock.supply == required_supply['supply']:
+
+                if supply_on_stock.warehouse.supply == required_supply['supply']:
                     required_supply['stock'] = supply_on_stock.quantity
+                    required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
+                    required_supply['full_cost'] = \
+                        required_supply['cost'] * \
+                        math.ceil(required_supply['required'] / required_supply['measurement_quantity'])
+                    break
+                else:
+                    required_supply['stock'] = 0
                     required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
                     required_supply['full_cost'] = \
                         required_supply['cost'] * \
@@ -149,6 +320,29 @@ class ProductsHelper(object):
 
     def get_today_popular_cartridge(self):
         return self.__always_popular_cartridge
+
+    def get_all_warehouse_details(self):
+        if self.__all_warehouse_details is None:
+            self.set_all_warehouse_details()
+        return self.__all_warehouse_details
+
+    # --Setters --#
+
+    def set_predictions(self):
+        if self.__all_tickets_details is None:
+            self.set_all_tickets_details()
+
+        prediction_list = []
+
+        for ticket_details in self.__all_tickets_details:
+            cartridge_object = {
+                'name': ticket_details.cartridge.name,
+                'cantidad': 1,
+            }
+
+            prediction_list.append(cartridge_object)
+
+        self.__predictions = prediction_list
 
     def set_all_cartridges(self):
         self.__all_cartridges = Cartridge.objects.all()
@@ -201,6 +395,9 @@ class ProductsHelper(object):
 
     def set_elements_in_warehouse(self):
         self.__elements_in_warehouse = Warehouse.objects.select_related('supply').all()
+
+    def set_all_warehouse_details(self):
+        self.__all_warehouse_details = WarehouseDetails.objects.all()
 
     def set_today_popular_cartridge(self):
         cartridges_frequency_dict = {}
@@ -509,36 +706,11 @@ def catering(request):
     """
     products_helper = ProductsHelper()
     required_supplies = products_helper.get_required_supplies()
-    supplies_on_stock = products_helper.get_supplies_on_stock_list()
     estimated_total_cost = 0
-
-    def get_average():
-        initial_date = datetime.today()
-        final_date = initial_date + timedelta(days=7)
-        ticket_detail_object = {}
-        all_tickets_details = products_helper.get_all_tickets_details(initial_date, final_date)
-        for ticket_detail in all_tickets_details:
-            if ticket_detail.cartridge.id == ticket_detail.cartridge.id:
-                ticket_detail.quantity += 1
-
-            print(ticket_detail)
-
-    for required_supply in required_supplies:
-        required_supply['stock'] = 0
-        for supply in supplies_on_stock:
-            if supply['name'] == required_supply['name']:
-                required_supply['stock'] = supply['quantity']
-            else:
-                required_supply['stock'] = 0
-
-        required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
-        required_supply['full_cost'] = \
-            required_supply['cost'] * (math.ceil(required_supply['required'] / required_supply['measurement_quantity']))
-        estimated_total_cost = estimated_total_cost + required_supply['full_cost']
 
     template = 'catering/catering.html'
     title = 'Abastecimiento'
-    get_average()
+
     context = {
         'title': title,
         'required_supplies': required_supplies,
@@ -567,34 +739,30 @@ def warehouse(request):
 def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()
+    supplies_on_stock = WarehouseDetails.objects.order_by('warehouse')
 
     if request.method == 'POST':
-        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
-        mod_wh.quantity -= float(request.POST['cantidad'])
+        mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
+        mod_wh.status = "ST"
         mod_wh.save()
-        try:
-            sup_on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
-            sup_on_stock.quantity += float(request.POST['cantidad'])
-            sup_on_stock.save()
-        except Warehouse.DoesNotExist:
-            Warehouse.objects.create(supply=mod_wh.supply, status="ST", quantity=request.POST['cantidad'],
-                                     waste=mod_wh.waste, cost=mod_wh.cost)
 
     for prediction in predictions:
-        try:
-            sup_on_pro = Warehouse.objects.get(supply=prediction['supply'], status="PR")
-            sup_on_pro.quantity = float(prediction['required'])
-            sup_on_pro.save()
-        except Warehouse.DoesNotExist:
-            Warehouse.objects.create(supply=prediction['supply'], status="PR", quantity=prediction['required'],
-                                     waste=0, cost=prediction['cost'])
-
-    supply_list = Warehouse.objects.all()
+        if prediction['required'] > 0:
+            try:
+                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])
+                try:
+                    detail = WarehouseDetails.objects.get(warehouse=sup_on_stock, status="PR")
+                    detail.quantity = prediction['quantity']
+                except WarehouseDetails.DoesNotExist:
+                    WarehouseDetails.objects.create(warehouse=sup_on_stock, status="PR",
+                                                    quantity=prediction['required'])
+            except Warehouse.DoesNotExist:
+                Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'])
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {
-        'supplies': supply_list,
+        'supply_list': supplies_on_stock,
         'title': title,
         'page_title': PAGE_TITLE
     }
@@ -602,6 +770,7 @@ def warehouse_movements(request):
 
 
 def products_analytics(request):
+
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
     context = {
