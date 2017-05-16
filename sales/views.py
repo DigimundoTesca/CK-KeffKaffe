@@ -21,6 +21,7 @@ class SalesHelper(object):
     def __init__(self):
         self.__all_tickets = None
         self.__all_tickets_details = None
+        self.__all_cash_registers = None
         super(SalesHelper, self).__init__()
 
     def get_all_tickets(self):
@@ -416,7 +417,9 @@ def delete_sale(request):
 
 @login_required(login_url='users:login')
 def new_sale(request):
-    helper = SalesHelper()
+    helper = Helper()
+    sales_helper = SalesHelper()
+
     if request.method == 'POST':
         if request.POST['ticket']:
             username = request.user

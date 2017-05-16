@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
-from helpers import Helper
+from helpers import Helper, LeastSquares
 from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm, WarehouseForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse, WarehouseDetails
@@ -464,14 +464,6 @@ def categories_supplies(request, categ):
 def cartridges(request):
     cartridges_list = Cartridge.objects.order_by('id')
 
-    tickets = Ticket.objects.all()
-    tickets_d = TicketDetail.objects.select_related('ticket').all()
-
-    for ticket in tickets:
-        for td in tickets_d:
-            if td.ticket.id == ticket.id:
-                print('holisss son iguales :v:v')
-
     template = 'cartridges/cartridges.html'
     title = 'Cartuchos'
     context = {
@@ -607,26 +599,27 @@ def warehouse_movements(request):
         mod_wh.quantity -= float(number)
         mod_wh.save()        
 
-        created_detaill = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse,status="ST",quantity=number)
+        created_detail = WarehouseDetails.objects.create(
+            warehouse=mod_wh.warehouse, status="ST", quantity=number)
 
-        start_date = str(created_detaill.created_at)
-        date = datetime.strptime(start_date, "%Y-%m-%d")
-        modified_date = date + timedelta(days=created_detaill.warehouse.supply.optimal_duration)
-        created_detaill.expiry_date = modified_date
-        created_detaill.save()
-
+        start_date = str(created_detail.created_at)
+        dt = datetime.strptime(start_date, "%Y-%m-%d")
+        modified_date = dt + timedelta(days=created_detail.warehouse.supply.optimal_duration)
+        created_detail.expiry_date = modified_date
+        created_detail.save()
     
     for prediction in predictions:                    
-        if(prediction['required']>0):            
+        if prediction['required'] > 0:
             try:
                 sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])   
                 try:
-                    detail = WarehouseDetails.objects.get(warehouse=sup_on_stock,status="PR")
+                    detail = WarehouseDetails.objects.get(warehouse=sup_on_stock, status="PR")
                     detail.quantity = prediction['required']
                 except WarehouseDetails.DoesNotExist:
-                        WarehouseDetails.objects.create(warehouse=sup_on_stock,status="PR",quantity=prediction['required'])
+                        WarehouseDetails.objects.create(
+                            warehouse=sup_on_stock, status="PR", quantity=prediction['required'])
             except Warehouse.DoesNotExist:
-                Warehouse.objects.create(supply=prediction['supply'],cost=prediction['cost'])                
+                Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'])
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
@@ -641,6 +634,23 @@ def warehouse_movements(request):
 def products_analytics(request):
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
+
+    list_x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    list_y = [90, 106, 152, 244, 302, 274, 162, 194, 312, 359, 215, 126]
+
+    latest_squares = LeastSquares(list_x, list_y)
+    print('Suma de x:\t\t', latest_squares.get_sum_x())
+    print('Suma de y:\t\t', latest_squares.get_sum_y())
+    print('Suma de x al cuadrado:\t', latest_squares.get_sum_x_pow())
+    print('Promedio de x:\t\t', latest_squares.get_x_average())
+    print('Promedio de y:\t\t', latest_squares.get_y_average())
+    print('Suma de y al cuadrado:\t', latest_squares.get_sum_y_pow())
+    print('Suma del producto del X y Y:\t', latest_squares.get_sum_x_y_prod())
+    print('*' * 50)
+    print('A:\t\t', latest_squares.get_a())
+    print('B:\t\t', latest_squares.get_b())
+    print('Pronostico:\t', latest_squares.get_forecast())
+
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
