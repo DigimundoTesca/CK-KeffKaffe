@@ -4,6 +4,7 @@
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">  
 {% endblock link %}
 {% block content %}
+
   <!-- Container -->
   <div class="container-fluid container-sales">
     <div class="row">
@@ -15,12 +16,12 @@
             </div>
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">
               <div class="card-block products-block">
-                {% for warehouse in supplies %}
-                  {% if warehouse.status == "PR" and warehouse.quantity > 0 %}
-                    <div class="card-block product-container" id="warehouse.supply-{{ warehouse.supply.pk }}">
-                      <h6 class="product-name">{{ warehouse.supply.name }}</h6>
-                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.pr.supply-img-{{ warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="warehouse.supply.quantity-{{ warehouse.quantity }}" > Cantidad: {{ warehouse.quantity }} </h4>
+                {% for supplies in supply_list %}
+                  {% if supplies.status == "PR" and supplies.quantity > 0 %}
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
+                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -33,12 +34,14 @@
             </div>
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-stock">
               <div class="card-block products-block"> 
-                {% for warehouse in supplies %}                      
-                  {% if warehouse.status == "ST" and warehouse.quantity > 0 %}                  
-                    <div class="card-block product-container" id="warehouse.supply-{{ warehouse.supply.pk }}">
-                      <h6 class="product-name">{{ warehouse.supply.name }}</h6>
-                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{ warehouse.supply.pk }}" class="product-img" width="200" height="200">  
-                      <h5 class="product_quantity" id="warehouse.supply-{{ warehouse.supply.pk }}" > Cantidad: {{ warehouse.quantity }} </h4>
+                {% for supplies in supply_list %}
+                  {% if supplies.status == "ST" and supplies.quantity > 0 %}
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
+                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply-{{ supplies.optimal_duration 
+                      }}" > Fecha de Expiracion: {{ supplies.expiry_date }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -51,21 +54,23 @@
             </div>
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-rfa">
               <div class="card-block products-block">
-                {% for warehouse in supplies %}                      
-                  {% if warehouse.status == "AS" and warehouse.quantity > 0 %}                  
-                    <div class="card-block product-container" id="warehouse.supply-{{warehouse.supply.pk}}">
-                      <h6 class="product-name">{{ warehouse.supply.name }}</h6>
-                      <img src="{{ warehouse.supply.image.url }}" id="warehouse.supply-img-{{warehouse.supply.pk}}" class="product-img" width="200" height="200">
-                      <h5 class="product_quantity" id="warehouse.supply-{{ warehouse.supply.pk }}" > Cantidad: {{ warehouse.quantity }} </h4>
+                {% for supplies in supply_list %}
+                  {% if supplies.status == "SO" and supplies.quantity > 0 %}
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
+                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
               </div>
             </div>                       
-          </div>                                     
+          </div>  
+        </div>                          
       </div>      
     </div>
   </div>
+
 {% endblock content %}
 {% block javascript %}
 <script type="text/javascript" charset="utf-8">
@@ -95,8 +100,9 @@ $(function(){
   $(".product-img-pr").on("dragstart",function(e){    
 
     var element = $(this);
-    var element_id = element.attr('id').substring(24);
-    var element_quantity = element.parent().children(".provider_quantity").attr('id').substring(26);    
+    var element_id = element.attr('id').substring(23);
+    var element_quantity = element.parent().children(".provider_quantity").attr('id').substring(35);  
+    console.log(element_quantity)  
     var str = element_id+","+element_quantity;   
 
     e.originalEvent.dataTransfer.setData("text",str);    

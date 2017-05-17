@@ -14,8 +14,8 @@ class AdminProcessedCartridge(admin.ModelAdmin):
 
 @admin.register(Warehouse)
 class AdminWarehouse(admin.ModelAdmin):
-    list_display = ('supply', 'cost')
-
+    list_display = ('id', 'supply', 'cost')
+    list_display_links = ('id', 'supply')
 
 @admin.register(WarehouseDetails)
 class AdminWarehouseDetails(admin.ModelAdmin):

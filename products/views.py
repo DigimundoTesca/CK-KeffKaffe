@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
-from helpers import Helper
+from helpers import Helper, LeastSquares
 from products.forms import SupplyForm, SuppliesCategoryForm, CartridgeForm, SuppliersForm, RecipeForm, WarehouseForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse, WarehouseDetails
@@ -205,10 +205,12 @@ class ProductsHelper(object):
         self.__all_warehouse_details = None
         self.__predictions = None
         self.__required_supplies_list = None
-        self.__today_popular_cartridge = None
+        self.__today_popular_cartridge = None        
         super(ProductsHelper, self).__init__()
 
     def get_all_cartridges(self):
+        if self.__all_cartridges is None:
+            self.set_all_cartridges()
         return self.__all_cartridges
 
     def get_all_tickets_details(self):
@@ -233,7 +235,7 @@ class ProductsHelper(object):
 
     def get_required_supplies(self):
         if self.__elements_in_warehouse is None:
-            self.set_elements_in_warehouse()
+            self.set_elements_in_warehouse()            
 
         if self.__all_cartridges is None:
             self.set_all_cartridges()
@@ -248,13 +250,17 @@ class ProductsHelper(object):
             self.set_predictions()
 
         required_supplies_list = []
+        all_cartridges = self.__all_cartridges        
+        predictions = self.__predictions
         supplies_on_stock = self.__all_warehouse_details.filter(status="ST")
+        
+        ingredients = CartridgeRecipe.objects.select_related('cartridge').select_related('supply').all();
 
-        for prediction in self.__predictions:
-            for cartridge in self.__all_cartridges:
-                if prediction['name'] == cartridge.name:
-                    ingredients = self.__all_cartridges_recipes.filter(cartridge=cartridge)
-                    for ingredient in ingredients:
+        for prediction in predictions:
+            for cartridge in all_cartridges:
+                if prediction['cartridge'] == cartridge:
+                    ingredientes = ingredients.filter(cartridge=cartridge)
+                    for ingredient in ingredientes:
                         supply = ingredient.supply
                         name = ingredient.supply.name
                         cost = ingredient.supply.presentation_cost
@@ -270,7 +276,10 @@ class ProductsHelper(object):
                             'cost': cost,
                             'measurement': measurement,
                             'measurement_quantity': measurement_quantity,
-                            'quantity': quantity
+                            'quantity': quantity,   
+                            'stock': 0,
+                            'required': 0,
+                            'full_cost': 0,
                         }
 
                         if len(required_supplies_list) == 0:
@@ -286,23 +295,31 @@ class ProductsHelper(object):
                         if count == 1:
                             required_supplies_list.append(required_supply_object)
 
-        for required_supply in required_supplies_list:
-            for supply_on_stock in supplies_on_stock:
-
-                if supply_on_stock.warehouse.supply == required_supply['supply']:
-                    required_supply['stock'] = supply_on_stock.quantity
-                    required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
-                    required_supply['full_cost'] = \
+        for required_supply in required_supplies_list:                       
+            if len(supplies_on_stock)>0:
+                for supply_on_stock in supplies_on_stock:
+                    if supply_on_stock.warehouse.supply == required_supply['supply']:                          
+                        required_supply['stock'] = supply_on_stock.quantity
+                        required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
+                        required_supply['full_cost'] = \
                         required_supply['cost'] * \
-                        math.ceil(required_supply['required'] / required_supply['measurement_quantity'])
-                    break
-                else:
-                    required_supply['stock'] = 0
-                    required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
-                    required_supply['full_cost'] = \
+                            math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
+                        break           
+                    else:                                                
+                        required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
+                        required_supply['full_cost'] = \
                         required_supply['cost'] * \
-                        math.ceil(required_supply['required'] / required_supply['measurement_quantity'])
+                            math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
+                        required_supply['full_cost'] = \
+                        required_supply['cost'] * \
+                            math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
 
+            else:       
+                required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
+                required_supply['full_cost'] = \
+                required_supply['cost'] * \
+                        math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
+                  
         return required_supplies_list
 
     def get_supplies_on_stock_list(self):
@@ -332,11 +349,13 @@ class ProductsHelper(object):
         if self.__all_tickets_details is None:
             self.set_all_tickets_details()
 
-        prediction_list = []
+        all_tickets_details = self.__all_tickets_details
 
-        for ticket_details in self.__all_tickets_details:
+        prediction_list = []
+        
+        for ticket_details in all_tickets_details:
             cartridge_object = {
-                'name': ticket_details.cartridge.name,
+                'cartridge': ticket_details.cartridge,
                 'cantidad': 1,
             }
 
@@ -397,7 +416,7 @@ class ProductsHelper(object):
         self.__elements_in_warehouse = Warehouse.objects.select_related('supply').all()
 
     def set_all_warehouse_details(self):
-        self.__all_warehouse_details = WarehouseDetails.objects.all()
+        self.__all_warehouse_details = WarehouseDetails.objects.prefetch_related('warehouse__supply').all();
 
     def set_today_popular_cartridge(self):
         cartridges_frequency_dict = {}
@@ -612,6 +631,7 @@ def categories_supplies(request, categ):
 @login_required(login_url='users:login')
 def cartridges(request):
     cartridges_list = Cartridge.objects.order_by('id')
+
     template = 'cartridges/cartridges.html'
     title = 'Cartuchos'
     context = {
@@ -705,8 +725,8 @@ def catering(request):
     TODO: Ordenar por prioridad.
     """
     products_helper = ProductsHelper()
-    required_supplies = products_helper.get_required_supplies()
-    estimated_total_cost = 0
+    required_supplies = products_helper.get_required_supplies()    
+    estimated_total_cost = 0    
 
     template = 'catering/catering.html'
     title = 'Abastecimiento'
@@ -738,24 +758,34 @@ def warehouse(request):
 @login_required(login_url='users:login')
 def warehouse_movements(request):
     products_helper = ProductsHelper()
-    predictions = products_helper.get_required_supplies()
-    supplies_on_stock = WarehouseDetails.objects.order_by('warehouse')
+    predictions = products_helper.get_required_supplies()    
+    supplies_on_stock = products_helper.get_all_warehouse_details()
 
-    if request.method == 'POST':
+    if request.method == 'POST':        
+        number = request.POST['cantidad']
         mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
-        mod_wh.status = "ST"
-        mod_wh.save()
+        mod_wh.quantity -= float(number)
+        mod_wh.save()        
 
-    for prediction in predictions:
+        created_detail = WarehouseDetails.objects.create(
+            warehouse=mod_wh.warehouse, status="ST", quantity=number)
+
+        start_date = str(created_detail.created_at)
+        dt = datetime.strptime(start_date, "%Y-%m-%d")
+        modified_date = dt + timedelta(days=created_detail.warehouse.supply.optimal_duration)
+        created_detail.expiry_date = modified_date
+        created_detail.save()
+    
+    for prediction in predictions:                    
         if prediction['required'] > 0:
             try:
-                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])
+                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])   
                 try:
                     detail = WarehouseDetails.objects.get(warehouse=sup_on_stock, status="PR")
-                    detail.quantity = prediction['quantity']
+                    detail.quantity = prediction['required']
                 except WarehouseDetails.DoesNotExist:
-                    WarehouseDetails.objects.create(warehouse=sup_on_stock, status="PR",
-                                                    quantity=prediction['required'])
+                        WarehouseDetails.objects.create(
+                            warehouse=sup_on_stock, status="PR", quantity=prediction['required'])
             except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'])
 
@@ -773,6 +803,23 @@ def products_analytics(request):
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
+
+    list_x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    list_y = [90, 106, 152, 244, 302, 274, 162, 194, 312, 359, 215, 126]
+
+    latest_squares = LeastSquares(list_x, list_y)
+    print('Suma de x:\t\t', latest_squares.get_sum_x())
+    print('Suma de y:\t\t', latest_squares.get_sum_y())
+    print('Suma de x al cuadrado:\t', latest_squares.get_sum_x_pow())
+    print('Promedio de x:\t\t', latest_squares.get_x_average())
+    print('Promedio de y:\t\t', latest_squares.get_y_average())
+    print('Suma de y al cuadrado:\t', latest_squares.get_sum_y_pow())
+    print('Suma del producto del X y Y:\t', latest_squares.get_sum_x_y_prod())
+    print('*' * 50)
+    print('A:\t\t', latest_squares.get_a())
+    print('B:\t\t', latest_squares.get_b())
+    print('Pronostico:\t', latest_squares.get_forecast())
+
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
