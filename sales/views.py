@@ -38,7 +38,7 @@ class SalesHelper(object):
         return self.__all_tickets_details
 
     def set_all_tickets_details(self):
-        self.__all_tickets_details = TicketDetail.objects.select_related('ticket').select_related('ticket__seller').\
+        self.__all_tickets_details = TicketDetail.objects.select_related('ticket').select_related('ticket__seller'). \
             select_related('cartridge').select_related('package_cartridge').all()
 
 
@@ -232,7 +232,7 @@ def sales(request):
         return tickets_list
 
     def get_tickets(initial_date, final_date):
-        tickets = sales_helper.get_all_tickets().\
+        tickets = sales_helper.get_all_tickets(). \
             filter(created_at__range=(initial_date, final_date)).order_by('-created_at')
         tickets_details = sales_helper.get_all_tickets_details()
         tickets_list = []
@@ -511,38 +511,31 @@ def new_sale(request):
 
         return JsonResponse({'status': 'error'})
 
-    else:
-        path = request.get_full_path().split('/')[3]
-        if path == 'breakfast':
-            template = 'new/breakfast.html'
-            title = 'Vender Desayuno'
+    cartridges_list = Cartridge.objects.all().order_by('name')
+    package_cartridges = PackageCartridge.objects.all().order_by('name')
+    extra_ingredients = ExtraIngredient.objects.all().prefetch_related('ingredient');
+    extra_ingredients_products_list = []
 
-        else:
-            template = 'new/food.html'
-            title = 'Vender Comida'
+    for cartridge in cartridges_list:
+        cartridge_object = {
+            'id': cartridge.id,
+            'name': cartridge.name,
+            'extra_ingredients': [],
+        }
+        for ingredient in extra_ingredients:
+            if cartridge == ingredient.cartridge:
+                ingredient_object = {
+                    'id': ingredient.id,
+                    'name': ingredient.ingredient.name,
+                    'image': ingredient.image.url,
+                    'cost': str(ingredient.cost),
+                }
+                cartridge_object['extra_ingredients'].append(ingredient_object)
+        if len(cartridge_object['extra_ingredients']) > 0:
+            extra_ingredients_products_list.append(cartridge_object)
 
-        cartridges_list = Cartridge.objects.all().order_by('name')
-        package_cartridges = PackageCartridge.objects.all().order_by('name')
-        extra_ingredients = ExtraIngredient.objects.all().prefetch_related('ingredient');
-        extra_ingredients_products_list = []
-
-        for cartridge in cartridges_list:
-            cartridge_object = {
-                'id': cartridge.id,
-                'name': cartridge.name,
-                'extra_ingredients': [],
-            }
-            for ingredient in extra_ingredients:
-                if cartridge == ingredient.cartridge:
-                    ingredient_object = {
-                        'id': ingredient.id,
-                        'name': ingredient.ingredient.name,
-                        'image': ingredient.image.url,
-                        'cost': str(ingredient.cost),
-                    }
-                    cartridge_object['extra_ingredients'].append(ingredient_object)
-            if len(cartridge_object['extra_ingredients']) > 0:
-                extra_ingredients_products_list.append(cartridge_object)
+        template = 'new/new_sale.html'
+        title = 'Nueva venta'
 
         context = {
             'title': PAGE_TITLE + ' | ' + title,
