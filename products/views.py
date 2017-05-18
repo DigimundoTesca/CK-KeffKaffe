@@ -631,30 +631,27 @@ def warehouse_movements(request):
     return render(request, template, context)
 
 
+def get_generic_period(period_list,total_sales):
+    helper_least = LeastSquares()
+    count = 0
+    for item in helper_least.x:
+        pass
+
+
 def products_analytics(request):
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
+    helper = Helper()
 
-    list_x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    list_y = [90, 106, 152, 244, 302, 274, 162, 194, 312, 359, 215, 126]
+    list_x = [0, 1, 2, 3, 4, 5, 6]
+    list_y = [90, 106, 152, 244, 302, 274, 162]
 
     latest_squares = LeastSquares(list_x, list_y)
-    print('Suma de x:\t\t', latest_squares.get_sum_x())
-    print('Suma de y:\t\t', latest_squares.get_sum_y())
-    print('Suma de x al cuadrado:\t', latest_squares.get_sum_x_pow())
-    print('Promedio de x:\t\t', latest_squares.get_x_average())
-    print('Promedio de y:\t\t', latest_squares.get_y_average())
-    print('Suma de y al cuadrado:\t', latest_squares.get_sum_y_pow())
-    print('Suma del producto del X y Y:\t', latest_squares.get_sum_x_y_prod())
-    print('*' * 50)
-    print('A:\t\t', latest_squares.get_a())
-    print('B:\t\t', latest_squares.get_b())
-    print('Pronostico:\t', latest_squares.get_forecast())
-
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
+        'least_squares': latest_squares,
     }
 
     return render(request, template, context)
