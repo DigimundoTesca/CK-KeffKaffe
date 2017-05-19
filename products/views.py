@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from _decimal import Decimal
 from datetime import timedelta, datetime, date
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
@@ -631,64 +631,78 @@ def warehouse_movements(request):
     return render(request, template, context)
 
 
-def get_daily_period():
-    helper = Helper()
-    sales_helper = SalesHelper()
-    initial_date = helper.naive_to_datetime(date.today())
-    final_date = helper.naive_to_datetime(initial_date + timedelta(days=1))
-    filtered_tickets = sales_helper.get_all_tickets().filter(created_at__range=[initial_date, final_date])
-    tickets_details = TicketDetail.objects.select_related('ticket').filter()
-    tickets_list = []
-    period_list = []
-    for ticket in filtered_tickets:
-        ticket_object = {
-            'total': Decimal(0.00),
-        }
-        for ticket_details in tickets_details:
-            if ticket_details.ticket == ticket:
-                ticket_object['total'] += ticket_details.price
-        tickets_list.append(Decimal(ticket_object['total']))
-
-    for _ in tickets_list:
-        if ticket.created_at == ticket.created_at:
-            print('No corresponde a la hora')
-
-
-def get_weekly_period():
-    helper = Helper()
-    sales_helper = SalesHelper()
-    # initial_date = helper.naive_to_datetime(date.today())
-    initial_date = helper.naive_to_datetime(date(2017, 5, 8))
-    final_date = helper.naive_to_datetime(initial_date + timedelta(days=7))
-    filtered_tickets_details = sales_helper.get_all_tickets_details().filter(ticket__created_at__range=
-                                                                             [initial_date, final_date])
-    #filtered_cartridge_recipes = sales_helper.
-    tickets_list = []
-    period_list = []
-    date_dict = {}
-    aux_initial = initial_date
-    aux_final = final_date
-
-    while aux_initial < aux_final:
-        date_dict[aux_initial.strftime('%d-%m-%Y')] = []
-        aux_initial = aux_initial + timedelta(days=1)
-
-    for ticket_detail in filtered_tickets_details:
-        cartridge_object = {
-            'name': ticket_detail.cartridge.name,
-            'quantity': ticket_detail.quantity,
-        }
-
-
 @login_required(login_url='users:login')
 def products_analytics(request):
+    def get_daily_period():
+        helper = Helper()
+        sales_helper = SalesHelper()
+        initial_date = helper.naive_to_datetime(date.today())
+        final_date = helper.naive_to_datetime(initial_date + timedelta(days=1))
+        filtered_tickets = sales_helper.get_all_tickets().filter(created_at__range=[initial_date, final_date])
+        tickets_details = TicketDetail.objects.select_related('ticket').filter()
+        tickets_list = []
+        period_list = []
+        for ticket in filtered_tickets:
+            ticket_object = {
+                'total': Decimal(0.00),
+            }
+            for ticket_details in tickets_details:
+                if ticket_details.ticket == ticket:
+                    ticket_object['total'] += ticket_details.price
+            tickets_list.append(Decimal(ticket_object['total']))
+
+        for _ in tickets_list:
+            if ticket.created_at == ticket.created_at:
+                print('No corresponde a la hora')
+
+
+    def get_period(initial_date, final_date):
+        helper = Helper()
+        sales_helper = SalesHelper()
+        initial_date = initial_date.split('-')
+        initial_date = helper.naive_to_datetime(date(int(initial_date[2]), int(initial_date[1]), int(initial_date[0])))
+        final_date = final_date.split('-')
+        final_date = helper.naive_to_datetime(date(int(final_date[2]), int(final_date[1]), int(final_date[0])))
+
+        filtered_tickets_details = sales_helper.get_all_tickets_details().filter(ticket__created_at__range=
+                                                                                 [initial_date, final_date])
+        all_cartridge_recipes = CartridgeRecipe.objects.select_related('cartridge').all()
+        tickets_list = []
+        supplies_list = []
+        date_dict = {}
+        aux_initial = initial_date
+        aux_final = final_date
+
+        while aux_initial < aux_final:
+            date_dict[aux_initial.strftime('%d-%m-%Y')] = []
+            aux_initial = aux_initial + timedelta(days=1)
+
+        for ticket_detail in filtered_tickets_details:
+            filtered_cartridge_recipes = all_cartridge_recipes.filter(cartridge=ticket_detail.cartridge)
+            filtered_cartridge_recipes_list = []
+
+            for item in filtered_cartridge_recipes:
+                filtered_cartridge_recipes_list.append(item.supply.name)
+
+            cartridge_object = {
+                'name': ticket_detail.cartridge.name,
+                'quantity': ticket_detail.quantity,
+                'recipe': filtered_cartridge_recipes_list
+            }
+            supplies_list.append(cartridge_object)
+            
+    if request.method == 'POST':
+        initial_date = request.POST['initial_date']
+        final_date = request.POST['final_date']
+        # get_daily_period()
+        get_period(initial_date, final_date)
+        return JsonResponse({'resultado': 'algo xd'})
+
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
     list_x = [1, 2, 3, 4, 5, 6]
     list_y = [10, 20, 30, 40, 50, 60]
     least_helper = LeastSquares(list_x, list_y)
-    get_daily_period()
-    get_weekly_period()
 
     latest_squares = LeastSquares(list_x, list_y)
     context = {
