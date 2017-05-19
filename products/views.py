@@ -640,7 +640,6 @@ def get_daily_period():
     tickets_details = TicketDetail.objects.select_related('ticket').filter()
     tickets_list = []
     period_list = []
-    count = 0
     for ticket in filtered_tickets:
         ticket_object = {
             'total': Decimal(0.00),
@@ -650,49 +649,46 @@ def get_daily_period():
                 ticket_object['total'] += ticket_details.price
         tickets_list.append(Decimal(ticket_object['total']))
 
-    """for _ in tickets_list:
-        if ticket.created_at == period_list[count]:
-            period_list[count].append(ticket_object['total'])
-            count += 1
-        else:
+    for _ in tickets_list:
+        if ticket.created_at == ticket.created_at:
             print('No corresponde a la hora')
-    """
 
 
 def get_weekly_period():
     helper = Helper()
     sales_helper = SalesHelper()
-    initial_date = helper.naive_to_datetime(date.today())
+    # initial_date = helper.naive_to_datetime(date.today())
+    initial_date = helper.naive_to_datetime(date(2017, 5, 8))
     final_date = helper.naive_to_datetime(initial_date + timedelta(days=7))
-    filtered_tickets = sales_helper.get_all_tickets().filter(created_at__range=[initial_date, final_date])
-    tickets_details = TicketDetail.objects.select_related('ticket').filter()
+    filtered_tickets_details = sales_helper.get_all_tickets_details().filter(ticket__created_at__range=
+                                                                             [initial_date, final_date])
+    #filtered_cartridge_recipes = sales_helper.
     tickets_list = []
     period_list = []
-    count = 0
-    for ticket in filtered_tickets:
-        ticket_object = {
-            'total': Decimal(0.00),
+    date_dict = {}
+    aux_initial = initial_date
+    aux_final = final_date
+
+    while aux_initial < aux_final:
+        date_dict[aux_initial.strftime('%d-%m-%Y')] = []
+        aux_initial = aux_initial + timedelta(days=1)
+
+    for ticket_detail in filtered_tickets_details:
+        cartridge_object = {
+            'name': ticket_detail.cartridge.name,
+            'quantity': ticket_detail.quantity,
         }
-        for ticket_details in tickets_details:
-            if ticket_details.ticket == ticket:
-                ticket_object['total'] += ticket_details.price
-        tickets_list.append(Decimal(ticket_object['total']))
-    print(tickets_list)
-
-"""
-    for _ in tickets_list:
-        if ticket.created_at == period_list[count]:
-            period_list[count].append(ticket_object['total'])
-"""
 
 
+@login_required(login_url='users:login')
 def products_analytics(request):
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
+    list_x = [1, 2, 3, 4, 5, 6]
+    list_y = [10, 20, 30, 40, 50, 60]
+    least_helper = LeastSquares(list_x, list_y)
     get_daily_period()
     get_weekly_period()
-    list_x = [0, 1, 2, 3, 4, 5, 6]
-    list_y = [90, 106, 152, 244, 302, 274, 162]
 
     latest_squares = LeastSquares(list_x, list_y)
     context = {
