@@ -126,7 +126,7 @@ def sales(request):
             final_date = helper.parse_to_datetime(final_date) + timedelta(days=1)
 
             filtered_sales = sales_helper.get_sales_list(initial_date, final_date)
-            filtered_tickets = sales_helper.get_tickets(initial_date, final_date)
+            filtered_tickets = sales_helper.get_tickets_list(initial_date, final_date)
             data = {
                 'sales': filtered_sales,
                 'tickets': filtered_tickets,
