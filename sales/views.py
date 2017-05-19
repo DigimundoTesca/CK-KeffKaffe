@@ -135,7 +135,7 @@ def sales(request):
             return JsonResponse(data)
 
     # Any other request method:
-    template = 'sales/sales.html'
+    template = 'sales/sales_analytics.html'
     title = 'Registro de Ventas'
     context = {
         'title': PAGE_TITLE + ' | ' + title,
