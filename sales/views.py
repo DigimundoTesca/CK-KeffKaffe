@@ -211,9 +211,6 @@ def new_sale(request):
                 )
                 new_ticket_detail_object.save()
 
-                print(CartridgeRecipe.objects.select_related('cartridge').filter(cartridge=cartridge_object))
-
-
 
             for ticket_detail in ticket_detail_json_object['extra_ingredients_cartridges']:
                 cartridge_object = get_object_or_404(Cartridge, id=ticket_detail['cartridge_id'])

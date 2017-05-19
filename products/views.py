@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from datetime import timedelta, datetime, date
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
@@ -88,10 +88,10 @@ class ProductsHelper(object):
         ingredients = CartridgeRecipe.objects.select_related('cartridge').select_related('supply').all();
 
         for prediction in predictions:
-            for cartridge in all_cartridges:
+            for cartridge in all_cartridges:                
                 if prediction['cartridge'] == cartridge:
-                    ingredientes = ingredients.filter(cartridge=cartridge)
-                    for ingredient in ingredientes:
+                    ingredientes = ingredients.filter(cartridge=cartridge)                    
+                    for ingredient in ingredientes:                        
                         supply = ingredient.supply
                         name = ingredient.supply.name
                         cost = ingredient.supply.presentation_cost
@@ -151,6 +151,7 @@ class ProductsHelper(object):
                 required_supply['cost'] * \
                         math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
                   
+
         return required_supplies_list
 
     def get_supplies_on_stock_list(self):
@@ -570,9 +571,32 @@ def catering(request):
     TODO: Media para predicción. 
     TODO: Ordenar por prioridad.
     """
+
     products_helper = ProductsHelper()
     required_supplies = products_helper.get_required_supplies()    
     estimated_total_cost = 0    
+
+    if request.method == 'POST':
+        buy_objects_list = []
+
+        for required in required_supplies:
+            diner_object = {    
+                'Nombre': required['name'], 
+                'Provedor': "proveedor",
+                'Cantidad': required['name'] ,
+                'Medida' : required["measurement"],
+                'Presentacion': required['measurement_quantity'],
+                'Stock'
+                'Requerdio': required['required'],
+                'Costo': required['full_cost']                     
+            }            
+
+            buy_objects_list.append(diner_object)
+
+        return JsonResponse({'buy_list': buy_objects_list})
+
+    for required in required_supplies:
+        estimated_total_cost += required["full_cost"]
 
     template = 'catering/catering.html'
     title = 'Abastecimiento'
@@ -606,6 +630,7 @@ def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()    
     supplies_on_stock = products_helper.get_all_warehouse_details()
+    supplies = products_helper.get_all_supplies()
 
     if request.method == 'POST':                
         number = request.POST['cantidad']
@@ -625,12 +650,6 @@ def warehouse_movements(request):
         modified_date = date + timedelta(days=created_detaill.warehouse.supply.optimal_duration)
         created_detaill.expiry_date = modified_date
         created_detaill.save()
-
-        start_date = str(created_detail.created_at)
-        dt = datetime.strptime(start_date, "%Y-%m-%d")
-        modified_date = dt + timedelta(days=created_detail.warehouse.supply.optimal_duration)
-        created_detail.expiry_date = modified_date
-        created_detail.save()
     
     for prediction in predictions:                    
         if prediction['required'] > 0:
@@ -645,9 +664,11 @@ def warehouse_movements(request):
             except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'])
 
+
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {
+        'supps' : supplies,
         'supply_list': supplies_on_stock,
         'title': title,
         'page_title': PAGE_TITLE
