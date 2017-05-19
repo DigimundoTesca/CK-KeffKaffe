@@ -8,7 +8,7 @@
   <!-- Container -->
   <div class="container-fluid container-sales">
     <div class="row">
-      <div class="group-sales col-xs-12 col-lg-9">
+      <div class="group-sales col-xs-12 col-lg-12">
         <div class="row">
           <div class="col-xs-12 col-md-4 col-lg-4">
             <div class="card card-block card-product-title card-outline-info">
@@ -21,7 +21,7 @@
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
                       <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
                       <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity}} {{supplies.warehouse.supply.measurement_quantity}} {{  supplies.warehouse.supply.measurement_unit}} </h4>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -64,7 +64,7 @@
                   {% endif %}
                 {% endfor %}
               </div>
-            </div>                       
+            </div>                                   
           </div>  
         </div>                          
       </div>      
@@ -77,7 +77,7 @@
 
 $(function(){  
 
-  function get_cookie(name) {
+  function get_cookie(name) 
         var cookie_value = null;
         if (document.cookie && document.cookie !== '') {
           var cookies = document.cookie.split(';');

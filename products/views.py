@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from datetime import timedelta, datetime, date
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
@@ -88,10 +88,10 @@ class ProductsHelper(object):
         ingredients = CartridgeRecipe.objects.select_related('cartridge').select_related('supply').all();
 
         for prediction in predictions:
-            for cartridge in all_cartridges:
+            for cartridge in all_cartridges:                
                 if prediction['cartridge'] == cartridge:
-                    ingredientes = ingredients.filter(cartridge=cartridge)
-                    for ingredient in ingredientes:
+                    ingredientes = ingredients.filter(cartridge=cartridge)                    
+                    for ingredient in ingredientes:                        
                         supply = ingredient.supply
                         name = ingredient.supply.name
                         cost = ingredient.supply.presentation_cost
@@ -151,6 +151,7 @@ class ProductsHelper(object):
                 required_supply['cost'] * \
                         math.ceil(required_supply['required'] / required_supply['measurement_quantity'])                                        
                   
+
         return required_supplies_list
 
     def get_supplies_on_stock_list(self):
@@ -381,18 +382,18 @@ class UpdateSupply(UpdateView):
         self.object = form.save()
         return redirect('products:supplies')
 
-    class DeleteSupply(DeleteView):
-        model = Supply
-        template_name = 'supplies/delete_supply.html'
+class DeleteSupply(DeleteView):
+    model = Supply
+    template_name = 'supplies/delete_supply.html'
 
-        def __init__(self, **kwargs):
-            super(DeleteView).__init__(**kwargs)
-            self.object = None
+    def __init__(self, **kwargs):
+        super(DeleteView).__init__(**kwargs)
+        self.object = None
 
-        def delete(self, request, *args, **kwargs):
-            self.object = self.get_object()
-            self.object.delete()
-            return redirect('supplies:supplies')
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        return redirect('supplies:supplies')
 
 
 # ------------------------------------- Categories -------------------------------------
@@ -549,15 +550,53 @@ class DeleteCartridge(DeleteView):
 
 
 # -------------------------------------  Catering -------------------------------------
+class AddStock(CreateView):
+    model = WarehouseDetails
+    fields = ['warehouse','status','quantity']
+    template_name = 'catering/add_stock.html'
+
+    def __init__(self, **kwargs):
+        super(CreateSupply).__init__(**kwargs)
+        self.object = None
+
+    def form_valid(self, form):
+        print(form)
+        self.object = form.save()
+        return redirect('products:warehouse/catering')
+
+
 @login_required(login_url='users:login')
 def catering(request):
     """"
     TODO: Media para predicción. 
     TODO: Ordenar por prioridad.
     """
+
     products_helper = ProductsHelper()
     required_supplies = products_helper.get_required_supplies()    
     estimated_total_cost = 0    
+
+    if request.method == 'POST':
+        buy_objects_list = []
+
+        for required in required_supplies:
+            diner_object = {    
+                'Nombre': required['name'], 
+                'Provedor': "proveedor",
+                'Cantidad': required['name'] ,
+                'Medida' : required["measurement"],
+                'Presentacion': required['measurement_quantity'],
+                'Stock'
+                'Requerdio': required['required'],
+                'Costo': required['full_cost']                     
+            }            
+
+            buy_objects_list.append(diner_object)
+
+        return JsonResponse({'buy_list': buy_objects_list})
+
+    for required in required_supplies:
+        estimated_total_cost += required["full_cost"]
 
     template = 'catering/catering.html'
     title = 'Abastecimiento'
@@ -591,21 +630,26 @@ def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()    
     supplies_on_stock = products_helper.get_all_warehouse_details()
+    supplies = products_helper.get_all_supplies()
 
-    if request.method == 'POST':        
+    if request.method == 'POST':                
         number = request.POST['cantidad']
         mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
         mod_wh.quantity -= float(number)
         mod_wh.save()        
 
-        created_detail = WarehouseDetails.objects.create(
-            warehouse=mod_wh.warehouse, status="ST", quantity=number)
+        created_detaill = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse,quantity=number)
 
-        start_date = str(created_detail.created_at)
-        dt = datetime.strptime(start_date, "%Y-%m-%d")
-        modified_date = dt + timedelta(days=created_detail.warehouse.supply.optimal_duration)
-        created_detail.expiry_date = modified_date
-        created_detail.save()
+        if(request.POST['move']=='Stock'):
+            created_detaill.status="ST"
+        else:
+            created_detaill.status="AS"
+
+        start_date = str(created_detaill.created_at)
+        date = datetime.strptime(start_date, "%Y-%m-%d")
+        modified_date = date + timedelta(days=created_detaill.warehouse.supply.optimal_duration)
+        created_detaill.expiry_date = modified_date
+        created_detaill.save()
     
     for prediction in predictions:                    
         if prediction['required'] > 0:
@@ -620,9 +664,11 @@ def warehouse_movements(request):
             except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'])
 
+
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {
+        'supps' : supplies,
         'supply_list': supplies_on_stock,
         'title': title,
         'page_title': PAGE_TITLE
