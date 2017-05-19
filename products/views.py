@@ -631,7 +631,7 @@ def warehouse_movements(request):
     return render(request, template, context)
 
 
-def get_period():
+def get_daily_period():
     helper = Helper()
     sales_helper = SalesHelper()
     initial_date = helper.naive_to_datetime(date.today())
@@ -650,16 +650,47 @@ def get_period():
                 ticket_object['total'] += ticket_details.price
         tickets_list.append(Decimal(ticket_object['total']))
 
-    for _ in tickets_list:
-        print(ticket.id)
-        print(ticket.created_at)
+    """for _ in tickets_list:
+        if ticket.created_at == period_list[count]:
+            period_list[count].append(ticket_object['total'])
+            count += 1
+        else:
+            print('No corresponde a la hora')
+    """
+
+
+def get_weekly_period():
+    helper = Helper()
+    sales_helper = SalesHelper()
+    initial_date = helper.naive_to_datetime(date.today())
+    final_date = helper.naive_to_datetime(initial_date + timedelta(days=7))
+    filtered_tickets = sales_helper.get_all_tickets().filter(created_at__range=[initial_date, final_date])
+    tickets_details = TicketDetail.objects.select_related('ticket').filter()
+    tickets_list = []
+    period_list = []
+    count = 0
+    for ticket in filtered_tickets:
+        ticket_object = {
+            'total': Decimal(0.00),
+        }
+        for ticket_details in tickets_details:
+            if ticket_details.ticket == ticket:
+                ticket_object['total'] += ticket_details.price
+        tickets_list.append(Decimal(ticket_object['total']))
     print(tickets_list)
+
+"""
+    for _ in tickets_list:
+        if ticket.created_at == period_list[count]:
+            period_list[count].append(ticket_object['total'])
+"""
 
 
 def products_analytics(request):
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
-    get_period()
+    get_daily_period()
+    get_weekly_period()
     list_x = [0, 1, 2, 3, 4, 5, 6]
     list_y = [90, 106, 152, 244, 302, 274, 162]
 
