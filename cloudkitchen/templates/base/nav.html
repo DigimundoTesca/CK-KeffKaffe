@@ -6,16 +6,13 @@ TODO: Fix navs id's
     <a class="navbar-brand" href="{% url 'users:login' %}"><h3>{{ page_title }}</h3></a>
     <ul class="nav navbar-nav float-xs-right">
       <li class="nav-item" id="link-sales">
-        <a class="nav-link" href="{% url 'sales:sales' %}">Ventas <span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="{% url 'sales:sales' %}">Ventas<span class="sr-only">(current)</span></a>
       </li>
-      <li class="nav-item" id="link-new-breakfast">
-        <a class="nav-link" href="{% url 'sales:new_breakfast'  %}">Desayunos</a>
+      <li class="nav-item" id="link-new-sale">
+        <a class="nav-link" href="{% url 'sales:new_sale' %}">POS<span class="sr-only">(current)</span></a>
       </li>
-      <li class="nav-item" id="link-new-food">
-        <a class="nav-link" href="{% url 'sales:new_food'  %}">Comidas</a>
-      </li>
-      <li class="nav-item dropdown" >
-        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Cocina</a>
+      <li class="nav-item dropdown" id="link-kitchen">
+        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">NetKitchen</a>
         <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
           <a class="dropdown-item" href="{% url 'kitchen:kitchen' %}">Cocina</a>
           <a class="dropdown-item" href="{% url 'kitchen:assembly' %}">Ensamble</a>
