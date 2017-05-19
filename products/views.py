@@ -613,7 +613,6 @@ def warehouse_movements(request):
         mod_wh.quantity -= float(number)
         mod_wh.save()        
 
-<<<<<<< HEAD
         created_detaill = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse,quantity=number)
 
         if(request.POST['move']=='Stock'):
@@ -626,10 +625,6 @@ def warehouse_movements(request):
         modified_date = date + timedelta(days=created_detaill.warehouse.supply.optimal_duration)
         created_detaill.expiry_date = modified_date
         created_detaill.save()
-=======
-        created_detail = WarehouseDetails.objects.create(
-            warehouse=mod_wh.warehouse, status="ST", quantity=number)
->>>>>>> develop
 
         start_date = str(created_detail.created_at)
         dt = datetime.strptime(start_date, "%Y-%m-%d")
