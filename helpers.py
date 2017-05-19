@@ -110,8 +110,6 @@ class Helper(object):
 
 
 class LeastSquares(object):
-    """docstring for LeastSquares"""
-
     def __init__(self, x: list, y: list):
         super(LeastSquares, self).__init__()
         if len(x) != len(y):
@@ -218,17 +216,11 @@ class KitchenHelper(object):
         self.__all_warehouse = None
 
     def get_all_processed_products(self):
-        """
-        :rtype: django.db.models.query.QuerySet 
-        """
         if self.__all_processed_products is None:
             self.set_all_processed_products()
         return self.__all_processed_products
 
     def get_all_warehouse(self):
-        """
-        :rtype: django.db.models.query.QuerySet 
-        """
         if self.__all_warehouse is None:
             self.set_all_processed_products()
         return self.__all_warehouse
@@ -312,25 +304,16 @@ class SalesHelper(object):
             all()
 
     def get_all_tickets(self):
-        """        
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_tickets is None:
             self.set_all_tickets()
         return self.__all_tickets
 
     def get_all_tickets_details(self):
-        """        
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_tickets_details is None:
             self.set_all_tickets_details()
         return self.__all_tickets_details
 
     def get_all_extra_ingredients(self):
-        """        
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_extra_ingredients is None:
             self.set_all_extra_ingredients()
         return self.__all_extra_ingredients
@@ -622,51 +605,33 @@ class ProductsHelper(object):
             all()
 
     def get_all_supplies(self):
-        """
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_supplies is None:
             self.set_all_supplies()
         return self.__all_supplies
 
     def get_all_cartridges(self):
-        """
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_cartridges is None:
             self.set_all_cartridges()
         return self.__all_cartridges
 
     def get_all_packages_cartridges(self):
-        """
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_packages_cartridges is None:
             self.set_all_packages_cartridges()
         return self.__all_packages_cartridges
 
     def get_all_extra_ingredients(self):
-        """
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_extra_ingredients is None:
             self.set_all_extra_ingredients()
 
         return self.__all_extra_ingredients
 
     def get_all_cartridges_recipes(self):
-        """
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_cartridges_recipes is None:
             self.set_all_cartridges_recipes()
 
         return self.__all_cartridges_recipes
 
     def get_all_packages_cartridges_recipes(self):
-        """
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_packages_cartridges_recipes is None:
             self.set_all_package_cartridges_recipes()
 
@@ -730,9 +695,6 @@ class DinersHelper(object):
         return weeks_list
 
     def get_access_logs(self, initial_date, final_date):
-        """
-        :rtype: django.db.models.query.QuerySet 
-        """
         if self.__all_access_logs is None:
             self.set_all_access_logs()
 
@@ -741,9 +703,6 @@ class DinersHelper(object):
             order_by('-access_to_room')
 
     def get_access_logs_today(self):
-        """
-        :rtype: django.db.models.query.QuerySet 
-        """
         if self.__all_access_logs is None:
             self.set_all_access_logs()
         helper = Helper()
@@ -757,9 +716,6 @@ class DinersHelper(object):
             order_by('-access_to_room')
 
     def get_all_access_logs(self):
-        """
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_access_logs is None:
             self.set_all_access_logs()
         return self.__all_access_logs
@@ -824,17 +780,11 @@ class DinersHelper(object):
         return json.dumps(week_diners_list)
 
     def get_all_diners(self):
-        """
-        :rtype: django.db.models.query.QuerySet
-        """
         if self.__all_diners is None:
             self.set_all_diners()
         return self.__all_diners
 
     def set_all_access_logs(self):
-        """
-        :rtype: django.db.models.query.QuerySet 
-        """
         self.__all_access_logs = AccessLog.objects.select_related('diner').order_by('-access_to_room')
 
     def set_all_diners(self):

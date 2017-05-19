@@ -329,6 +329,7 @@ def test(request):
                     ticket_object['total'] += ticket_details.price
 
         tickets_list.append(ticket_object)
+        print(tickets_list)
 
     context = {
         'tickets': tickets_list,
