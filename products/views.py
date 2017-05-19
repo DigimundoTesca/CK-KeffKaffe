@@ -378,18 +378,18 @@ class UpdateSupply(UpdateView):
         self.object = form.save()
         return redirect('products:supplies')
 
-    class DeleteSupply(DeleteView):
-        model = Supply
-        template_name = 'supplies/delete_supply.html'
+class DeleteSupply(DeleteView):
+    model = Supply
+    template_name = 'supplies/delete_supply.html'
 
-        def __init__(self, **kwargs):
-            super(DeleteView).__init__(**kwargs)
-            self.object = None
+    def __init__(self, **kwargs):
+        super(DeleteView).__init__(**kwargs)
+        self.object = None
 
-        def delete(self, request, *args, **kwargs):
-            self.object = self.get_object()
-            self.object.delete()
-            return redirect('supplies:supplies')
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        return redirect('supplies:supplies')
 
 
 # ------------------------------------- Categories -------------------------------------
@@ -545,6 +545,21 @@ class DeleteCartridge(DeleteView):
 
 
 # -------------------------------------  Catering -------------------------------------
+class AddStock(CreateView):
+    model = WarehouseDetails
+    fields = ['warehouse','status','quantity']
+    template_name = 'catering/add_stock.html'
+
+    def __init__(self, **kwargs):
+        super(CreateSupply).__init__(**kwargs)
+        self.object = None
+
+    def form_valid(self, form):
+        print(form)
+        self.object = form.save()
+        return redirect('products:warehouse/catering')
+
+
 @login_required(login_url='users:login')
 def catering(request):
     """"
@@ -588,13 +603,18 @@ def warehouse_movements(request):
     predictions = products_helper.get_required_supplies()    
     supplies_on_stock = products_helper.get_all_warehouse_details()
 
-    if request.method == 'POST':        
+    if request.method == 'POST':                
         number = request.POST['cantidad']
         mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
         mod_wh.quantity -= float(number)
         mod_wh.save()        
 
-        created_detaill = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse,status="ST",quantity=number)
+        created_detaill = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse,quantity=number)
+
+        if(request.POST['move']=='Stock'):
+            created_detaill.status="ST"
+        else:
+            created_detaill.status="AS"
 
         start_date = str(created_detaill.created_at)
         date = datetime.strptime(start_date, "%Y-%m-%d")

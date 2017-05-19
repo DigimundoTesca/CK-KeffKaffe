@@ -45,7 +45,7 @@ class ProcessedProduct(models.Model):
 
 
 class Warehouse(models.Model):
-    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)    
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE, unique=True)    
     cost = models.FloatField(default=0)
     
     def __str__(self):
