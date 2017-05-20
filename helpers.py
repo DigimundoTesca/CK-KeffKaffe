@@ -216,11 +216,17 @@ class KitchenHelper(object):
         self.__all_warehouse = None
 
     def get_all_processed_products(self):
+         """		
+         rtype: django.db.models.query.QuerySet 		
+         """
         if self.__all_processed_products is None:
             self.set_all_processed_products()
         return self.__all_processed_products
 
     def get_all_warehouse(self):
+        """		
+        :rtype: django.db.models.query.QuerySet 		
+        """
         if self.__all_warehouse is None:
             self.set_all_processed_products()
         return self.__all_warehouse
