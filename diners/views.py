@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
-import json, pytz
+import json
 from time import sleep
-import pytz, json
+import pytz
 from datetime import date, datetime, timedelta, time
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
