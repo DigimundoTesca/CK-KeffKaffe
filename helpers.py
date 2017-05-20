@@ -962,6 +962,9 @@ class DinersHelper(object):
         return weeks_list
 
     def get_access_logs(self, initial_date, final_date):
+        """
+        :rtype: django.db.models.query.QuerySet
+        """
         if self.__all_access_logs is None:
             self.set_all_access_logs()
 
@@ -970,8 +973,12 @@ class DinersHelper(object):
             order_by('-access_to_room')
 
     def get_access_logs_today(self):
+        """
+        :rtype: django.db.models.query.QuerySet
+        """
         if self.__all_access_logs is None:
             self.set_all_access_logs()
+
         helper = Helper()
         year = int(datetime.now().year)
         month = int(datetime.now().month)
@@ -983,6 +990,9 @@ class DinersHelper(object):
             order_by('-access_to_room')
 
     def get_all_access_logs(self):
+        """
+        :rtype: django.db.models.query.QuerySet
+        """
         if self.__all_access_logs is None:
             self.set_all_access_logs()
         return self.__all_access_logs
@@ -1047,6 +1057,9 @@ class DinersHelper(object):
         return json.dumps(week_diners_list)
 
     def get_all_diners(self):
+        """
+        :rtype: django.db.models.query.QuerySet
+        """
         if self.__all_diners is None:
             self.set_all_diners()
         return self.__all_diners
