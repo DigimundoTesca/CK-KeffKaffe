@@ -110,8 +110,6 @@ class Helper(object):
 
 
 class LeastSquares(object):
-    """docstring for LeastSquares"""
-
     def __init__(self, x: list, y: list):
         super(LeastSquares, self).__init__()
         if len(x) != len(y):
@@ -157,7 +155,7 @@ class LeastSquares(object):
         count = 0
         auxiliary_list = []
 
-        for item in self.__x:
+        for _ in self.__x:
             auxiliary_list.append(self.__x[count] * self.__y[count])
             count += 1
 
@@ -198,13 +196,13 @@ class LeastSquares(object):
 
     def get_b(self):
         return math.ceil((self.get_sum_x_y_prod() - (self.get_sum_x() * self.get_sum_y() / self.__n)) / (
-        self.get_sum_x_pow() - (self.get_sum_x() ** 2) / self.__n))
+            self.get_sum_x_pow() - (self.get_sum_x() ** 2) / self.__n))
 
     def get_forecast(self):
         forecast_list = []
         count = 0
 
-        for item in self.__x:
+        for _ in self.__x:
             forecast_list.append(self.get_a() + self.get_b() * self.__periodic_list[count])
             count += 1
 
@@ -218,16 +216,16 @@ class KitchenHelper(object):
         self.__all_warehouse = None
 
     def get_all_processed_products(self):
-        """
-        :rtype: django.db.models.query.QuerySet 
-        """
+         """		
+         rtype: django.db.models.query.QuerySet 		
+         """
         if self.__all_processed_products is None:
             self.set_all_processed_products()
         return self.__all_processed_products
 
     def get_all_warehouse(self):
-        """
-        :rtype: django.db.models.query.QuerySet 
+        """		
+        :rtype: django.db.models.query.QuerySet 		
         """
         if self.__all_warehouse is None:
             self.set_all_processed_products()
@@ -297,22 +295,22 @@ class SalesHelper(object):
         self.__all_tickets = Ticket.objects.select_related('seller').all()
 
     def set_all_tickets_details(self):
-        self.__all_tickets_details = TicketDetail.objects.\
-            select_related('ticket').\
+        self.__all_tickets_details = TicketDetail.objects. \
+            select_related('ticket'). \
             select_related('cartridge'). \
             select_related('ticket__seller'). \
             select_related('package_cartridge'). \
             all()
 
     def set_all_extra_ingredients(self):
-        self.__all_extra_ingredients = TicketExtraIngredient.objects.\
+        self.__all_extra_ingredients = TicketExtraIngredient.objects. \
             select_related('ticket_detail'). \
             select_related('extra_ingredient'). \
             select_related('extra_ingredient__ingredient'). \
             all()
 
     def get_all_tickets(self):
-        """        
+        """
         :rtype: django.db.models.query.QuerySet
         """
         if self.__all_tickets is None:
@@ -320,7 +318,7 @@ class SalesHelper(object):
         return self.__all_tickets
 
     def get_all_tickets_details(self):
-        """        
+        """
         :rtype: django.db.models.query.QuerySet
         """
         if self.__all_tickets_details is None:
@@ -333,10 +331,10 @@ class SalesHelper(object):
         """
         if self.__all_tickets_details is None:
             self.set_all_tickets_details()
-        return self.__all_tickets_details .filter(ticket__created_at__range=[initial_date, final_date])
+        return self.__all_tickets_details.filter(ticket__created_at__range=[initial_date, final_date])
 
     def get_all_extra_ingredients(self):
-        """        
+        """
         :rtype: django.db.models.query.QuerySet
         """
         if self.__all_extra_ingredients is None:
@@ -615,9 +613,9 @@ class ProductsHelper(object):
         self.__always_popular_cartridge = None
 
     def set_all_supplies(self):
-        self.__all_supplies = Supply.objects.\
-            select_related('category').\
-            select_related('supplier').\
+        self.__all_supplies = Supply.objects. \
+            select_related('category'). \
+            select_related('supplier'). \
             select_related('location').all()
 
     def set_all_cartridges(self):
@@ -639,13 +637,13 @@ class ProductsHelper(object):
             all()
 
     def set_all_extra_ingredients(self):
-        self.__all_extra_ingredients = ExtraIngredient.objects.\
-            select_related('ingredient').\
+        self.__all_extra_ingredients = ExtraIngredient.objects. \
+            select_related('ingredient'). \
             select_related('cartridge'). \
             all()
 
     def set_all_warehouse_details(self):
-        self.__all_warehouse_details = WarehouseDetails.objects.prefetch_related('warehouse__supply').all();
+        self.__all_warehouse_details = WarehouseDetails.objects.prefetch_related('warehouse__supply').all()
 
     def set_predictions(self):
         sales_helper = SalesHelper()
@@ -664,8 +662,8 @@ class ProductsHelper(object):
         self.__predictions = prediction_list
 
     def set_all_tickets_details(self):
-            self.__all_tickets_details = TicketDetail.objects.select_related(
-                'ticket').select_related('cartridge').select_related('package_cartridge').all()
+        self.__all_tickets_details = TicketDetail.objects.select_related(
+            'ticket').select_related('cartridge').select_related('package_cartridge').all()
 
     def set_always_popular_cartridge(self):
         sales_helper = SalesHelper()
@@ -965,7 +963,7 @@ class DinersHelper(object):
 
     def get_access_logs(self, initial_date, final_date):
         """
-        :rtype: django.db.models.query.QuerySet 
+        :rtype: django.db.models.query.QuerySet
         """
         if self.__all_access_logs is None:
             self.set_all_access_logs()
@@ -976,10 +974,11 @@ class DinersHelper(object):
 
     def get_access_logs_today(self):
         """
-        :rtype: django.db.models.query.QuerySet 
+        :rtype: django.db.models.query.QuerySet
         """
         if self.__all_access_logs is None:
             self.set_all_access_logs()
+
         helper = Helper()
         year = int(datetime.now().year)
         month = int(datetime.now().month)
@@ -1066,9 +1065,6 @@ class DinersHelper(object):
         return self.__all_diners
 
     def set_all_access_logs(self):
-        """
-        :rtype: django.db.models.query.QuerySet 
-        """
         self.__all_access_logs = AccessLog.objects.select_related('diner').order_by('-access_to_room')
 
     def set_all_diners(self):

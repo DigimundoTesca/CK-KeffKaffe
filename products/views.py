@@ -1,20 +1,22 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 
+from decimal import Decimal
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
-from helpers import LeastSquares, ProductsHelper
+from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
 from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm
-from products.models import Cartridge, Supply, SuppliesCategory
+from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
 from kitchen.models import Warehouse, WarehouseDetails
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
+
 
 
 # -------------------------------------  Suppliers -------------------------------------
@@ -285,7 +287,7 @@ class AddStock(CreateView):
     template_name = 'catering/add_stock.html'
 
     def __init__(self, **kwargs):
-        super(CreateSupply).__init__(**kwargs)
+        super(AddStock).__init__(**kwargs)
         self.object = None
 
     def form_valid(self, form):
@@ -302,8 +304,8 @@ def catering(request):
     """
 
     products_helper = ProductsHelper()
-    required_supplies = products_helper.get_required_supplies()    
-    estimated_total_cost = 0    
+    required_supplies = products_helper.get_required_supplies()
+    estimated_total_cost = 0
 
     if request.method == 'POST':
         buy_objects_list = []
@@ -357,15 +359,15 @@ def warehouse(request):
 @login_required(login_url='users:login')
 def warehouse_movements(request):
     products_helper = ProductsHelper()
-    predictions = products_helper.get_required_supplies()    
+    predictions = products_helper.get_required_supplies()
     supplies_on_stock = products_helper.get_all_warehouse_details()
     all_supplies = products_helper.get_all_supplies()
 
-    if request.method == 'POST':                
+    if request.method == 'POST':
         number = request.POST['cantidad']
         mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
         mod_wh.quantity -= float(number)
-        mod_wh.save()        
+        mod_wh.save()
 
         created_detail = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse, quantity=number)
 
@@ -379,17 +381,17 @@ def warehouse_movements(request):
         modified_date = dt + timedelta(days=created_detail.warehouse.supply.optimal_duration)
         created_detail.expiry_date = modified_date
         created_detail.save()
-    
-    for prediction in predictions:                    
+
+    for prediction in predictions:
         if prediction['required'] > 0:
             try:
-                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])   
+                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])
                 try:
                     detail = WarehouseDetails.objects.get(warehouse=sup_on_stock, status="PR")
                     detail.quantity = prediction['required']
                 except WarehouseDetails.DoesNotExist:
-                        WarehouseDetails.objects.create(
-                            warehouse=sup_on_stock, status="PR", quantity=prediction['required'])
+                    WarehouseDetails.objects.create(
+                        warehouse=sup_on_stock, status="PR", quantity=prediction['required'])
             except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'])
 
@@ -404,30 +406,82 @@ def warehouse_movements(request):
     return render(request, template, context)
 
 
+@login_required(login_url='users:login')
 def products_analytics(request):
+    def get_daily_period():
+        helper = Helper()
+        sales_helper = SalesHelper()
+
+        initial_date = helper.naive_to_datetime(date.today())
+        final_date = helper.naive_to_datetime(initial_date + timedelta(days=1))
+        filtered_tickets = sales_helper.get_all_tickets().filter(created_at__range=[initial_date, final_date])
+        tickets_details = sales_helper.get_all_tickets_details()
+        tickets_list = []
+        period_list = []
+        for ticket in filtered_tickets:
+            ticket_object = {
+                'total': Decimal(0.00),
+            }
+            for ticket_details in tickets_details:
+                if ticket_details.ticket == ticket:
+                    ticket_object['total'] += ticket_details.price
+            tickets_list.append(Decimal(ticket_object['total']))
+
+        for _ in tickets_list:
+            if ticket.created_at == ticket.created_at:
+                print('No corresponde a la hora')
+
+    def get_period(initial_dt, final_dt):
+        helper = Helper()
+        sales_helper = SalesHelper()
+        initial_dt = initial_dt.split('-')
+        initial_dt = helper.naive_to_datetime(date(int(initial_dt[2]), int(initial_dt[1]), int(initial_dt[0])))
+        final_dt = final_dt.split('-')
+        final_dt = helper.naive_to_datetime(date(int(final_dt[2]), int(final_dt[1]), int(final_dt[0])))
+
+        filtered_tickets_details = sales_helper.get_all_tickets_details().filter(ticket__created_at__range=
+                                                                                 [initial_dt, final_dt])
+        all_cartridge_recipes = CartridgeRecipe.objects.select_related('cartridge').all()
+        supplies_list = []
+        date_dict = {}
+        aux_initial = initial_dt
+        aux_final = final_dt
+
+        while aux_initial < aux_final:
+            date_dict[aux_initial.strftime('%d-%m-%Y')] = []
+            aux_initial = aux_initial + timedelta(days=1)
+
+        for ticket_detail in filtered_tickets_details:
+            filtered_cartridge_recipes = all_cartridge_recipes.filter(cartridge=ticket_detail.cartridge)
+            filtered_cartridge_recipes_list = []
+
+            for item in filtered_cartridge_recipes:
+                filtered_cartridge_recipes_list.append(item.supply.name)
+
+            cartridge_object = {
+                'name': ticket_detail.cartridge.name,
+                'quantity': ticket_detail.quantity,
+                'recipe': filtered_cartridge_recipes_list
+            }
+            supplies_list.append(cartridge_object)
+            
+    if request.method == 'POST':
+        initial_date = request.POST['initial_date']
+        final_date = request.POST['final_date']
+        # get_daily_period()
+        get_period(initial_date, final_date)
+        return JsonResponse({'resultado': 'algo xd'})
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
-
-    list_x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    list_y = [90, 106, 152, 244, 302, 274, 162, 194, 312, 359, 215, 126]
+    list_x = [1, 2, 3, 4, 5, 6]
+    list_y = [10, 20, 30, 40, 50, 60]
 
     latest_squares = LeastSquares(list_x, list_y)
-    print('Suma de x:\t\t', latest_squares.get_sum_x())
-    print('Suma de y:\t\t', latest_squares.get_sum_y())
-    print('Suma de x al cuadrado:\t', latest_squares.get_sum_x_pow())
-    print('Promedio de x:\t\t', latest_squares.get_x_average())
-    print('Promedio de y:\t\t', latest_squares.get_y_average())
-    print('Suma de y al cuadrado:\t', latest_squares.get_sum_y_pow())
-    print('Suma del producto del X y Y:\t', latest_squares.get_sum_x_y_prod())
-    print('*' * 50)
-    print('A:\t\t', latest_squares.get_a())
-    print('B:\t\t', latest_squares.get_b())
-    print('Pronostico:\t', latest_squares.get_forecast())
-
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
+        'least_squares': latest_squares,
     }
 
     return render(request, template, context)

@@ -61,7 +61,7 @@ def sales(request):
             # Get cartridges details
             for ticket_detail in sales_helper.get_all_tickets_details():
                 if ticket_detail.ticket.id == ticket_id:
-                    ticket_object['ticket_order'] = ticket_detail.ticket.order_number;
+                    ticket_object['ticket_order'] = ticket_detail.ticket.order_number
 
                     if ticket_detail.cartridge:
                         cartridge_object = {
@@ -211,7 +211,6 @@ def new_sale(request):
                 )
                 new_ticket_detail_object.save()
 
-
             for ticket_detail in ticket_detail_json_object['extra_ingredients_cartridges']:
                 cartridge_object = get_object_or_404(Cartridge, id=ticket_detail['cartridge_id'])
                 quantity = ticket_detail['quantity']
@@ -330,6 +329,7 @@ def test(request):
                     ticket_object['total'] += ticket_details.price
 
         tickets_list.append(ticket_object)
+        print(tickets_list)
 
     context = {
         'tickets': tickets_list,
