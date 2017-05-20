@@ -17,8 +17,8 @@ urlpatterns = [
     url(r'^supplies/$', views.supplies, name='supplies'),
     url(r'^supplies/add/$', CreateSupply.as_view(), name='new_supply'),
     url(r'^supplies/(?P<pk>[0-9]+)$', views.supply_detail, name='supply_detail'),
-    url(r'^supplies/modify/(?P<pk>[0-9]+)$', UpdateCartridge.as_view(), name='supply_modify'),
-    url(r'^supplies/delete/(?P<pk>[0-9]+)$', DeleteCartridge.as_view(), name='supply_delete'),
+    url(r'^supplies/modify/(?P<pk>[0-9]+)$', UpdateSupply.as_view(), name='supply_modify'),
+    url(r'^supplies/delete/(?P<pk>[0-9]+)$', DeleteSupply.as_view(), name='supply_delete'),
 
     # Cartridges
     url(r'^cartridges/$', views.cartridges, name='cartridges'),
@@ -45,6 +45,7 @@ urlpatterns = [
 
     # Warehouse
     url(r'^warehouse/$', views.warehouse, name='warehouse'),
+    url(r'^warehouse/add/$', AddStock.as_view(), name='addStock'),
     url(r'^warehouse/catering/$', views.catering, name='catering'),
     url(r'^warehouse/movements/$', views.warehouse_movements, name='wh_movements'),
 

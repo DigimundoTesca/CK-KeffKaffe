@@ -8,7 +8,7 @@
   <!-- Container -->
   <div class="container-fluid container-sales">
     <div class="row">
-      <div class="group-sales col-xs-12 col-lg-9">
+      <div class="group-sales col-xs-12 col-lg-12">
         <div class="row">
           <div class="col-xs-12 col-md-4 col-lg-4">
             <div class="card card-block card-product-title card-outline-info">
@@ -21,7 +21,7 @@
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
                       <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
                       <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity}} {{supplies.warehouse.supply.measurement_quantity}} {{  supplies.warehouse.supply.measurement_unit}} </h5>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -39,9 +39,8 @@
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
                       <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
                       <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply-{{ supplies.optimal_duration 
-                      }}" > Fecha de Expiracion: {{ supplies.expiry_date }} </h4>
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply-{{ supplies.optimal_duration}}" > Fecha de Expiracion: {{ supplies.expiry_date }} </h5>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -59,12 +58,12 @@
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
                       <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
                       <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h4>
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
                     </div>
                   {% endif %}
                 {% endfor %}
               </div>
-            </div>                       
+            </div>                                   
           </div>  
         </div>                          
       </div>      
@@ -75,45 +74,46 @@
 {% block javascript %}
 <script type="text/javascript" charset="utf-8">
 
-$(function(){  
+$(function(){
 
   function get_cookie(name) {
-        var cookie_value = null;
-        if (document.cookie && document.cookie !== '') {
-          var cookies = document.cookie.split(';');
-          for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-            }
-          }
+    let cookie_value = null;
+    if (document.cookie && document.cookie !== '') {
+      let cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        let cookie = jQuery.trim(cookies[i]);
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
         }
-        return cookie_value;
+      }
+    }
+    return cookie_value;
   }
 
-  var csrf_token = get_cookie('csrftoken');
+  let csrf_token = get_cookie('csrftoken');
 
   $("#group-stock").on("dragover",function(e){
     e.preventDefault();
   });
+
   $(".product-img-pr").on("dragstart",function(e){    
 
-    var element = $(this);
-    var element_id = element.attr('id').substring(23);
-    var element_quantity = element.parent().children(".provider_quantity").attr('id').substring(35);  
-    console.log(element_quantity)  
-    var str = element_id+","+element_quantity;   
+    let element = $(this);
+    let element_id = element.attr('id').substring(23);
+    let element_quantity = element.parent().children(".provider_quantity").attr('id').substring(35);
+    let str = element_id+","+element_quantity;
 
-    e.originalEvent.dataTransfer.setData("text",str);    
+    e.originalEvent.dataTransfer.setData("text", str);
 
   });
+
   $("#group-stock").on("drop",function(e){    
     e.preventDefault();
-    var data = e.originalEvent.dataTransfer.getData("text");
-    var obj_wh = data.split(',');
-    var obj_id = obj_wh[0];
-    var obj_quantity = obj_wh[1];
+    let data = e.originalEvent.dataTransfer.getData("text");
+    let obj_wh = data.split(',');
+    let obj_id = obj_wh[0];
+    let obj_quantity = obj_wh[1];
 
     swal({
       title: '¿Que cantidad desea mover?',
@@ -130,37 +130,32 @@ $(function(){
         return new Promise(function (resolve, reject) {
 
           $.ajax({
-              url: '{% url "products:wh_movements" %}',
-              type: 'POST',
-              data: {
-                'cantidad' : number,
-                'element_pk' : obj_id,
-                csrfmiddlewaretoken: csrf_token,
-              },
-              traditional: true,              
-              success: function(result) {
-                swal({
-                  title: "Éxito",
-                  text: "Listo",
-                  type: "success",
-                  showConfirmButton: false,                                    
-                });
-                location.reload(true)
-                setTimeout(rel, 1500);
-              }
-            });    
-                   
+            url: '{% url "products:wh_movements" %}',
+            type: 'POST',
+            data: {
+              'type' : 'Stock',
+              'cantidad' : number,
+              'element_pk' : obj_id,
+              csrfmiddlewaretoken: csrf_token,
+            },
+            traditional: true,
+            success: function(result) {
+              swal({
+                title: "Éxito",
+                text: "Listo",
+                type: "success",
+                showConfirmButton: false,
+              });
+              location.reload(true);
+              setTimeout(rel, 1500);
+            }
+          });
         })
       },
       allowOutsideClick: false
-    })    
-
+    })
   });
-
-
-  
 });
-
 
 </script>
   

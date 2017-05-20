@@ -61,7 +61,7 @@ def sales(request):
             # Get cartridges details
             for ticket_detail in sales_helper.get_all_tickets_details():
                 if ticket_detail.ticket.id == ticket_id:
-                    ticket_object['ticket_order'] = ticket_detail.ticket.order_number;
+                    ticket_object['ticket_order'] = ticket_detail.ticket.order_number
 
                     if ticket_detail.cartridge:
                         cartridge_object = {
@@ -126,7 +126,7 @@ def sales(request):
             final_date = helper.parse_to_datetime(final_date) + timedelta(days=1)
 
             filtered_sales = sales_helper.get_sales_list(initial_date, final_date)
-            filtered_tickets = sales_helper.get_tickets(initial_date, final_date)
+            filtered_tickets = sales_helper.get_tickets_list(initial_date, final_date)
             data = {
                 'sales': filtered_sales,
                 'tickets': filtered_tickets,
@@ -135,7 +135,7 @@ def sales(request):
             return JsonResponse(data)
 
     # Any other request method:
-    template = 'sales/sales.html'
+    template = 'sales/sales_analytics.html'
     title = 'Registro de Ventas'
     context = {
         'title': PAGE_TITLE + ' | ' + title,
