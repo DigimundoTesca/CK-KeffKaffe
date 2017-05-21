@@ -7,7 +7,6 @@ from decimal import Decimal
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from numpy.fft import helper
 
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
@@ -609,6 +608,7 @@ def main():
     
     """  Le tenemos que enviar el día del cual queremos obtener el numero
     correspondiente para hacer las validaciones """
+    helper = Helper()
     number_day = helper.get_number_day(day_to_predict) + 1 # Este metodo ya incorpora isoweekday
     #  Como day_to_predict es Lunes 22 de mayo, nos retornará un 0, así que le sumamos uno, para que tenga sentido
     
