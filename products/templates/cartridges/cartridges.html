@@ -32,7 +32,7 @@
 <script type="text/javascript">
   $(function() {
     $('#fab-add-cartridge').click(function(event) {
-      location.href = '/cartridges/new/';
+      location.href = "{% url 'products:new_cartridge' %}";
     });
   });
 </script>

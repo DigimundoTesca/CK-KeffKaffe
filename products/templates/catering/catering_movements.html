@@ -1,0 +1,162 @@
+{% extends "base/base_nav_footer.html" %}
+{% load static %}
+{% block link %}
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">  
+{% endblock link %}
+{% block content %}
+
+  <!-- Container -->
+  <div class="container-fluid container-sales">
+    <div class="row">
+      <div class="group-sales col-xs-12 col-lg-12">
+        <div class="row">
+          <div class="col-xs-12 col-md-4 col-lg-4">
+            <div class="card card-block card-product-title card-outline-info">
+              <h3>Por comprar</h3>
+            </div>
+            <div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">
+              <div class="card-block products-block">
+                {% for supplies in supply_list %}
+                  {% if supplies.status == "PR" and supplies.quantity > 0 %}
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
+                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity}} {{supplies.warehouse.supply.measurement_quantity}} {{  supplies.warehouse.supply.measurement_unit}} </h5>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>  
+            </div>
+          </div>
+          <div class="col-xs-12 col-md-4 col-lg-4">
+            <div class="card card-block card-product-title card-outline-info">
+              <h3>En Almacen</h3>
+            </div>
+            <div class="card col-xs-12 card-scroll card-outline-info" id="group-stock">
+              <div class="card-block products-block"> 
+                {% for supplies in supply_list %}
+                  {% if supplies.status == "ST" and supplies.quantity > 0 %}
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
+                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply-{{ supplies.optimal_duration}}" > Fecha de Expiracion: {{ supplies.expiry_date }} </h5>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>          
+          <div class="col-xs-12 col-md-4 col-lg-4">
+            <div class="card card-block card-product-title card-outline-info">
+              <h3>En uso</h3>
+            </div>
+            <div class="card col-xs-12 card-scroll card-outline-info" id="group-rfa">
+              <div class="card-block products-block">
+                {% for supplies in supply_list %}
+                  {% if supplies.status == "SO" and supplies.quantity > 0 %}
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
+                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>                                   
+          </div>  
+        </div>                          
+      </div>      
+    </div>
+  </div>
+
+{% endblock content %}
+{% block javascript %}
+<script type="text/javascript" charset="utf-8">
+
+$(function(){
+
+  function get_cookie(name) {
+    let cookie_value = null;
+    if (document.cookie && document.cookie !== '') {
+      let cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        let cookie = jQuery.trim(cookies[i]);
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookie_value;
+  }
+
+  let csrf_token = get_cookie('csrftoken');
+
+  $("#group-stock").on("dragover",function(e){
+    e.preventDefault();
+  });
+
+  $(".product-img-pr").on("dragstart",function(e){    
+
+    let element = $(this);
+    let element_id = element.attr('id').substring(23);
+    let element_quantity = element.parent().children(".provider_quantity").attr('id').substring(35);
+    let str = element_id+","+element_quantity;
+
+    e.originalEvent.dataTransfer.setData("text", str);
+
+  });
+
+  $("#group-stock").on("drop",function(e){    
+    e.preventDefault();
+    let data = e.originalEvent.dataTransfer.getData("text");
+    let obj_wh = data.split(',');
+    let obj_id = obj_wh[0];
+    let obj_quantity = obj_wh[1];
+
+    swal({
+      title: '¿Que cantidad desea mover?',
+      input: 'range',
+      inputAttributes: {
+        min: 0,
+        max: obj_quantity,
+        step: 1
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Submit',
+      showLoaderOnConfirm: true,
+      preConfirm: function (number) {
+        return new Promise(function (resolve, reject) {
+
+          $.ajax({
+            url: '{% url "products:wh_movements" %}',
+            type: 'POST',
+            data: {
+              'type' : 'Stock',
+              'cantidad' : number,
+              'element_pk' : obj_id,
+              csrfmiddlewaretoken: csrf_token,
+            },
+            traditional: true,
+            success: function(result) {
+              swal({
+                title: "Éxito",
+                text: "Listo",
+                type: "success",
+                showConfirmButton: false,
+              });
+              location.reload(true);
+              setTimeout(rel, 1500);
+            }
+          });
+        })
+      },
+      allowOutsideClick: false
+    })
+  });
+});
+
+</script>
+  
+{% endblock javascript %}

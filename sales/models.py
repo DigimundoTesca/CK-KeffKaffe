@@ -79,10 +79,6 @@ class TicketDetail(models.Model):
 
     def __str__(self):
         return '%s' % self.id
-    def __str__(self):
-        return self.quantity
-    def __str__(self):
-        return '%s' % self.cartridge
 
     def extra_ingredients(self):
         ingredients = TicketExtraIngredient.objects.filter(ticket_detail=self.id)
@@ -100,6 +96,7 @@ class TicketDetail(models.Model):
         ordering = ('id',)
         verbose_name = 'Ticket Details'
         verbose_name_plural = 'Tickets Details'
+
 
 class TicketExtraIngredient(models.Model):
     ticket_detail = models.ForeignKey(TicketDetail, null=True)

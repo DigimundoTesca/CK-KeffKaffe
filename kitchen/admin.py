@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from kitchen.models import ProcessedProduct, Warehouse
+from kitchen.models import ProcessedProduct, Warehouse, WarehouseDetails
 
 
 @admin.register(ProcessedProduct)
@@ -14,5 +14,10 @@ class AdminProcessedCartridge(admin.ModelAdmin):
 
 @admin.register(Warehouse)
 class AdminWarehouse(admin.ModelAdmin):
-    list_display = ('supply', 'status', 'quantity', 'waste', 'cost')
+    list_display = ('id', 'supply', 'cost')
+    list_display_links = ('id', 'supply')
+
+@admin.register(WarehouseDetails)
+class AdminWarehouseDetails(admin.ModelAdmin):
+    list_display = ('warehouse', 'status', 'created_at', 'expiry_date', 'quantity')
 

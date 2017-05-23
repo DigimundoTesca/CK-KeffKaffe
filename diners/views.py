@@ -1,9 +1,8 @@
-
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
-import json,pytz
+import json
 from time import sleep
-import  pytz, json
+import pytz
 from datetime import date, datetime, timedelta, time
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -21,14 +20,14 @@ from cloudkitchen.settings.base import PAGE_TITLE
 
 def naive_to_datetime(nd):
     if type(nd) == datetime:
-        if nd.tzinfo is not None and nd.tzinfo.utcoffset(nd) is not None: # Is Aware
+        if nd.tzinfo is not None and nd.tzinfo.utcoffset(nd) is not None:  # Is Aware
             return nd
-        else: # Is Naive
-            return pytz.timezone('America/Mexico_City').localize(nd)              
+        else:  # Is Naive
+            return pytz.timezone('America/Mexico_City').localize(nd)
 
     elif type(nd) == date:
         d = nd
-        t = time(0,0)
+        t = time(0, 0)
         new_date = datetime.combine(d, t)
         return pytz.timezone('America/Mexico_City').localize(new_date)
 
@@ -76,7 +75,7 @@ def get_number_day(dt):
 
 
 def start_datetime(back_days):
-    start_date = date.today() - timedelta(days=back_days) 
+    start_date = date.today() - timedelta(days=back_days)
     return naive_to_datetime(start_date)
 
 
@@ -87,14 +86,14 @@ def end_datetime(back_days):
 
 def naive_to_datetime(nd):
     if type(nd) == datetime:
-        if nd.tzinfo is not None and nd.tzinfo.utcoffset(nd) is not None: # Is Aware
+        if nd.tzinfo is not None and nd.tzinfo.utcoffset(nd) is not None:  # Is Aware
             return nd
-        else: # Is Naive
-            return pytz.timezone('America/Mexico_City').localize(nd)              
+        else:  # Is Naive
+            return pytz.timezone('America/Mexico_City').localize(nd)
 
     elif type(nd) == date:
         d = nd
-        t = time(0,0)
+        t = time(0, 0)
         new_date = datetime.combine(d, t)
         return pytz.timezone('America/Mexico_City').localize(new_date)
 
@@ -112,10 +111,10 @@ def diners_paginator(request, queryset, num_pages):
 
     if num_page > result_list.num_pages:
         num_page = result_list.num_pages
-    
+
     if result_list.num_pages >= num_page:
         page = result_list.page(num_page)
-    
+
         context = {
             'queryset': page.object_list,
             'num_page': num_page,
@@ -134,7 +133,7 @@ def parse_to_datetime(dt):
     month = int(dt.split('-')[1])
     year = int(dt.split('-')[2])
     parse_date = date(year, month, day)
-    return  naive_to_datetime(parse_date)
+    return naive_to_datetime(parse_date)
 
 
 def get_access_logs(dt):
@@ -163,39 +162,39 @@ def get_all_access_logs():
 def get_start_week_day(day):
     format = "%w"
     number_day = int(naive_to_datetime(day).strftime(format))
-    if number_day ==  0:
+    if number_day == 0:
         number_day = 7
     else:
-        day = naive_to_datetime(day) - timedelta(days=number_day-1)
+        day = naive_to_datetime(day) - timedelta(days=number_day - 1)
 
 
 def get_diners_per_hour():
     hours_list = []
     hours_to_count = 12
     start_hour = 5
-    customter_count = 0    
+    customter_count = 0
     logs = get_access_logs_today()
 
     while start_hour <= hours_to_count:
 
-        hour = {            
+        hour = {
             'count': None,
         }
 
         for log in logs:
             datetime = str(log.access_to_room)
-            date,time = datetime.split(" ")    
-            if(time.startswith("0"+str(start_hour))):
-                customter_count += 1 
+            date, time = datetime.split(" ")
+            if (time.startswith("0" + str(start_hour))):
+                customter_count += 1
             hour['count'] = customter_count
 
-        hours_list.append(hour)        
+        hours_list.append(hour)
         customter_count = 0
         start_hour += 1
         total_entries = 0
 
-    return json.dumps(hours_list) 
-   
+    return json.dumps(hours_list)
+
 
 def get_diners_actual_week():
     week_diners_list = []
@@ -203,7 +202,7 @@ def get_diners_actual_week():
     days_to_count = get_number_day(date.today())
     day_limit = days_to_count
     start_date_number = 0
-    
+
     while start_date_number <= day_limit:
         day_object = {
             'date': str(start_datetime(days_to_count).date().strftime('%d-%m-%Y')),
@@ -211,10 +210,11 @@ def get_diners_actual_week():
             'entries': None,
             'number_day': get_number_day(start_datetime(days_to_count).date())
         }
-        
-        logs = AccessLog.objects.filter(access_to_room__range=[start_datetime(days_to_count), end_datetime(days_to_count)])
 
-        for log in logs:                
+        logs = AccessLog.objects.filter(
+            access_to_room__range=[start_datetime(days_to_count), end_datetime(days_to_count)])
+
+        for log in logs:
             total_entries += 1;
 
         day_object['entries'] = str(total_entries)
@@ -228,7 +228,6 @@ def get_diners_actual_week():
         start_date_number += 1
 
     return json.dumps(week_diners_list)
-
 
 
 # ------------------------- Django Views ----------------------------- #
@@ -247,7 +246,7 @@ def RFID(request):
         else:
             access_logs = get_access_logs_today()
             exists = False
-            
+
             for log in access_logs:
                 if rfid == log.RFID:
                     exists = True
@@ -265,7 +264,7 @@ def RFID(request):
                         new_access_log.save()
                     except Diner.DoesNotExist:
                         new_access_log = AccessLog(diner=None, RFID=rfid)
-                        new_access_log.save()   
+                        new_access_log.save()
                 else:
                     if settings.DEBUG:
                         print('RFID Inválido\n')
@@ -276,10 +275,11 @@ def RFID(request):
     else:
         return redirect('diners:diners')
 
+
 @login_required(login_url='users:login')
 def diners(request):
     count = 0
-    diners_list = []    
+    diners_list = []
     total_diners = len(diners_list)
     diners_objects = get_access_logs_today()
     total_diners = diners_objects.count()
@@ -288,14 +288,15 @@ def diners(request):
     title = 'Comensales del Dia'
     page_title = PAGE_TITLE
 
-    context={
+    context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
-        'diners' : pag['queryset'],                
+        'diners': pag['queryset'],
         'paginator': pag,
         'total_diners': total_diners,
     }
     return render(request, template, context)
+
 
 @login_required(login_url='users:login')
 def diners_logs(request):
@@ -367,9 +368,9 @@ def diners_logs(request):
                 earnings_sale_object = {
                     'access_id': access_log.id,
                     'datetime': timezone.localtime(access_log.access_to_room),
-                    'number_day': get_number_day(start_date), 
+                    'number_day': get_number_day(start_date),
                 }
-                
+
                 access_logs_day_list.append(earnings_sale_object)
             return JsonResponse({'access_logs_day_list': access_logs_day_list})
 
@@ -393,7 +394,7 @@ def diners_logs(request):
                 diners_objects_list.append(diner_object)
 
             return JsonResponse({'diner_logs': diners_objects_list})
-            
+
     else:
         all_diners_objects = get_all_access_logs()
         today_diners_objects = get_access_logs_today()
@@ -410,28 +411,29 @@ def diners_logs(request):
             try:
                 min_year = all_diners_objects.aggregate(Min('access_to_room'))['access_to_room__min'].year
                 max_year = all_diners_objects.aggregate(Max('access_to_room'))['access_to_room__max'].year
-                years_list = [] # [2015:object, 2016:object, 2017:object, ...]
+                years_list = []  # [2015:object, 2016:object, 2017:object, ...]
             except Exception as e:
                 if settings.DEBUG:
-                    print('Error:' , e)
+                    print('Error:', e)
                 return HttpResponse('No hay registros')
-                
+
             while max_year >= min_year:
-                year_object = { # 2015:object or 2016:object or 2017:object ...
-                    'year' : max_year,
-                    'weeks_list' : []
+                year_object = {  # 2015:object or 2016:object or 2017:object ...
+                    'year': max_year,
+                    'weeks_list': []
                 }
 
                 diners_per_year = all_diners_objects.filter(
-                    access_to_room__range=[naive_to_datetime(date(max_year,1,1)),naive_to_datetime(date(max_year,12,31))])
-                
+                    access_to_room__range=[naive_to_datetime(date(max_year, 1, 1)),
+                                           naive_to_datetime(date(max_year, 12, 31))])
+
                 for diner in diners_per_year:
-                    if len(year_object['weeks_list']) == 0: 
+                    if len(year_object['weeks_list']) == 0:
                         """
                         Creates a new week_object in the weeks_list of the actual year_object
                         """
                         start_week_day = get_start_week_day(diner.access_to_room.date())
-                        week_object = { 
+                        week_object = {
                             'week_number': diner.access_to_room.isocalendar()[1],
                             'start_date': diner.access_to_room.date().strftime("%d-%m-%Y"),
                             'end_date': diner.access_to_room.date().strftime("%d-%m-%Y"),
@@ -439,7 +441,7 @@ def diners_logs(request):
                         year_object['weeks_list'].append(week_object)
 
                         # End if
-                    else: 
+                    else:
                         """
                         Validates if exists some week with an indentical week_number of the actual year
                         If exists a same week in the list validates the start_date and the end_date,
@@ -452,24 +454,26 @@ def diners_logs(request):
                             if week_object['week_number'] == diner.access_to_room.isocalendar()[1]:
                                 # There's a same week number
                                 existing_week = True
-                                if datetime.strptime(week_object['start_date'], "%d-%m-%Y").date() > diner.access_to_room.date():
+                                if datetime.strptime(week_object['start_date'],
+                                                     "%d-%m-%Y").date() > diner.access_to_room.date():
                                     exists = True
                                     week_object['start_date'] = diner.access_to_room.date().strftime("%d-%m-%Y")
-                                elif datetime.strptime(week_object['end_date'], "%d-%m-%Y").date() < diner.access_to_room.date():
+                                elif datetime.strptime(week_object['end_date'],
+                                                       "%d-%m-%Y").date() < diner.access_to_room.date():
                                     week_object['end_date'] = diner.access_to_room.date().strftime("%d-%m-%Y")
                                 existing_week = True
                                 break
 
                         if not existing_week:
                             # There's a different week number
-                            week_object = { 
+                            week_object = {
                                 'week_number': diner.access_to_room.isocalendar()[1],
                                 'start_date': diner.access_to_room.date().strftime("%d-%m-%Y"),
                                 'end_date': diner.access_to_room.date().strftime("%d-%m-%Y"),
                             }
                             year_object['weeks_list'].append(week_object)
 
-                        #End else
+                            # End else
                 years_list.append(year_object)
                 max_year -= 1
             # End while
@@ -480,7 +484,7 @@ def diners_logs(request):
         title = 'Registro de comensales'
         page_title = PAGE_TITLE
 
-        context={
+        context = {
             'title': PAGE_TITLE + ' | ' + title,
             'page_title': title,
             'diners': pag['queryset'],
@@ -491,7 +495,8 @@ def diners_logs(request):
             'diners_week': get_diners_actual_week(),
             'dates_range': get_dates_range(),
         }
-        return render(request, template, context)    
+        return render(request, template, context)
+
 
 @login_required(login_url='users:login')
 def satisfaction_rating(request):
@@ -515,8 +520,7 @@ def satisfaction_rating(request):
                 new_element = ElementToEvaluate.objects.get(id=element)
                 new_satisfaction_rating.elements.add(new_element)
                 new_satisfaction_rating.save()
-            return JsonResponse({'status':'ready'})
-
+            return JsonResponse({'status': 'ready'})
 
     template = 'satisfaction_rating.html'
     title = 'Rating'
@@ -526,7 +530,8 @@ def satisfaction_rating(request):
         'page_title': title,
         'elements': elements,
     }
-    return render (request, template, context)
+    return render(request, template, context)
+
 
 @login_required(login_url='users:login')
 def analytics(request):
@@ -540,23 +545,23 @@ def analytics(request):
         # 'ratings': ratings,
         'tests': tests,
     }
-    return render (request, template, context)
+    return render(request, template, context)
 
 
 # --------------------------- TEST ------------------------
 @login_required(login_url='users:login')
 def test(request):
-    rfids = [ 52661 ,]
+    rfids = [52661, ]
 
     for rfid in rfids:
-        dt = naive_to_datetime(datetime(2017,3,23,13,30))
+        dt = naive_to_datetime(datetime(2017, 3, 23, 13, 30))
         rfid = str(rfid)
         if rfid is None:
             print('No se recibió RFID\n')
         else:
             access_logs = get_access_logs(dt)
             exists = False
-            
+
             for log in access_logs:
                 if rfid == log.RFID:
                     exists = True
@@ -576,7 +581,7 @@ def test(request):
                     except Diner.DoesNotExist:
                         new_access_log = AccessLog(diner=None, RFID=rfid, access_to_room=dt)
                         new_access_log.save()
-                        if settings.DEBUG:   
+                        if settings.DEBUG:
                             print('Nuevo comensal\n')
                 else:
                     if settings.DEBUG:

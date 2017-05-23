@@ -8,6 +8,7 @@ from django.db import models
 
 from branchoffices.models import BranchOffice, Supplier
 
+
 class SuppliesCategory(models.Model):
     name = models.CharField(validators=[MinLengthValidator(4)], max_length=125, unique=True)
     image = models.ImageField(blank=False, upload_to='supplies-categories')
@@ -91,6 +92,7 @@ class Supply(models.Model):
     optimal_duration_unit = models.CharField(choices=OPTIMAL_DURATION, max_length=2, default=DAYS)
     location = models.ForeignKey(SupplyLocation, default=1, on_delete=models.CASCADE)
     created_at = models.DateTimeField(editable=False, auto_now=True)
+    waste = models.FloatField(default=0)
     image = models.ImageField(blank=False, upload_to='supplies')
 
     def __str__(self):

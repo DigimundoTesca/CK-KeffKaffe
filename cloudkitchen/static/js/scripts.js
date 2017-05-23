@@ -5,8 +5,8 @@ $(function() {
   if (path == '/sales/') {
     $('#link-sales').addClass('active');
   }
-  else if (path == '/sales/new/breakfast/') {
-    $('#link-new-breakfast').addClass('active');
+  else if (path == '/sales/new/') {
+    $('#link-new-sale').addClass('active');
   }
   else if (path == '/sales/new/food/') {
     $('#link-new-food').addClass('active');
