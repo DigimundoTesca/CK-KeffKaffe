@@ -45,19 +45,7 @@ class ProcessedProduct(models.Model):
 
 
 class Warehouse(models.Model):
-    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)    
-    cost = models.FloatField(default=0)
-    
-    def __str__(self):
-        return '%s' % self.supply.name
 
-    class Meta:
-        ordering = ('id',)
-        verbose_name = 'Insumo en Almacén'
-        verbose_name_plural = 'Insumos en el Almacén'
-
-
-class WarehouseDetails(models.Model):
     PROVIDER = 'PR'
     STOCK = 'ST'
     ASSEMBLED = 'AS'
@@ -68,20 +56,38 @@ class WarehouseDetails(models.Model):
         (ASSEMBLED, 'Assembled'),
         (SOLD, 'Sold'),
     )
-    
-    warehouse = models.ForeignKey(Warehouse, default=1, on_delete=models.CASCADE)
+
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)    
+    cost = models.FloatField(default=0)
     status = models.CharField(choices=STATUS, default=PROVIDER, max_length=15)
     created_at = models.DateField(editable=False, auto_now_add=True)
     expiry_date = models.DateField(editable=True, auto_now_add=True)
     quantity = models.FloatField(default=0)
+
+    def total_quantity(self):
+        return self.supply.measurement_convertion
+    
+    def __str__(self):
+        return '%s' % self.supply.name
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Insumo en Almacén'
+        verbose_name_plural = 'Insumos en el Almacén'
+
+
+class Delivery(models.Model):        
+
+    deliveries = models.ManyToManyField(Warehouse)
+    delivery_day = models.DateField(editable=False, auto_now_add=True)
 
     def __str__(self):
         return '%s' % self.warehouse.supply
 
     class Meta:
         ordering = ('id',)
-        verbose_name = 'Insumo en Almacén - Detalles'
-        verbose_name_plural = 'Insumos en el Almacén - Detalles'
+        verbose_name = 'Entrega'
+        verbose_name_plural = 'Entragas'
 
 
 

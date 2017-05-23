@@ -10,7 +10,7 @@ from django.db.models import Min, Max
 from django.utils import timezone
 
 from diners.models import AccessLog, Diner
-from kitchen.models import Warehouse, ProcessedProduct, WarehouseDetails
+from kitchen.models import Warehouse, ProcessedProduct, Delivery
 from products.models import Supply, Cartridge, PackageCartridge, CartridgeRecipe, PackageCartridgeRecipe, \
     ExtraIngredient
 from sales.models import Ticket, TicketDetail, TicketExtraIngredient
@@ -602,10 +602,9 @@ class ProductsHelper(object):
         self.__all_packages_cartridges = None
         self.__all_supplies = None
         self.__all_extra_ingredients = None
-        self.__all_cartridges_recipes = None
+        self.__all_cartridges_recipes = None        
         self.__all_tickets_details = None
-        self.__elements_in_warehouse = None
-        self.__all_warehouse_details = None
+        self.__elements_in_warehouse = None        
         self.__predictions = None
         self.__required_supplies_list = None
         self.__today_popular_cartridge = None
@@ -641,9 +640,6 @@ class ProductsHelper(object):
             select_related('ingredient'). \
             select_related('cartridge'). \
             all()
-
-    def set_all_warehouse_details(self):
-        self.__all_warehouse_details = WarehouseDetails.objects.prefetch_related('warehouse__supply').all()
 
     def set_predictions(self):
         sales_helper = SalesHelper()
@@ -785,13 +781,13 @@ class ProductsHelper(object):
 
         return self.__all_packages_cartridges_recipes
 
-    def get_all_warehouse_details(self):
+    def get_all_elements_in_warehouse(self):
         """
         :rtype: django.db.models.query.QuerySet
         """
-        if self.__all_warehouse_details is None:
-            self.set_all_warehouse_details()
-        return self.__all_warehouse_details
+        if self.__elements_in_warehouse is None:
+            self.set_elements_in_warehouse()
+        return self.__elements_in_warehouse
 
     def get_required_supplies(self):
         """
@@ -800,7 +796,7 @@ class ProductsHelper(object):
         required_supplies_list = []
         all_cartridges = self.get_all_cartridges()
         predictions = self.get_predictions_supplies()
-        supplies_on_stock = self.get_all_warehouse_details().filter(status="ST")
+        supplies_on_stock = self.get_all_elements_in_warehouse().filter(status="ST")
 
         ingredients = self.get_all_cartridges_recipes()
         
@@ -815,19 +811,12 @@ class ProductsHelper(object):
                         supply = ingredient.supply
                         name = ingredient.supply.name
                         cost = ingredient.supply.presentation_cost                        
-                        measurement = ingredient.supply.measurement_unit
                         measurement_unit = ingredient.supply.measurement_unit
+                        measurement_unit_c = ingredient.supply.unit_convertion
                         measurement_quantity = ingredient.supply.measurement_quantity
-                        measurement_quantity_c = ingredient.supply.measurement_quantity
+                        measurement_quantity_c = ingredient.supply.measurement_convertion
                         quantity = ingredient.quantity
                         supplier = ingredient.supply.supplier
-
-                        if measurement_quantity>=1000:
-                            measurement_quantity_c = measurement_quantity/1000
-                            if measurement == 'GR':
-                                measurement_unit = 'Kilos'
-                            else:
-                                measurement_unit = 'Litros'
                             
                         count = 0
 
@@ -835,9 +824,9 @@ class ProductsHelper(object):
                             'supply': supply,
                             'name': name,
                             'cost': cost,
-                            'measurement': measurement,
-                            'measurement_quantity': measurement_quantity,
                             'measurement_unit': measurement_unit,
+                            'measurement_quantity': measurement_quantity,
+                            'measurement_unit_c': measurement_unit_c,
                             'measurement_quantity_c': measurement_quantity_c,
                             'quantity': quantity,
                             'supplier': supplier,
@@ -862,7 +851,7 @@ class ProductsHelper(object):
         for required_supply in required_supplies_list:
             if len(supplies_on_stock) > 0:
                 for supply_on_stock in supplies_on_stock:
-                    if supply_on_stock.warehouse.supply == required_supply['supply']:
+                    if supply_on_stock.supply == required_supply['supply']:
                         required_supply['stock'] = supply_on_stock.quantity
                         required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
                         required_supply['full_cost'] = \

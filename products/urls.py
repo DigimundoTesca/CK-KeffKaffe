@@ -44,8 +44,7 @@ urlpatterns = [
     url(r'^products/analytics/$', views.products_analytics, name='analytics'),
 
     # Warehouse
-    url(r'^warehouse/$', views.warehouse, name='warehouse'),
-    url(r'^warehouse/add/$', AddStock.as_view(), name='addStock'),
+    url(r'^warehouse/$', views.warehouse, name='warehouse'),    
     url(r'^warehouse/catering/$', views.catering, name='catering'),
     url(r'^warehouse/movements/$', views.warehouse_movements, name='wh_movements'),
 

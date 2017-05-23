@@ -12,7 +12,7 @@ from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
 from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
-from kitchen.models import Warehouse, WarehouseDetails
+from kitchen.models import Warehouse, Delivery
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
@@ -281,21 +281,6 @@ class DeleteCartridge(DeleteView):
 
 
 # -------------------------------------  Catering -------------------------------------
-class AddStock(CreateView):
-    model = WarehouseDetails
-    fields = ['warehouse','status','quantity']
-    template_name = 'catering/add_stock.html'
-
-    def __init__(self, **kwargs):
-        super(AddStock).__init__(**kwargs)
-        self.object = None
-
-    def form_valid(self, form):
-        print(form)
-        self.object = form.save()
-        return redirect('products:warehouse/catering')
-
-
 @login_required(login_url='users:login')
 def catering(request):
     """"
@@ -363,16 +348,15 @@ def warehouse(request):
 def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()
-    supplies_on_stock = products_helper.get_all_warehouse_details()
-    all_supplies = products_helper.get_all_supplies()
+    supplies = products_helper.get_all_elements_in_warehouse()
 
     if request.method == 'POST':
         number = request.POST['cantidad']
-        mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
+        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
         mod_wh.quantity -= float(number)
         mod_wh.save()
 
-        created_detail = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse, quantity=number)
+        created_detail = Warehouse.objects.create(supply=mod_wh.supply, quantity=number)
 
         if request.POST['type'] == 'Stock':
             created_detail.status = "ST"
@@ -381,28 +365,22 @@ def warehouse_movements(request):
 
         start_date = str(created_detail.created_at)
         dt = datetime.strptime(start_date, "%Y-%m-%d")
-        modified_date = dt + timedelta(days=created_detail.warehouse.supply.optimal_duration)
+        modified_date = dt + timedelta(days=created_detail.supply.optimal_duration)
         created_detail.expiry_date = modified_date
         created_detail.save()
 
     for prediction in predictions:
-        if prediction['required'] > 0:
+        if prediction['required'] > 0:            
             try:
-                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])
-                try:
-                    detail = WarehouseDetails.objects.get(warehouse=sup_on_stock, status="PR")
-                    detail.quantity = prediction['required']
-                except WarehouseDetails.DoesNotExist:
-                    WarehouseDetails.objects.create(
-                        warehouse=sup_on_stock, status="PR", quantity=prediction['required'])
+                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'],status="PR")
             except Warehouse.DoesNotExist:
-                Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'])
+                Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'],
+                 quantity=prediction['required'], status="PR")
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {
-        'supps': all_supplies,
-        'supply_list': supplies_on_stock,
+        'supply_list': supplies,        
         'title': title,
         'page_title': PAGE_TITLE
     }

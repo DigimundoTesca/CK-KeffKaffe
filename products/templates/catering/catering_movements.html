@@ -16,12 +16,12 @@
             </div>
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">
               <div class="card-block products-block">
-                {% for supplies in supply_list %}
-                  {% if supplies.status == "PR" and supplies.quantity > 0 %}
-                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
-                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
-                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity}} {{supplies.warehouse.supply.measurement_quantity}} {{  supplies.warehouse.supply.measurement_unit}} </h5>
+                {% for supplies in supply_list %}                  
+                  {% if supplies.status == "PR"  %}
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.supply.name }}</h6>
+                      <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.total_quantity }} {{  supplies.supply.measurement_unit}} </h5>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -36,11 +36,10 @@
               <div class="card-block products-block"> 
                 {% for supplies in supply_list %}
                   {% if supplies.status == "ST" and supplies.quantity > 0 %}
-                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
-                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
-                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply-{{ supplies.optimal_duration}}" > Fecha de Expiracion: {{ supplies.expiry_date }} </h5>
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.supply.name }}</h6>
+                      <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>                      
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -55,10 +54,10 @@
               <div class="card-block products-block">
                 {% for supplies in supply_list %}
                   {% if supplies.status == "SO" and supplies.quantity > 0 %}
-                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
-                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
-                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.supply.name }}</h6>
+                      <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -103,6 +102,7 @@ $(function(){
     let element_id = element.attr('id').substring(23);
     let element_quantity = element.parent().children(".provider_quantity").attr('id').substring(35);
     let str = element_id+","+element_quantity;
+    console.log(element)
 
     e.originalEvent.dataTransfer.setData("text", str);
 

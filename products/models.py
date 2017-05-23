@@ -98,6 +98,15 @@ class Supply(models.Model):
     def __str__(self):
         return self.name
 
+    def measurement_convertion(self):
+        return self.measurement_quantity/1000
+
+    def unit_convertion(self):
+        if measurement_unit == 'GR':
+            return "Kilos"
+        else:
+            return "Litros"
+
     class Meta:
         ordering = ('id',)
         verbose_name = 'Insumo'
