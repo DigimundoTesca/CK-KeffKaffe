@@ -305,21 +305,24 @@ def catering(request):
 
     products_helper = ProductsHelper()
     required_supplies = products_helper.get_required_supplies()
+
     estimated_total_cost = 0
 
     if request.method == 'POST':
         buy_objects_list = []
 
         for required in required_supplies:
+                       
+
             diner_object = {    
                 'Nombre': required['name'], 
-                'Provedor': "proveedor",
-                'Cantidad': required['name'],
-                'Medida': required["measurement"],
-                'Presentacion': required['measurement_quantity'],
-                'Stock'
-                'Requerdio': required['required'],
-                'Costo': required['full_cost']                     
+                'Requeridos': required['quantity'],
+                'Stock': required['stock'],
+                'Por Comprar': required['required'],
+                'Comprar en': str(required['supplier']),
+                'Cantidad x Unidad' : required['measurement_quantity_c'],
+                'Costo x Unidad': required['cost'],
+                'Costo Total': required['full_cost'],                    
             }            
 
             buy_objects_list.append(diner_object)

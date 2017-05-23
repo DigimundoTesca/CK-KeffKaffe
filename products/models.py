@@ -59,7 +59,7 @@ class Supply(models.Model):
     # presentation unit
     PACKAGE = 'PA'
     BOX = 'BO'
-    PIECE = 'PI'
+    PIECE = 'PZ'
     PRESENTATION_UNIT = (
         (PACKAGE, 'Paquete'),
         (BOX, 'Caja'),
@@ -69,7 +69,7 @@ class Supply(models.Model):
     # metrics
     GRAM = 'GR'
     MILLILITER = 'MI'
-    PIECE = 'PI'
+    PIECE = 'PZ'
 
     METRICS = (
         (GRAM, 'gramo'),

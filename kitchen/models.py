@@ -82,3 +82,7 @@ class WarehouseDetails(models.Model):
         ordering = ('id',)
         verbose_name = 'Insumo en Almacén - Detalles'
         verbose_name_plural = 'Insumos en el Almacén - Detalles'
+
+
+
+

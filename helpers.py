@@ -803,20 +803,32 @@ class ProductsHelper(object):
         supplies_on_stock = self.get_all_warehouse_details().filter(status="ST")
 
         ingredients = self.get_all_cartridges_recipes()
-
+        
         for prediction in predictions:
             for cartridge in all_cartridges:
                 if prediction['cartridge'] == cartridge:
 
-                    ingredients = ingredients.filter(cartridge=cartridge)
-                    for ingredient in ingredients:
+                    ingredientes = ingredients.filter(cartridge=cartridge)                    
+
+                    for ingredient in ingredientes:           
+
                         supply = ingredient.supply
                         name = ingredient.supply.name
-                        cost = ingredient.supply.presentation_cost
+                        cost = ingredient.supply.presentation_cost                        
                         measurement = ingredient.supply.measurement_unit
+                        measurement_unit = ingredient.supply.measurement_unit
                         measurement_quantity = ingredient.supply.measurement_quantity
+                        measurement_quantity_c = ingredient.supply.measurement_quantity
                         quantity = ingredient.quantity
+                        supplier = ingredient.supply.supplier
 
+                        if measurement_quantity>=1000:
+                            measurement_quantity_c = measurement_quantity/1000
+                            if measurement == 'GR':
+                                measurement_unit = 'Kilos'
+                            else:
+                                measurement_unit = 'Litros'
+                            
                         count = 0
 
                         required_supply_object = {
@@ -825,7 +837,10 @@ class ProductsHelper(object):
                             'cost': cost,
                             'measurement': measurement,
                             'measurement_quantity': measurement_quantity,
+                            'measurement_unit': measurement_unit,
+                            'measurement_quantity_c': measurement_quantity_c,
                             'quantity': quantity,
+                            'supplier': supplier,
                             'stock': 0,
                             'required': 0,
                             'full_cost': 0,
