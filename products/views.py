@@ -356,23 +356,15 @@ def warehouse_movements(request):
         mod_wh.quantity -= float(number)
         mod_wh.save()
 
-        created_detail = Warehouse.objects.create(supply=mod_wh.supply, quantity=number)
-
         if request.POST['type'] == 'Stock':
-            created_detail.status = "ST"
+            Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="ST")
         else:
-            created_detail.status = "AS"
-
-        start_date = str(created_detail.created_at)
-        dt = datetime.strptime(start_date, "%Y-%m-%d")
-        modified_date = dt + timedelta(days=created_detail.supply.optimal_duration)
-        created_detail.expiry_date = modified_date
-        created_detail.save()
+            Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
 
     for prediction in predictions:
         if prediction['required'] > 0:            
             try:
-                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'],status="PR")
+                Warehouse.objects.get(supply=prediction['supply'], status="PR", quantity=prediction['required'])
             except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'],
                  quantity=prediction['required'], status="PR")

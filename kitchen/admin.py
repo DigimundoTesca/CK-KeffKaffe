@@ -14,12 +14,11 @@ class AdminProcessedCartridge(admin.ModelAdmin):
 
 @admin.register(Warehouse)
 class AdminWarehouse(admin.ModelAdmin):
-    list_display = ('id', 'supply', 'status', 'quantity' , 'cost')
+    list_display = ('id', 'supply', 'status', 'quantity', 'cost')
     list_display_links = ('id', 'supply')
+
 
 @admin.register(Delivery)
 class AdminDelivery(admin.ModelAdmin):
-	list_display = ('id', 'delivery_day')
-	list_display_links = ('id', 'delivery_day')
-
-
+    list_display = ('id', 'delivery_day')
+    list_display_links = ('id', 'delivery_day')

@@ -98,14 +98,23 @@ class Supply(models.Model):
     def __str__(self):
         return self.name
 
-    def measurement_convertion(self):
-        return self.measurement_quantity/1000
-
-    def unit_convertion(self):
-        if measurement_unit == 'GR':
-            return "Kilos"
+    def measurement_convertion(self,quantity):
+        if quantity >= 1000:
+            return self.measurement_quantity / 1000
         else:
-            return "Litros"
+            return self.measurement_quantity
+
+    def unit_convertion(self,quantity):
+        if quantity >= 1000:
+            if self.measurement_unit == 'GR':
+                return "Kilos"
+            elif self.measurement_unit == 'MI':
+                return "Litros"
+            else:
+                return "Pieza"
+        else:
+            return self.measurement_unit
+
 
     class Meta:
         ordering = ('id',)

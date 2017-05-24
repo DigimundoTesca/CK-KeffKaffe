@@ -811,10 +811,10 @@ class ProductsHelper(object):
                         supply = ingredient.supply
                         name = ingredient.supply.name
                         cost = ingredient.supply.presentation_cost                        
-                        measurement_unit = ingredient.supply.measurement_unit
-                        measurement_unit_c = ingredient.supply.unit_convertion
-                        measurement_quantity = ingredient.supply.measurement_quantity
-                        measurement_quantity_c = ingredient.supply.measurement_convertion
+                        measurement_unit = ingredient.supply.unit_convertion(ingredient.quantity)
+                        measurement_quantity = ingredient.supply.measurement_convertion(ingredient.quantity)
+                        supplier_unit = ingredient.supply.unit_convertion(ingredient.supply.measurement_quantity)
+                        supplier_quantity = ingredient.supply.measurement_convertion(ingredient.supply.measurement_quantity)
                         quantity = ingredient.quantity
                         supplier = ingredient.supply.supplier
                             
@@ -826,8 +826,8 @@ class ProductsHelper(object):
                             'cost': cost,
                             'measurement_unit': measurement_unit,
                             'measurement_quantity': measurement_quantity,
-                            'measurement_unit_c': measurement_unit_c,
-                            'measurement_quantity_c': measurement_quantity_c,
+                            'supplier_unit': supplier_unit,
+                            'supplier_quantity': supplier_quantity,
                             'quantity': quantity,
                             'supplier': supplier,
                             'stock': 0,

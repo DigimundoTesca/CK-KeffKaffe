@@ -21,7 +21,7 @@
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
                       <h6 class="product-name">{{ supplies.supply.name }}</h6>
                       <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.total_quantity }} {{  supplies.supply.measurement_unit}} </h5>
+                      <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.total_quantity }}  </h5>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -100,9 +100,10 @@ $(function(){
 
     let element = $(this);
     let element_id = element.attr('id').substring(23);
-    let element_quantity = element.parent().children(".provider_quantity").attr('id').substring(35);
+    let element_quantity = element.parent().children(".provider_quantity").attr('id').substring(25);
     let str = element_id+","+element_quantity;
-    console.log(element)
+    console.log(element_id);
+    console.log(str);
 
     e.originalEvent.dataTransfer.setData("text", str);
 

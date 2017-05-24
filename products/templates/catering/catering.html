@@ -55,11 +55,11 @@
             {% endif %}
           {% endif %}                    
             <td>{{ required.name }}</td>
-            <td>{{ required.quantity }} {{ required.measurement }}</td>            
-            <td>{{ required.stock }} {{ required.measurement }}</td>
-            <td>{{ required.required }} {{ required.measurement }}</td>
+            <td>{{ required.quantity }} {{ required.measurement_unit }}</td>
+            <td>{{ required.stock }} {{ required.measurement_unit }}</td>
+            <td>{{ required.required }} {{ required.measurement_unit }}</td>
             <td>{{ required.supplier }}</td>
-            <td>{{ required.measurement_quantity_c }} {{ required.measurement_unit }}</td>
+            <td>{{ required.supplier_quantity }} {{ required.supplier_unit }}</td>
             <td>${{ required.cost }}</td>            
             <td>${{ required.full_cost }}</td>                       
             <tr>                                            

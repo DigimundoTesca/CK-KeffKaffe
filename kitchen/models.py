@@ -64,11 +64,11 @@ class Warehouse(models.Model):
     expiry_date = models.DateField(editable=True, auto_now_add=True)
     quantity = models.FloatField(default=0)
 
-    def total_quantity(self):
-        return self.supply.measurement_convertion
-    
     def __str__(self):
         return '%s' % self.supply.name
+
+    def total_quantity(self):
+        return self.supply.measurement_convertion(self.supply.measurement_quantity) * self.quantity
 
     class Meta:
         ordering = ('id',)
@@ -87,7 +87,7 @@ class Delivery(models.Model):
     class Meta:
         ordering = ('id',)
         verbose_name = 'Entrega'
-        verbose_name_plural = 'Entragas'
+        verbose_name_plural = 'Entregas'
 
 
 
