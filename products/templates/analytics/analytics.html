@@ -17,6 +17,11 @@
 
     <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" onclick="" id="create-predictions">Generar</button>
   </div>
+  <h2 class="text-xs-center">Producto más popular:
+        <span class="div badge badge-success">
+          {{ today_sold_product.name }}: {{ today_sold_product.frequency }}
+        </span>
+      </h2>
 </div>
 
 {% endblock content %}
