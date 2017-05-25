@@ -404,8 +404,8 @@ def warehouse_movements(request):
     context = {
         'supps': all_supplies,
         'supply_list': supplies_on_stock,
-        'title': title,
-        'page_title': PAGE_TITLE
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title
     }
     return render(request, template, context)
 
@@ -499,5 +499,18 @@ def products_analytics(request):
 
     return render(request, template, context)
 
+
+@login_required(login_url='users:login')
+def products_predictions(request):
+    template = 'analytics/predictions.html'
+    title = 'Predicciones'
+
+    context = {
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title
+    }
+    return render(request, template, context)
+
+  
 def test(request):
     return HttpResponse('Hola!!!')
