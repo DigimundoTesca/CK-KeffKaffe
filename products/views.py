@@ -7,6 +7,7 @@ from decimal import Decimal
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
+
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
@@ -20,6 +21,9 @@ from django.views.generic import CreateView
 
 
 # -------------------------------------  Suppliers -------------------------------------
+from sales.models import TicketDetail
+
+
 @login_required(login_url='users:login')
 def suppliers(request):
     suppliers_list = Supplier.objects.order_by('id')
@@ -408,29 +412,6 @@ def warehouse_movements(request):
 
 @login_required(login_url='users:login')
 def products_analytics(request):
-    def get_daily_period():
-        helper = Helper()
-        sales_helper = SalesHelper()
-
-        initial_date = helper.naive_to_datetime(date.today())
-        final_date = helper.naive_to_datetime(initial_date + timedelta(days=1))
-        filtered_tickets = sales_helper.get_all_tickets().filter(created_at__range=[initial_date, final_date])
-        tickets_details = sales_helper.get_all_tickets_details()
-        tickets_list = []
-        period_list = []
-        for ticket in filtered_tickets:
-            ticket_object = {
-                'total': Decimal(0.00),
-            }
-            for ticket_details in tickets_details:
-                if ticket_details.ticket == ticket:
-                    ticket_object['total'] += ticket_details.price
-            tickets_list.append(Decimal(ticket_object['total']))
-
-        for _ in tickets_list:
-            if ticket.created_at == ticket.created_at:
-                print('No corresponde a la hora')
-
     def get_period(initial_dt, final_dt):
         helper = Helper()
         sales_helper = SalesHelper()
@@ -464,13 +445,43 @@ def products_analytics(request):
                 'recipe': filtered_cartridge_recipes_list
             }
             supplies_list.append(cartridge_object)
-            
-    if request.method == 'POST':
-        initial_date = request.POST['initial_date']
-        final_date = request.POST['final_date']
-        # get_daily_period()
-        get_period(initial_date, final_date)
-        return JsonResponse({'resultado': 'algo xd'})
+
+        if request.method == 'POST':
+            initial_date = request.POST['initial_date']
+            final_date = request.POST['final_date']
+            get_period(initial_date, final_date)
+            return JsonResponse({'resultado': 'algo xd'})
+
+    def get_products_sold():
+        sales_helper = SalesHelper()
+        products_helper = ProductsHelper()
+        initial_date = date.today()
+        final_date = initial_date + timedelta(days=1)
+        cartridge_dict = {}
+        cartridge_list = []
+        filtered_ticket_details = sales_helper.get_tickets_details(initial_date, final_date)
+
+        for cartridge in products_helper.get_all_cartridges():
+            cartridge_dict[cartridge.id] = {
+                'name': cartridge.name,
+                'frequency': 0
+            }
+
+        for ticket_detail in filtered_ticket_details:
+            if ticket_detail.cartridge:
+                ticket_detail_id = ticket_detail.cartridge.id
+                cartridge_dict[ticket_detail_id]['frequency'] += ticket_detail.quantity
+                cartridge_list.append(cartridge_dict)
+
+        return cartridge_list
+
+    get_products_sold()
+
+    template = 'analytics/analytics.html'
+    title = 'Products - Analytics'
+    list_x = [1, 2, 3, 4, 5, 6]
+    list_y = [10, 20, 30, 40, 50, 60]
+    get_products_sold()
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
@@ -478,10 +489,12 @@ def products_analytics(request):
     list_y = [10, 20, 30, 40, 50, 60]
 
     latest_squares = LeastSquares(list_x, list_y)
+    sold_product  = get_products_sold()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
         'least_squares': latest_squares,
+        'today_sold_product': get_products_sold()
     }
 
     return render(request, template, context)
@@ -498,6 +511,6 @@ def products_predictions(request):
     }
     return render(request, template, context)
 
-
+  
 def test(request):
-    return HttpResponse('Write yours test here')
+    return HttpResponse('Hola!!!')
