@@ -364,7 +364,7 @@ def warehouse_movements(request):
     for prediction in predictions:
         if prediction['required'] > 0:            
             try:
-                Warehouse.objects.get(supply=prediction['supply'], status="PR", quantity=prediction['required'])
+                Warehouse.objects.get(supply=prediction['supply'], status="PR")
             except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'],
                  quantity=prediction['required'], status="PR")

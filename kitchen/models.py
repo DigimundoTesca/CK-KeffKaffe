@@ -4,6 +4,7 @@ from django.dispatch import receiver
 
 from products.models import Supply, Cartridge, PackageCartridge
 from sales.models import Ticket, TicketDetail
+import math
 
 
 class ProcessedProduct(models.Model):
@@ -45,7 +46,6 @@ class ProcessedProduct(models.Model):
 
 
 class Warehouse(models.Model):
-
     PROVIDER = 'PR'
     STOCK = 'ST'
     ASSEMBLED = 'AS'
@@ -57,7 +57,7 @@ class Warehouse(models.Model):
         (SOLD, 'Sold'),
     )
 
-    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)    
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
     cost = models.FloatField(default=0)
     status = models.CharField(choices=STATUS, default=PROVIDER, max_length=15)
     created_at = models.DateField(editable=False, auto_now_add=True)
@@ -67,8 +67,14 @@ class Warehouse(models.Model):
     def __str__(self):
         return '%s' % self.supply.name
 
-    def total_quantity(self):
-        return self.supply.measurement_convertion(self.supply.measurement_quantity) * self.quantity
+    def required_quantity(self):
+        required = math.ceil(self.quantity / self.supply.measurement_quantity) * self.supply.measurement_quantity
+        if required >= 1000:
+            required /= 1000
+        return required
+
+    def get_unit(self):
+        return self.supply.unit_convertion(math.ceil(self.quantity / self.supply.measurement_quantity) * self.supply.measurement_quantity)
 
     class Meta:
         ordering = ('id',)
@@ -76,8 +82,7 @@ class Warehouse(models.Model):
         verbose_name_plural = 'Insumos en el Almacén'
 
 
-class Delivery(models.Model):        
-
+class Delivery(models.Model):
     deliveries = models.ManyToManyField(Warehouse)
     delivery_day = models.DateField(editable=False, auto_now_add=True)
 
@@ -88,7 +93,3 @@ class Delivery(models.Model):
         ordering = ('id',)
         verbose_name = 'Entrega'
         verbose_name_plural = 'Entregas'
-
-
-
-
