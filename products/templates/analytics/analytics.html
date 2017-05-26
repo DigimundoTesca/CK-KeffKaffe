@@ -17,11 +17,28 @@
 
     <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" onclick="" id="create-predictions">Generar</button>
   </div>
-  <h2 class="text-xs-center">Producto más popular:
-        <span class="div badge badge-success">
-          {{ today_sold_product.name }}: {{ today_sold_product.frequency }}
-        </span>
-      </h2>
+  <table>
+    <thead class="thead-inverse">
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+      </tr>
+      <tr>
+        <td>
+          {% for cartridge in today_sold_product %}
+          {{ cartridge.name }}
+          <br>
+          {% endfor %}
+        </td>
+        <td>
+          {% for cartridge in today_sold_product %}
+          {{ cartridge.frequency }}
+          <br>
+          {% endfor %}
+        </td>
+      </tr>
+    </thead>  
+  </table>
 </div>
 
 {% endblock content %}
