@@ -1,0 +1,13 @@
+#analytics-prro { 
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#analytics-prro tr:nth-child(even){
+ background-color:  rgba(131,78,0,0.5);
+}
+
+
+#analytics-prro tr:hover{
+ background-color:  rgba(131,78,0,1);
+}
