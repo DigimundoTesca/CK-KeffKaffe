@@ -5,7 +5,7 @@
 {% endblock link %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container"/>
   <div class="form-inline">
     <label class="sr-only" for="initial-date">Fecha inicial</label>
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="initial-date" placeholder="Primer Fecha">
@@ -17,28 +17,32 @@
 
     <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" onclick="" id="create-predictions">Generar</button>
   </div>
-  <table>
-    <thead class="thead-inverse">
-      <tr>
-        <th>Producto</th>
-        <th>Cantidad</th>
-      </tr>
-      <tr>
-        <td>
-          {% for cartridge in today_sold_product %}
-          {{ cartridge.name }}
-          <br>
-          {% endfor %}
-        </td>
-        <td>
-          {% for cartridge in today_sold_product %}
-          {{ cartridge.frequency }}
-          <br>
-          {% endfor %}
-        </td>
-      </tr>
-    </thead>  
-  </table>
+  <div>
+    <table class="table table-kitchen table-straped table-hover" align="right">
+      <thead class="thead-inverse">
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+        </tr>
+      </thead>  
+        <tbody>
+            {% for cartridge in today_sold_product %}
+            <tr class="table-success">
+              <td>  
+                <span class="badge badge-blue">
+                  {{ cartridge.name }}
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-success">
+                  {{ cartridge.frequency }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+  </div>
 </div>
 
 {% endblock content %}
