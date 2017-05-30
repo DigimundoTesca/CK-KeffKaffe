@@ -4,10 +4,10 @@
 }
 
 #analytics-prro tr:nth-child(even){
- background-color:  rgba(131,78,0,0.5);
+ background-color:  rgba(120, 204, 200,0.5);
 }
 
 
 #analytics-prro tr:hover{
- background-color:  rgba(131,78,0,1);
+ background-color:  rgba(75, 127, 125, 0.8);
 }
