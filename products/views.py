@@ -284,7 +284,7 @@ class DeleteCartridge(DeleteView):
         return redirect('supplies:cartridges')
 
 
-# -------------------------------------  Catering -------------------------------------
+# -------------------------------------  Catering -----~--------------------------------
 @login_required(login_url='users:login')
 def catering(request):
     """"
@@ -374,6 +374,7 @@ def warehouse_movements(request):
         try:
             Warehouse.objects.get(supply=supply, status="PR")
         except Warehouse.DoesNotExist:
+
             Warehouse.objects.create(supply=supply, cost=supply.presentation_cost, status="PR")
 
     for prediction in predictions:

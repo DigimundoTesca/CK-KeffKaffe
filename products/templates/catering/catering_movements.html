@@ -17,7 +17,7 @@
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">
               <div class="card-block products-block">
                 {% for supplies in supply_list %}                  
-                  {% if supplies.status == "PR" and supplies.quantity > 0 %}
+                  {% if supplies.status == "PR"%}
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
                       <h6 class="product-name">{{ supplies.supply.name }}</h6>
                       <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>
@@ -99,21 +99,12 @@ $(function(){
   });
 
   $(".product-img-pr,.product-img-st,.product-img-as").on("dragstart",function(e){
-    
     let element = $(this);
-
     let element_id = element.attr('id').substring(23);
     let element_unit = element.parent().children(".provider_unit").attr('id').substring(25);
-
-
-
     let element_quantity = element.parent().children(".provider_quantity").attr('id').substring(25);
     let str = element_id+","+element_quantity+","+element_unit;
-
-    console.log(str);
-
     e.originalEvent.dataTransfer.setData("text", str);
-
   });
 
   $("#group-stock,#group-rfa ").on("drop",function(e){
@@ -125,9 +116,9 @@ $(function(){
     let obj_quantity = obj_wh[1];
     let obj_measurement = obj_wh[2];
     let obj_unit = obj_wh[3];
+    let move = "Stock";
+    let id = $(this).attr("id");
 
-    let move = "Stock"
-    let id = $(this).attr("id")
     if(id == "group-rfa"){
         move = "Assembly"
     }
@@ -146,7 +137,6 @@ $(function(){
       showLoaderOnConfirm: true,
       preConfirm: function (number) {
         return new Promise(function (resolve, reject) {
-
           $.ajax({
             url: '{% url "products:wh_movements" %}',
             type: 'POST',
@@ -175,13 +165,8 @@ $(function(){
   });
 
   $(".product-img-st").on("click",function(e){
-
     console.log("Clicked on Product-img-st")
-
   });
-
-
-
 
 });
 
