@@ -102,8 +102,14 @@ $(function(){
 
     let element = $(this);
     let element_id = element.attr('id').substring(23);
+    let element_unit = element.parent().children(".provider_unit").attr('id').substring(25);
+
+
+
     let element_quantity = element.parent().children(".provider_quantity").attr('id').substring(25);
-    let str = element_id+","+element_quantity;
+    let str = element_id+","+element_quantity+","+element_unit;
+
+    console.log(str);
 
     e.originalEvent.dataTransfer.setData("text", str);
 
@@ -115,6 +121,9 @@ $(function(){
     let obj_wh = data.split(',');
     let obj_id = obj_wh[0];
     let obj_quantity = obj_wh[1];
+    let obj_measurement = obj_wh[2];
+    let obj_unit = obj_wh[3];
+
     let move = "Stock"
     let id = $(this).attr("id")
     if(id == "group-rfa"){
@@ -122,14 +131,14 @@ $(function(){
     }
 
     swal({
-      title: '¿Que cantidad desea mover?',
+      title: '¿Cuantos ' +obj_unit+ ' desea mover? ',
       input: 'range',
       inputAttributes: {
         min: 1,
-        max: obj_quantity,
+        max: obj_measurement * 5,
         step: 1
       },
-      inputValue: Math.round(obj_quantity / 2),
+      inputValue: Math.ceil((obj_measurement * 5) / 2),
       showCancelButton: true,
       confirmButtonText: 'Submit',
       showLoaderOnConfirm: true,
