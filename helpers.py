@@ -615,7 +615,7 @@ class ProductsHelper(object):
         self.__all_supplies = Supply.objects. \
             select_related('category'). \
             select_related('supplier'). \
-            select_related('location').all()
+            select_related('location').order_by('name')
 
     def set_all_cartridges(self):
         self.__all_cartridges = Cartridge.objects.all()
@@ -692,7 +692,7 @@ class ProductsHelper(object):
                     }
 
     def set_elements_in_warehouse(self):
-        self.__elements_in_warehouse = Warehouse.objects.select_related('supply').all()
+        self.__elements_in_warehouse = Warehouse.objects.select_related('supply').all().order_by('supply__name')
 
     def set_today_popular_cartridge(self):
         sales_helper = SalesHelper()

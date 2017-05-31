@@ -20,9 +20,10 @@
                   {% if supplies.status == "PR"  %}
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
                       <h6 class="product-name">{{ supplies.supply.name }}</h6>
-                      <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
+                      <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>
+                      <h5 class="provider_unit" id="supplies.supply.quantity-{{ supplies.supply.measurement_quantity }},{{ supplies.supply.measurement_unit }}" > Unidad: {{ supplies.supply.measurement_quantity }} {{ supplies.supply.measurement_unit }} </h5>
                       <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Faltan: {{ supplies.quantity }} {{ supplies.supply.measurement_unit }} </h5>
-                      <h5 class="provider_required" id="supplies.supply.quantity" > Comprar: {{ supplies.required_quantity }} {{ supplies.get_unit }} </h5>
+                      <h5 class="provider_required" id="supplies.supply.quantity-{{ supplies.required_quantity }},{{ supplies.get_unit }}" > Comprar: {{ supplies.required_quantity }} {{ supplies.get_unit }} </h5>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -124,7 +125,7 @@ $(function(){
       title: '¿Que cantidad desea mover?',
       input: 'range',
       inputAttributes: {
-        min: 0,
+        min: 1,
         max: obj_quantity,
         step: 1
       },

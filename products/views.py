@@ -348,7 +348,7 @@ def warehouse(request):
 def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()
-    supplies = products_helper.get_all_elements_in_warehouse()
+    supplies_list = products_helper.get_all_supplies()
 
     if request.method == 'POST':
         number = request.POST['cantidad']
@@ -361,8 +361,14 @@ def warehouse_movements(request):
         else:
             Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
 
+    for supply in supplies_list:
+        try:
+            Warehouse.objects.get(supply=supply, status="PR")
+        except Warehouse.DoesNotExist:
+            Warehouse.objects.create(supply=supply, cost=supply.presentation_cost, status="PR")
+
     for prediction in predictions:
-        if prediction['required'] > 0:            
+        if prediction['required'] > 0:
             try:
                 Warehouse.objects.get(supply=prediction['supply'], status="PR")
             except Warehouse.DoesNotExist:
@@ -372,7 +378,7 @@ def warehouse_movements(request):
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {
-        'supply_list': supplies,        
+        'supply_list': products_helper.get_all_elements_in_warehouse(),
         'title': title,
         'page_title': PAGE_TITLE
     }
