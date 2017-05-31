@@ -305,7 +305,7 @@ def catering(request):
                 'Stock': required['stock'],
                 'Por Comprar': required['required'],
                 'Comprar en': str(required['supplier']),
-                'Cantidad x Unidad' : required['measurement_quantity_c'],
+                'Cantidad x Unidad' : required['measurement_quantity'],
                 'Costo x Unidad': required['cost'],
                 'Costo Total': required['full_cost'],                    
             }            
@@ -356,10 +356,15 @@ def warehouse_movements(request):
         mod_wh.quantity -= float(number)
         mod_wh.save()
 
-        if request.POST['type'] == 'Stock':
-            Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="ST")
-        else:
-            Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
+        try:
+            on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
+            on_stock.quantity += float(number)
+            on_stock.save()
+        except Warehouse.DoesNotExist:
+            if request.POST['type'] == 'Stock':
+                Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="ST")
+            else:
+                Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
 
     for supply in supplies_list:
         try:
