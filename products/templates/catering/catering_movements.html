@@ -16,12 +16,14 @@
             </div>
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">
               <div class="card-block products-block">
-                {% for supplies in supply_list %}
-                  {% if supplies.status == "PR" and supplies.quantity > 0 %}
-                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
-                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
-                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity}} {{supplies.warehouse.supply.measurement_quantity}} {{  supplies.warehouse.supply.measurement_unit}} </h5>
+                {% for supplies in supply_list %}                  
+                  {% if supplies.status == "PR"%}
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.supply.name }}</h6>
+                      <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>
+                      <h5 class="provider_unit" id="supplies.supply.quantity-{{ supplies.supply.measurement_quantity }},{{ supplies.supply.measurement_unit }}" > Unidad: {{ supplies.supply.measurement_quantity }} {{ supplies.supply.measurement_unit }} </h5>
+                      <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Faltan: {{ supplies.quantity }} {{ supplies.supply.measurement_unit }} </h5>
+                      <h5 class="provider_required" id="supplies.supply.quantity-{{ supplies.required_quantity }},{{ supplies.get_unit }}" > Comprar: {{ supplies.required_quantity }} {{ supplies.get_unit }} </h5>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -36,11 +38,10 @@
               <div class="card-block products-block"> 
                 {% for supplies in supply_list %}
                   {% if supplies.status == "ST" and supplies.quantity > 0 %}
-                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
-                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
-                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply-{{ supplies.optimal_duration}}" > Fecha de Expiracion: {{ supplies.expiry_date }} </h5>
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.supply.name }}</h6>
+                      <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-st" width="200" height="200" draggable=true>
+                      <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>                      
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -54,11 +55,11 @@
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-rfa">
               <div class="card-block products-block">
                 {% for supplies in supply_list %}
-                  {% if supplies.status == "SO" and supplies.quantity > 0 %}
-                    <div class="card-block product-container" id="supplies.supply-{{ supplies.warehouse.supply.pk }}">
-                      <h6 class="product-name">{{ supplies.warehouse.supply.name }}</h6>
-                      <img src="{{ supplies.warehouse.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.warehouse.pk }}" class="product-img-pr" width="200" height="200" draggable=true>    
-                      <h5 class="provider_quantity" id="supplies.warehouse.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
+                  {% if supplies.status == "AS" and supplies.quantity > 0 %}
+                    <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
+                      <h6 class="product-name">{{ supplies.supply.name }}</h6>
+                      <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-as" width="200" height="200" draggable=true>
+                      <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>
                     </div>
                   {% endif %}
                 {% endfor %}
@@ -93,47 +94,54 @@ $(function(){
 
   let csrf_token = get_cookie('csrftoken');
 
-  $("#group-stock").on("dragover",function(e){
+  $("#group-stock,#group-rfa").on("dragover",function(e){
     e.preventDefault();
   });
 
-  $(".product-img-pr").on("dragstart",function(e){    
-
+  $(".product-img-pr,.product-img-st,.product-img-as").on("dragstart",function(e){
     let element = $(this);
     let element_id = element.attr('id').substring(23);
-    let element_quantity = element.parent().children(".provider_quantity").attr('id').substring(35);
-    let str = element_id+","+element_quantity;
-
+    let element_unit = element.parent().children(".provider_unit").attr('id').substring(25);
+    let element_quantity = element.parent().children(".provider_quantity").attr('id').substring(25);
+    let str = element_id+","+element_quantity+","+element_unit;
     e.originalEvent.dataTransfer.setData("text", str);
-
   });
 
-  $("#group-stock").on("drop",function(e){    
+  $("#group-stock,#group-rfa ").on("drop",function(e){
     e.preventDefault();
+
     let data = e.originalEvent.dataTransfer.getData("text");
     let obj_wh = data.split(',');
     let obj_id = obj_wh[0];
     let obj_quantity = obj_wh[1];
+    let obj_measurement = obj_wh[2];
+    let obj_unit = obj_wh[3];
+    let move = "Stock";
+    let id = $(this).attr("id");
+
+    if(id == "group-rfa"){
+        move = "Assembly"
+    }
 
     swal({
-      title: '¿Que cantidad desea mover?',
+      title: '¿Cuantos ' +obj_unit+ ' desea mover? ',
       input: 'range',
       inputAttributes: {
-        min: 0,
-        max: obj_quantity,
+        min: 1,
+        max: obj_measurement * 5,
         step: 1
       },
+      inputValue: Math.ceil((obj_measurement * 5) / 2),
       showCancelButton: true,
       confirmButtonText: 'Submit',
       showLoaderOnConfirm: true,
       preConfirm: function (number) {
         return new Promise(function (resolve, reject) {
-
           $.ajax({
             url: '{% url "products:wh_movements" %}',
             type: 'POST',
             data: {
-              'type' : 'Stock',
+              'type' : move,
               'cantidad' : number,
               'element_pk' : obj_id,
               csrfmiddlewaretoken: csrf_token,
@@ -155,6 +163,11 @@ $(function(){
       allowOutsideClick: false
     })
   });
+
+  $(".product-img-st").on("click",function(e){
+    console.log("Clicked on Product-img-st")
+  });
+
 });
 
 </script>

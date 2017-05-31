@@ -59,7 +59,7 @@ class Supply(models.Model):
     # presentation unit
     PACKAGE = 'PA'
     BOX = 'BO'
-    PIECE = 'PI'
+    PIECE = 'PZ'
     PRESENTATION_UNIT = (
         (PACKAGE, 'Paquete'),
         (BOX, 'Caja'),
@@ -69,7 +69,7 @@ class Supply(models.Model):
     # metrics
     GRAM = 'GR'
     MILLILITER = 'MI'
-    PIECE = 'PI'
+    PIECE = 'PZ'
 
     METRICS = (
         (GRAM, 'gramo'),
@@ -97,6 +97,24 @@ class Supply(models.Model):
 
     def __str__(self):
         return self.name
+
+    def measurement_convertion(self,quantity):
+        if quantity >= 1000:
+            return self.measurement_quantity / 1000
+        else:
+            return self.measurement_quantity
+
+    def unit_convertion(self,quantity):
+        if quantity >= 1000:
+            if self.measurement_unit == 'GR':
+                return "Kilos"
+            elif self.measurement_unit == 'MI':
+                return "Litros"
+            else:
+                return "Pieza"
+        else:
+            return self.measurement_unit
+
 
     class Meta:
         ordering = ('id',)

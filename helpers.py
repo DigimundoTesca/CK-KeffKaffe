@@ -1,20 +1,15 @@
 import json
 import math
-from decimal import Decimal
-
 import pytz
-
 from datetime import datetime, date, timedelta, time
-
+from decimal import Decimal
 from django.db.models import Min, Max
 from django.utils import timezone
-
 from diners.models import AccessLog, Diner
-from kitchen.models import Warehouse, ProcessedProduct, WarehouseDetails
+from kitchen.models import Warehouse, ProcessedProduct, Delivery
 from products.models import Supply, Cartridge, PackageCartridge, CartridgeRecipe, PackageCartridgeRecipe, \
     ExtraIngredient
 from sales.models import Ticket, TicketDetail, TicketExtraIngredient
-
 
 class Helper(object):
     def __init__(self):
@@ -602,10 +597,9 @@ class ProductsHelper(object):
         self.__all_packages_cartridges = None
         self.__all_supplies = None
         self.__all_extra_ingredients = None
-        self.__all_cartridges_recipes = None
+        self.__all_cartridges_recipes = None        
         self.__all_tickets_details = None
-        self.__elements_in_warehouse = None
-        self.__all_warehouse_details = None
+        self.__elements_in_warehouse = None        
         self.__predictions = None
         self.__required_supplies_list = None
         self.__today_popular_cartridge = None
@@ -616,7 +610,7 @@ class ProductsHelper(object):
         self.__all_supplies = Supply.objects. \
             select_related('category'). \
             select_related('supplier'). \
-            select_related('location').all()
+            select_related('location').order_by('name')
 
     def set_all_cartridges(self):
         self.__all_cartridges = Cartridge.objects.all()
@@ -641,9 +635,6 @@ class ProductsHelper(object):
             select_related('ingredient'). \
             select_related('cartridge'). \
             all()
-
-    def set_all_warehouse_details(self):
-        self.__all_warehouse_details = WarehouseDetails.objects.prefetch_related('warehouse__supply').all()
 
     def set_predictions(self):
         sales_helper = SalesHelper()
@@ -696,7 +687,7 @@ class ProductsHelper(object):
                     }
 
     def set_elements_in_warehouse(self):
-        self.__elements_in_warehouse = Warehouse.objects.select_related('supply').all()
+        self.__elements_in_warehouse = Warehouse.objects.select_related('supply').all().order_by('supply__name')
 
     def set_today_popular_cartridge(self):
         sales_helper = SalesHelper()
@@ -785,13 +776,13 @@ class ProductsHelper(object):
 
         return self.__all_packages_cartridges_recipes
 
-    def get_all_warehouse_details(self):
+    def get_all_elements_in_warehouse(self):
         """
         :rtype: django.db.models.query.QuerySet
         """
-        if self.__all_warehouse_details is None:
-            self.set_all_warehouse_details()
-        return self.__all_warehouse_details
+        if self.__elements_in_warehouse is None:
+            self.set_elements_in_warehouse()
+        return self.__elements_in_warehouse
 
     def get_required_supplies(self):
         """
@@ -800,32 +791,40 @@ class ProductsHelper(object):
         required_supplies_list = []
         all_cartridges = self.get_all_cartridges()
         predictions = self.get_predictions_supplies()
-        supplies_on_stock = self.get_all_warehouse_details().filter(status="ST")
+        supplies_on_stock = self.get_all_elements_in_warehouse().filter(status="ST")
 
         ingredients = self.get_all_cartridges_recipes()
-
+        
         for prediction in predictions:
             for cartridge in all_cartridges:
                 if prediction['cartridge'] == cartridge:
 
-                    ingredients = ingredients.filter(cartridge=cartridge)
-                    for ingredient in ingredients:
+                    ingredientes = ingredients.filter(cartridge=cartridge)                    
+
+                    for ingredient in ingredientes:           
+
                         supply = ingredient.supply
                         name = ingredient.supply.name
-                        cost = ingredient.supply.presentation_cost
-                        measurement = ingredient.supply.measurement_unit
-                        measurement_quantity = ingredient.supply.measurement_quantity
+                        cost = ingredient.supply.presentation_cost                        
+                        measurement_unit = ingredient.supply.unit_convertion(ingredient.quantity)
+                        measurement_quantity = ingredient.supply.measurement_convertion(ingredient.quantity)
+                        supplier_unit = ingredient.supply.unit_convertion(ingredient.supply.measurement_quantity)
+                        supplier_quantity = ingredient.supply.measurement_convertion(ingredient.supply.measurement_quantity)
                         quantity = ingredient.quantity
-
+                        supplier = ingredient.supply.supplier
+                            
                         count = 0
 
                         required_supply_object = {
                             'supply': supply,
                             'name': name,
                             'cost': cost,
-                            'measurement': measurement,
+                            'measurement_unit': measurement_unit,
                             'measurement_quantity': measurement_quantity,
+                            'supplier_unit': supplier_unit,
+                            'supplier_quantity': supplier_quantity,
                             'quantity': quantity,
+                            'supplier': supplier,
                             'stock': 0,
                             'required': 0,
                             'full_cost': 0,
@@ -847,7 +846,7 @@ class ProductsHelper(object):
         for required_supply in required_supplies_list:
             if len(supplies_on_stock) > 0:
                 for supply_on_stock in supplies_on_stock:
-                    if supply_on_stock.warehouse.supply == required_supply['supply']:
+                    if supply_on_stock.supply == required_supply['supply']:
                         required_supply['stock'] = supply_on_stock.quantity
                         required_supply['required'] = max(0, required_supply['quantity'] - required_supply['stock'])
                         required_supply['full_cost'] = \

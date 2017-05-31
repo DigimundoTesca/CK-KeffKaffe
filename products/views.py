@@ -13,7 +13,7 @@ from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
 from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
-from kitchen.models import Warehouse, WarehouseDetails
+from kitchen.models import Warehouse, Delivery
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
@@ -284,22 +284,7 @@ class DeleteCartridge(DeleteView):
         return redirect('supplies:cartridges')
 
 
-# -------------------------------------  Catering -------------------------------------
-class AddStock(CreateView):
-    model = WarehouseDetails
-    fields = ['warehouse','status','quantity']
-    template_name = 'catering/add_stock.html'
-
-    def __init__(self, **kwargs):
-        super(AddStock).__init__(**kwargs)
-        self.object = None
-
-    def form_valid(self, form):
-        print(form)
-        self.object = form.save()
-        return redirect('products:warehouse/catering')
-
-
+# -------------------------------------  Catering -----~--------------------------------
 @login_required(login_url='users:login')
 def catering(request):
     """"
@@ -309,21 +294,24 @@ def catering(request):
 
     products_helper = ProductsHelper()
     required_supplies = products_helper.get_required_supplies()
+
     estimated_total_cost = 0
 
     if request.method == 'POST':
         buy_objects_list = []
 
         for required in required_supplies:
+                       
+
             diner_object = {    
                 'Nombre': required['name'], 
-                'Provedor': "proveedor",
-                'Cantidad': required['name'],
-                'Medida': required["measurement"],
-                'Presentacion': required['measurement_quantity'],
-                'Stock'
-                'Requerdio': required['required'],
-                'Costo': required['full_cost']                     
+                'Requeridos': required['quantity'],
+                'Stock': required['stock'],
+                'Por Comprar': required['required'],
+                'Comprar en': str(required['supplier']),
+                'Cantidad x Unidad' : required['measurement_quantity'],
+                'Costo x Unidad': required['cost'],
+                'Costo Total': required['full_cost'],                    
             }            
 
             buy_objects_list.append(diner_object)
@@ -364,46 +352,43 @@ def warehouse(request):
 def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()
-    supplies_on_stock = products_helper.get_all_warehouse_details()
-    all_supplies = products_helper.get_all_supplies()
+    supplies_list = products_helper.get_all_supplies()
 
     if request.method == 'POST':
         number = request.POST['cantidad']
-        mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
+        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
         mod_wh.quantity -= float(number)
         mod_wh.save()
 
-        created_detail = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse, quantity=number)
+        try:
+            on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
+            on_stock.quantity += float(number)
+            on_stock.save()
+        except Warehouse.DoesNotExist:
+            if request.POST['type'] == 'Stock':
+                Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="ST")
+            else:
+                Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
 
-        if request.POST['type'] == 'Stock':
-            created_detail.status = "ST"
-        else:
-            created_detail.status = "AS"
+    for supply in supplies_list:
+        try:
+            Warehouse.objects.get(supply=supply, status="PR")
+        except Warehouse.DoesNotExist:
 
-        start_date = str(created_detail.created_at)
-        dt = datetime.strptime(start_date, "%Y-%m-%d")
-        modified_date = dt + timedelta(days=created_detail.warehouse.supply.optimal_duration)
-        created_detail.expiry_date = modified_date
-        created_detail.save()
+            Warehouse.objects.create(supply=supply, cost=supply.presentation_cost, status="PR")
 
     for prediction in predictions:
         if prediction['required'] > 0:
             try:
-                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])
-                try:
-                    detail = WarehouseDetails.objects.get(warehouse=sup_on_stock, status="PR")
-                    detail.quantity = prediction['required']
-                except WarehouseDetails.DoesNotExist:
-                    WarehouseDetails.objects.create(
-                        warehouse=sup_on_stock, status="PR", quantity=prediction['required'])
+                Warehouse.objects.get(supply=prediction['supply'], status="PR")
             except Warehouse.DoesNotExist:
-                Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'])
+                Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'],
+                 quantity=prediction['required'], status="PR")
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {
-        'supps': all_supplies,
-        'supply_list': supplies_on_stock,
+        'supply_list': products_helper.get_all_elements_in_warehouse(),
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title
     }
