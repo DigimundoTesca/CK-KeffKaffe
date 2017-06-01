@@ -1,7 +1,7 @@
 {% extends "base/base_nav_footer.html" %}
 {% load static %}
 {% block link %}
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">  
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">
 {% endblock link %}
 {% block content %}
 
@@ -40,6 +40,7 @@
                   {% if supplies.status == "ST" and supplies.quantity > 0 %}
                     <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
                       <h6 class="product-name">{{ supplies.supply.name }}</h6>
+                      <h5 class="provider_unit" id="supplies.supply.quantity-{{ supplies.supply.measurement_quantity }},{{ supplies.supply.measurement_unit }}" > Unidad: {{ supplies.supply.measurement_quantity }} {{ supplies.supply.measurement_unit }} </h5>
                       <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-st" width="200" height="200" draggable=true>
                       <h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Cantidad: {{ supplies.quantity }} </h5>                      
                     </div>
