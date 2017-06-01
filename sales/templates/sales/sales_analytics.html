@@ -748,6 +748,7 @@
           let cost_base = parseFloat(element.total) / element.quantity;
           let total = parseFloat(element.total);
           let quantity = element.quantity;
+          let new_li;
 
           // Formats the names
           $.each(cartridges_list, function(index, item) {
@@ -781,7 +782,7 @@
         ticket_details.packages.forEach(iterate_packages);
         $("#ticket-id").text(id_element);
         
-        let new_li = $("" +
+        new_li = $("" +
           "<li class='total-ticket-container mt-1'>" +
           " <span id='total-ticket'>$ <span class='total-ticket-cant'> " +
           " " + total +"</span></span> " +
