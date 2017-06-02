@@ -65,12 +65,17 @@
             <tr>                                            
           {% endfor %}                                    
             </tbody>
-          </table>          
-        </div>        
-      </div>
-      <button id="btn-save-ticket-csv" class="col-xs-12 col-sm-4 col-xl-2 btn btn-primary d-flex">
+          </table>
+      <div class ="row col-xl-12 push-xl-1">
+        <button id="btn-shop-list" class="btn btn-primary d-flex ">
+          <span class="btn-reports d-flex align-items-center"><i class="material-icons"></i>Crear Lista de Compras</span>
+        </button>
+        <button id="btn-save-ticket-csv" class="offset-md-7 btn btn-primary d-flex">
           <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
         </button>
+       </div>
+        </div>
+      </div>
     </div>
     {% endblock content %}
     {% block javascript %}
@@ -133,6 +138,10 @@
           }, 750);
         }
       });
+    });
+
+    $(".btn-shop-list").on("click",function(e){
+
     });
 
 });
