@@ -1,7 +1,7 @@
 {% extends "base/base_nav_footer.html" %}
 {% load static %}
 
-{% block content %} 
+{% block content %}
 <div class="container-fluid">
   <div class="row mt-3 mb-2">
     <div class="col-xs-12 col-md-6">
@@ -9,7 +9,7 @@
         <span class="badge badge-info">{{ today_popular_cartridge.name }}
         </span>
       </h2>
-    </div>    
+    </div>
     <div class="col-xs-12 col-md-6">
       <h2 class="text-xs-center">Producto más popular:
         <span class="div badge badge-success">
@@ -19,53 +19,53 @@
     </div>
   </div>
   <div class="row mt-1">
-  <div class="col-xs-12 col-xl-10 push-xl-1">      
+    <div class="col-xs-12 col-xl-10 push-xl-1">
       <p class="text-align {% spaceless %}
-      {% endspaceless %}">Costo total de insumos estimados: {{ estimated_total_cost }}</p> 
-      <table class="table table-kitchen table-striped table-hover" align="right">     
+      {% endspaceless %}">Costo total de insumos estimados: {{ estimated_total_cost }}</p>
+      <table class="table table-kitchen table-striped table-hover" align="right">
         <thead class="thead-inverse">
-          <tr>
-            <th>Nombre</th>
-            <th>Requeridos</th>
-            <th>Stock</th>            
-            <th>Por Comprar</th>         
-            <th>Proveedor</th>
-            <th>Cantidad x Unidad</th>
-            <th>Costo x Unidad</th>             
-            <th>Costo Total</th>                
-          </tr>
+        <tr>
+          <th>Nombre</th>
+          <th>Requeridos</th>
+          <th>Stock</th>
+          <th>Por Comprar</th>
+          <th>Proveedor</th>
+          <th>Cantidad x Unidad</th>
+          <th>Costo x Unidad</th>
+          <th>Costo Total</th>
+        </tr>
         </thead>
-        <tbody>             
-          {% for required in required_supplies %}
-          {% if required.measurement_quantity == 1  %}
-            {% if required.stock <= 50 %}
-              <tr class="table-danger">     
-            {% elif required.stock <= 25 %}
-              <tr class="table-warning">     
-            {% elif required.stock <= 10 %}
-              <tr class="table-success">    
-            {% endif %}
+        <tbody>
+        {% for required in required_supplies %}
+        {% if required.measurement_quantity == 1  %}
+        {% if required.stock <= 50 %}
+        <tr class="table-danger">
+          {% elif required.stock <= 25 %}
+        <tr class="table-warning">
+          {% elif required.stock <= 10 %}
+        <tr class="table-success">
+          {% endif %}
           {% else %}
-            {% if required.stock <= 500 %}
-              <tr class="table-danger">     
-            {% elif required.stock <= 1000 %}
-              <tr class="table-warning">     
-            {% elif required.stock <= 2000 %}
-              <tr class="table-success">     
-            {% endif %}
-          {% endif %}                    
-            <td>{{ required.name }}</td>
-            <td>{{ required.quantity }} {{ required.measurement_unit }}</td>
-            <td>{{ required.stock }} {{ required.measurement_unit }}</td>
-            <td>{{ required.required }} {{ required.measurement_unit }}</td>
-            <td>{{ required.supplier }}</td>
-            <td>{{ required.supplier_quantity }} {{ required.supplier_unit }}</td>
-            <td>${{ required.cost }}</td>            
-            <td>${{ required.full_cost }}</td>                       
-            <tr>                                            
-          {% endfor %}                                    
-            </tbody>
-          </table>
+          {% if required.stock <= 500 %}
+        <tr class="table-danger">
+          {% elif required.stock <= 1000 %}
+        <tr class="table-warning">
+          {% elif required.stock <= 2000 %}
+        <tr class="table-success">
+          {% endif %}
+          {% endif %}
+          <td>{{ required.name }}</td>
+          <td>{{ required.quantity }} {{ required.measurement_unit }}</td>
+          <td>{{ required.stock }} {{ required.measurement_unit }}</td>
+          <td>{{ required.required }} {{ required.measurement_unit }}</td>
+          <td>{{ required.supplier }}</td>
+          <td>{{ required.supplier_quantity }} {{ required.supplier_unit }}</td>
+          <td>${{ required.cost }}</td>
+          <td>${{ required.full_cost }}</td>
+        <tr>
+          {% endfor %}
+        </tbody>
+      </table>
       <div class ="row col-xl-12 push-xl-1">
         <button id="btn-shop-list" class="btn btn-primary d-flex ">
           <span class="btn-reports d-flex align-items-center"><i class="material-icons"></i>Crear Lista de Compras</span>
@@ -73,77 +73,103 @@
         <button id="btn-save-ticket-csv" class="offset-md-7 btn btn-primary d-flex">
           <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
         </button>
-       </div>
-        </div>
       </div>
     </div>
-    {% endblock content %}
-    {% block javascript %}
-    
+  </div>
+</div>
+{% endblock content %}
+{% block javascript %}
+
 <script src="{% static 'js/papaparse.min.js' %}" defer></script>
-<script src="{% static 'js/blob.js' %}" defer></script>    
+<script src="{% static 'js/blob.js' %}" defer></script>
 <script src="{% static 'js/fileSaver.min.js' %}" defer></script>
 <script type="text/javascript" charset="utf-8">
 
-  $(function(){  
+    $(function(){
 
-    $(this).on('click', '#btn-save-ticket-csv', function(event) {
-      /**
-       * Convert JSON TO CSV
-       */
-      var diners_json = null;
+        $(this).on('click', '#btn-save-ticket-csv', function(event) {
+            /**
+             * Convert JSON TO CSV
+             */
+            var diners_json = null;
 
-      $.ajax({
-        url: "{% url 'products:catering' %}",
-        type: 'POST',
-        dataType: 'json',
-        data: {
-          type: 'buy_list',
-          csrfmiddlewaretoken: '{{ csrf_token }}',
-        },
-        beforeSend: function(){
-          swal({
-              title: "Generando Excel",
-              text: "Espere mientras obtenemos toda la información",
+            $.ajax({
+                url: "{% url 'products:catering' %}",
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    type: 'buy_list',
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                },
+                beforeSend: function(){
+                    swal({
+                        title: "Generando Excel",
+                        text: "Espere mientras obtenemos toda la información",
+                    });
+                    swal.enableLoading();
+                },
+                success: function(result, status, XHR) {
+
+                    diner_details = Papa.unparse({
+                        fields: ["Nombre", "Requeridos", "Stock", "Por Comprar", "Comprar en", "Cantidad x Unidad", "Costo x Unidad", "Costo Total"],
+                        data: result.buy_list
+                    });
+
+                    var blob = new Blob([ diner_details ], {
+                        type: "text/csv;charset=UTF-8" }
+                    );
+
+                    var datetime = new Date();
+                    saveAs(blob, datetime + '.csv');
+
+                    swal({
+                        title: "Éxito",
+                        text: "Datos obtenidos",
+                        type: "info",
+                        timer: 750,
+                        showConfirmButton: false
+                    }).then(
+                        function(){},
+                        function(dismiss){}
+                    );
+                },
+                complete: function(result){
+                    setTimeout(function() {
+                    }, 750);
+                }
             });
-          swal.enableLoading();
-        },
-        success: function(result, status, XHR) {
-          
-          diner_details = Papa.unparse({
-              fields: ["Nombre", "Requeridos", "Stock", "Por Comprar", "Comprar en", "Cantidad x Unidad", "Costo x Unidad", "Costo Total"],
-              data: result.buy_list
-          });
+        });
 
-          var blob = new Blob([ diner_details ], {
-            type: "text/csv;charset=UTF-8" }
-            );
 
-          var datetime = new Date();
-          saveAs(blob, datetime + '.csv');
-
-          swal({
-            title: "Éxito",
-            text: "Datos obtenidos",
-            type: "info",
-            timer: 750,
-            showConfirmButton: false
-          }).then(
-            function(){},
-            function(dismiss){}
-          );
-        },
-        complete: function(result){
-          setTimeout(function() {
-          }, 750);
-        }
-      });
-    });
-
-    $(".btn-shop-list").on("click",function(e){
+        $("#btn-shop-list").on("click",function(e){
+            swal({
+                title: '<i>HTML</i> <u>example</u>',
+                type: 'info',
+                html:
+                '<div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">'+
+              '<div class="card-block products-block">'+
+               ' {% for supplies in supply_list %}'+
+                '  {% if supplies.status == "PR"%}'+
+                 '   <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">'+
+                  '    <h6 class="product-name">{{ supplies.supply.name }}</h6>'+
+                   '   <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>'+
+                    '  <h5 class="provider_unit" id="supplies.supply.quantity-{{ supplies.supply.measurement_quantity }},{{ supplies.supply.measurement_unit }}" > Unidad: {{ supplies.supply.measurement_quantity }} {{ supplies.supply.measurement_unit }} </h5>''+
+                     '<h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Faltan: {{ supplies.quantity }} {{ supplies.supply.measurement_unit }} </h5>'+
+                      '<h5 class="provider_required" id="supplies.supply.quantity-{{ supplies.required_quantity }},{{ supplies.get_unit }}" > Comprar: {{ supplies.required_quantity }} {{ supplies.get_unit }} </h5>'+
+                    '</div>'+
+                  '{% endif %}'+
+                '{% endfor %}'+
+              '</div>'+
+            '</div>',
+                showCloseButton: true,
+                showCancelButton: true,
+                confirmButtonText:
+                    '<i class="fa fa-thumbs-up"></i> Great!',
+                cancelButtonText:
+                    '<i class="fa fa-thumbs-down"></i>'
+            })
+        });
 
     });
-
-});
-    </script>
-    {% endblock javascript %}
+</script>
+{% endblock javascript %}
