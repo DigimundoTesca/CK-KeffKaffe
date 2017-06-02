@@ -67,7 +67,7 @@
         </tbody>
       </table>
       <div class ="row col-xl-12 push-xl-1">
-        <button id="btn-shop-list" class="btn btn-primary d-flex ">
+        <button id="btn-shop-list" class="btn btn-primary d-flex" data-toggle="modal" data-target="#ModalShopList">
           <span class="btn-reports d-flex align-items-center"><i class="material-icons"></i>Crear Lista de Compras</span>
         </button>
         <button id="btn-save-ticket-csv" class="offset-md-7 btn btn-primary d-flex">
@@ -77,6 +77,44 @@
     </div>
   </div>
 </div>
+
+<!-- ShopList Modal -->
+<div class="modal fade" id="ModalShopList" tabindex="-1" role="dialog" >
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="ModalLabel">Lista de Compras</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid container-sales">
+                    <div class="group-sales col-xs-12 col-md-12 col-lg-6">
+                        <div class="card card-block card-product-title card-outline-info">
+                            <h3>Por comprar</h3>
+                        </div>
+                        <div class="container-sales">
+
+                                <div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">
+                                    <div class="card-block products-block">
+                                        {% for supplies in supply_list %}
+                                        <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
+                                            <h6 class="product-name">{{ supplies.name }}</h6>
+                                            <img src="{{ supplies.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock content %}
 {% block javascript %}
 
@@ -138,36 +176,6 @@
                     }, 750);
                 }
             });
-        });
-
-
-        $("#btn-shop-list").on("click",function(e){
-            swal({
-                title: '<i>HTML</i> <u>example</u>',
-                type: 'info',
-                html:
-                '<div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">'+
-              '<div class="card-block products-block">'+
-               ' {% for supplies in supply_list %}'+
-                '  {% if supplies.status == "PR"%}'+
-                 '   <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">'+
-                  '    <h6 class="product-name">{{ supplies.supply.name }}</h6>'+
-                   '   <img src="{{ supplies.supply.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-pr" width="200" height="200" draggable=true>'+
-                    '  <h5 class="provider_unit" id="supplies.supply.quantity-{{ supplies.supply.measurement_quantity }},{{ supplies.supply.measurement_unit }}" > Unidad: {{ supplies.supply.measurement_quantity }} {{ supplies.supply.measurement_unit }} </h5>''+
-                     '<h5 class="provider_quantity" id="supplies.supply.quantity-{{ supplies.quantity }}" > Faltan: {{ supplies.quantity }} {{ supplies.supply.measurement_unit }} </h5>'+
-                      '<h5 class="provider_required" id="supplies.supply.quantity-{{ supplies.required_quantity }},{{ supplies.get_unit }}" > Comprar: {{ supplies.required_quantity }} {{ supplies.get_unit }} </h5>'+
-                    '</div>'+
-                  '{% endif %}'+
-                '{% endfor %}'+
-              '</div>'+
-            '</div>',
-                showCloseButton: true,
-                showCancelButton: true,
-                confirmButtonText:
-                    '<i class="fa fa-thumbs-up"></i> Great!',
-                cancelButtonText:
-                    '<i class="fa fa-thumbs-down"></i>'
-            })
         });
 
     });
