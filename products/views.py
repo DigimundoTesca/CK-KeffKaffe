@@ -360,15 +360,21 @@ def warehouse_movements(request):
         mod_wh.quantity -= float(number)
         mod_wh.save()
 
-        try:
-            on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
-            on_stock.quantity += float(number)
-            on_stock.save()
-        except Warehouse.DoesNotExist:
-            if request.POST['type'] == 'Stock':
+        if request.POST['type'] == 'Stock':
+            try:
+                on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
+                on_stock.quantity += float(number)
+                on_stock.save();
+            except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="ST")
-            else:
+        else:
+            try:
+                on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="AS")
+                on_stock.quantity += float(number)
+                on_stock.save();
+            except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
+
 
     for supply in supplies_list:
         try:
