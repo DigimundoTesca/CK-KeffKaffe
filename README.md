@@ -48,14 +48,15 @@ Also you can install your virtualenv with [virtualenvwrapper](https://pypi.pytho
 ### Create migrations in a database with the existing project
 
 1.  Delete all existing migrations with this script
-```
-find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
-find . -path "*/migrations/*.pyc"  -delete
-```
+    ```
+    find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+    find . -path "*/migrations/*.pyc"  -delete
+    ```
 2. Remove *django_migrations* table from database
 delete from django_migrations;
 
 3. Copy and apaste this script
+    ```
     ./manage.py makemigrations users
     ./manage.py migrate contenttypes --fake
     ./manage.py migrate --fake-initial fcm
@@ -76,6 +77,7 @@ delete from django_migrations;
     ./manage.py migrate --fake-initial diners
     ./manage.py makemigrations kitchen
     ./manage.py migrate --fake kitchen
+    ```
 
 ### Do you have questions about installing?
 * [Quick installation of a project django with virtualenv](https://tutorial.djangogirls.org/es/django_installation/)
