@@ -17,11 +17,20 @@
     <div class="input-group mb-2 mr-sm-2 mb-sm-0">
       <input type="text" class="form-control" id="final-date" placeholder="Última Fecha">
     </div>
-
     <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" onclick="" id="create-predictions">Generar</button>
   </div>
   <div>
-    <table id="analytics-prro" class="table table-kitchen table-straped table-hover" align="right">
+  <select class="custom-select" id="">Gráfica deseada</select>
+  </div>
+  <div class="row sales-graphics">
+    <div class="col-xs-12 col-lg-6">
+      <div class="canvas-holder">
+        <canvas id="analytics-chart" width="400" height="400"></canvas>
+      </div>
+    </div>
+  </div>
+  <div>
+    <table id="analytics-table" class="table table-kitchen table-straped table-hover" align="right">
       <thead class="thead-inverse">
         <tr>
           <th>Producto</th>
@@ -47,21 +56,6 @@
     </table>
   </div>
 </div>
-<!-- <style type="text/css">
-  /*---------- Tables ------------ */
-tr:nth-child(even){
- background-color:  rgba(131,78,0,0.5);
-}
-tr:hover{
- background-color:  rgba(131,78,0,1) !important;
-}
-
-table{
-  border-collapse: collapse;
-  width: 100%
-}*/
-</style> -->
-
 {% endblock content %}
 
 {% block javascript %}
@@ -111,7 +105,6 @@ table{
       final_date = aux_final[1] + '-' + aux_final[0] + '-' + aux_final[2];
 
       let csrf_token = get_cookie('csrftoken');
-      console.log(initial_date)
       $.ajax({
         url: '{% url "products:analytics" %}',
         type: 'POST',
@@ -130,7 +123,6 @@ table{
             showConfirmButton: true,
           });
 
-         console.log(result);
 
         },
         error: function(result, jqXHR, textStatus, errorThrown) {
@@ -144,7 +136,16 @@ table{
         },
       });
     });
-
   });
+
+  $(function(){
+
+    let ctx = $("#analytics-chart");
+    let ctx_products = []; 
+    let ctx_products_chart = document.getElementById("analytics-chart");
+    
+  });
+
+
 </script>
 {% endblock javascript %}

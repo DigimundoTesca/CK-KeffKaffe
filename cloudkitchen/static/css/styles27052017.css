@@ -1,14 +1,14 @@
-#analytics-prro { 
+#analytics-table { 
   border-collapse: collapse;
   width: 100%;
 }
 
-#analytics-prro tr:nth-child(even){
+#analytics-table tr:nth-child(even){
  background-color:  rgba(120, 204, 200,0.5);
 }
 
 
-#analytics-prro tr:hover{
+#analytics-table tr:hover{
  background-color:  rgba(75, 127, 125, 0.8);
 }
 
