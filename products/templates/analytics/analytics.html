@@ -3,58 +3,51 @@
 {% load static %}
 
 {% block link %}    
-  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css"/>
-  <link rel="stylesheet" href="{% static "css/styles27052017.css" %}">
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.js"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"/>
+<link rel="stylesheet" href="{% static "css/styles27052017.css" %}">
 {% endblock link %}
 
 {% block content %}
-<div class="container"/>
-  <div class="form-inline">
-    <label class="sr-only" for="initial-date">Fecha inicial</label>
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="initial-date" placeholder="Primer Fecha">
-
-    <label class="sr-only" for="final-date">Fecha Final</label>
-    <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-      <input type="text" class="form-control" id="final-date" placeholder="Última Fecha">
-    </div>
-    <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" onclick="" id="create-predictions">Generar</button>
-  </div>
-  <div>
-  <select class="custom-select" id="">Gráfica deseada</select>
-  </div>
-  <div class="row sales-graphics">
-    <div class="col-xs-12 col-lg-6">
-      <div class="canvas-holder">
-        <canvas id="analytics-chart" width="400" height="400"></canvas>
-      </div>
+<div>
+  <select class="custom-select" id=""></select>
+</div>
+<div class="row sales-graphics">
+  <div class="col-xs-12 col-lg-6">
+    <div class="canvas-holder">
+      <canvas id="analytics-chart" width="400" height="400"></canvas>
     </div>
   </div>
-  <div>
-    <table id="analytics-table" class="table table-kitchen table-straped table-hover" align="right">
-      <thead class="thead-inverse">
-        <tr>
-          <th>Producto</th>
-          <th>Cantidad</th>
-        </tr>
-      </thead>  
-        <tbody>
-            {% for cartridge in today_sold_product %}
-            <tr>
-              <td>
-                <span>
-                  {{ cartridge.name }}
-                </span>
-              </td>
-              <td>
-                <span class="badge badge-success">
-                  {{ cartridge.frequency }}
-                </span>
-              </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-  </div>
+</div>
+<div>
+  <table id="analytics-table" class="table table-kitchen table-straped table-hover" align="right">
+    <thead class="thead-inverse">
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+      </tr>
+    </thead>  
+    <tbody>
+      {% for cartridge in today_sold_product %}
+      <tr>
+        <td>
+          <span>
+            {{ cartridge.name }}
+          </span>
+        </td>
+        <td>
+          <span class="badge badge-success">
+            {{ cartridge.frequency }}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 </div>
 {% endblock content %}
 
