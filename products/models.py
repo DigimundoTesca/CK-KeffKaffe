@@ -98,13 +98,13 @@ class Supply(models.Model):
     def __str__(self):
         return self.name
 
-    def measurement_convertion(self,quantity):
+    def measurement_conversion(self, quantity):
         if quantity >= 1000:
             return self.measurement_quantity / 1000
         else:
             return self.measurement_quantity
 
-    def unit_convertion(self,quantity):
+    def unit_conversion(self, quantity):
         if quantity >= 1000:
             if self.measurement_unit == 'GR':
                 return "Kilos"
@@ -114,7 +114,6 @@ class Supply(models.Model):
                 return "Pieza"
         else:
             return self.measurement_unit
-
 
     class Meta:
         ordering = ('id',)
@@ -132,7 +131,7 @@ class Cartridge(models.Model):
         (COMPLEMENTS, 'Complementos'),
     )
 
-    # Kinf of food
+    # Kind of food
     BREAKFAST = 'BF'
     FOOD = 'FO'
     
@@ -156,7 +155,7 @@ class Cartridge(models.Model):
         return """
         <img src="%s" alt="Product image" height="80" >
 
-        """  % self.image.url
+        """ % self.image.url
 
     get_image.allow_tags = True
     get_image.short_description = 'Foto'
@@ -224,8 +223,7 @@ class PackageCartridge(models.Model):
         options = []
 
         for recipe in recipes:
-            options.append(("<option value=%s selected>%s</option>" %
-                                (recipe, recipe.cartridge)))
+            options.append(("<option value=%s selected>%s</option>" % (recipe, recipe.cartridge)))
         tag = """<select multiple disabled>%s</select>""" % str(options)
         return tag
 
@@ -249,7 +247,3 @@ class PackageCartridgeRecipe(models.Model):
         ordering = ('id',)
         verbose_name = 'Receta del Paquete'
         verbose_name_plural = 'Recetas de Paquetes'
-
-
-
-

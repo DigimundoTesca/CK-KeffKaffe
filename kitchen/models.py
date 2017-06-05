@@ -2,8 +2,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from products.models import Supply, Cartridge, PackageCartridge
-from sales.models import Ticket, TicketDetail
+from products.models import Supply
+from sales.models import Ticket
 import math
 
 
@@ -74,7 +74,8 @@ class Warehouse(models.Model):
         return required
 
     def get_unit(self):
-        return self.supply.unit_convertion(math.ceil(self.quantity / self.supply.measurement_quantity) * self.supply.measurement_quantity)
+        return self.supply.unit_conversion(
+            math.ceil(self.quantity / self.supply.measurement_quantity) * self.supply.measurement_quantity)
 
     class Meta:
         ordering = ('id',)
@@ -87,7 +88,8 @@ class Delivery(models.Model):
     delivery_day = models.DateField(editable=False, auto_now_add=True)
 
     def __str__(self):
-        return '%s' % self.warehouse.supply
+        # return '%s' % self.warehouse.supply
+        return '%s' % self.id
 
     class Meta:
         ordering = ('id',)

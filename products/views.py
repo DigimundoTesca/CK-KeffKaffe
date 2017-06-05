@@ -450,31 +450,31 @@ def products_analytics(request):
         products_helper = ProductsHelper()
         initial_date = date.today()
         final_date = initial_date + timedelta(days=1)
-        cartridge_dict = {}
-        cartridge_list = []
+        cartridges_list = []
         filtered_ticket_details = sales_helper.get_tickets_details(initial_date, final_date)
+        all_cartridges = products_helper.get_all_cartridges()
 
-        for cartridge in products_helper.get_all_cartridges():
-            cartridge_dict[cartridge.id] = {
-                'name': cartridge.name,
-                'frequency': 0
+        for cartridge_item in all_cartridges:
+            cartridge_object = {
+                'id': cartridge_item.id,
+                'name': cartridge_item.name,
+                'frequency': 0,
             }
+            cartridges_list.append(cartridge_object)
 
-        for ticket_detail in filtered_ticket_details:
-            if ticket_detail.cartridge:
-                ticket_detail_id = ticket_detail.cartridge.id
-                cartridge_dict[ticket_detail_id]['frequency'] += ticket_detail.quantity
-                cartridge_list.append(cartridge_dict)
+        for ticket_detail_item in filtered_ticket_details:
+            if ticket_detail_item.cartridge:
+                for cartridge_item in cartridges_list:
+                    if cartridge_item['id'] == ticket_detail_item.cartridge.id:
+                        cartridge_item['frequency'] += ticket_detail_item.quantity
+                        break
 
-        return cartridge_list
-
-    get_products_sold()
+        return cartridges_list
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
     list_x = [1, 2, 3, 4, 5, 6]
     list_y = [10, 20, 30, 40, 50, 60]
-    get_products_sold()
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
@@ -482,12 +482,12 @@ def products_analytics(request):
     list_y = [10, 20, 30, 40, 50, 60]
 
     latest_squares = LeastSquares(list_x, list_y)
-    sold_product  = get_products_sold()
+    sold_product = get_products_sold()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
         'least_squares': latest_squares,
-        'today_sold_product': get_products_sold()
+        'today_sold_product': sold_product,
     }
 
     return render(request, template, context)
@@ -504,6 +504,6 @@ def products_predictions(request):
     }
     return render(request, template, context)
 
-  
+
 def test(request):
     return HttpResponse('Hola!!!')
