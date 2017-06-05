@@ -295,6 +295,7 @@ def catering(request):
     products_helper = ProductsHelper()
     required_supplies = products_helper.get_required_supplies()
 
+
     estimated_total_cost = 0
 
     if request.method == 'POST':
@@ -329,6 +330,7 @@ def catering(request):
         'required_supplies': required_supplies,
         'estimated_total_cost': estimated_total_cost,
         'page_title': PAGE_TITLE,
+        'supply_list': products_helper.get_all_supplies(),
         'always_popular_cartridge': products_helper.get_always_popular_cartridge(),
         'today_popular_cartridge': products_helper.get_today_popular_cartridge(),
     }
@@ -360,15 +362,21 @@ def warehouse_movements(request):
         mod_wh.quantity -= float(number)
         mod_wh.save()
 
-        try:
-            on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
-            on_stock.quantity += float(number)
-            on_stock.save()
-        except Warehouse.DoesNotExist:
-            if request.POST['type'] == 'Stock':
+        if request.POST['type'] == 'Stock':
+            try:
+                on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
+                on_stock.quantity += float(number)
+                on_stock.save();
+            except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="ST")
-            else:
+        else:
+            try:
+                on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="AS")
+                on_stock.quantity += float(number)
+                on_stock.save();
+            except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
+
 
     for supply in supplies_list:
         try:
