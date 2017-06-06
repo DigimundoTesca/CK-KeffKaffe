@@ -12,7 +12,8 @@
  background-color:  rgba(75, 127, 125, 0.8);
 }
 
-.card{
-	display: flex;
-
+.canvas-container{
+	width: 10px;
+	
 }
+
