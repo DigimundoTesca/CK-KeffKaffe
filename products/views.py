@@ -18,8 +18,6 @@ from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
 
-
-
 # -------------------------------------  Suppliers -------------------------------------
 from sales.models import TicketDetail
 
@@ -287,7 +285,7 @@ class DeleteCartridge(DeleteView):
 # -------------------------------------  Catering -------------------------------------
 class AddStock(CreateView):
     model = WarehouseDetails
-    fields = ['warehouse','status','quantity']
+    fields = ['warehouse', 'status', 'quantity']
     template_name = 'catering/add_stock.html'
 
     def __init__(self, **kwargs):
@@ -315,16 +313,16 @@ def catering(request):
         buy_objects_list = []
 
         for required in required_supplies:
-            diner_object = {    
-                'Nombre': required['name'], 
+            diner_object = {
+                'Nombre': required['name'],
                 'Provedor': "proveedor",
                 'Cantidad': required['name'],
                 'Medida': required["measurement"],
                 'Presentacion': required['measurement_quantity'],
                 'Stock'
                 'Requerdio': required['required'],
-                'Costo': required['full_cost']                     
-            }            
+                'Costo': required['full_cost']
+            }
 
             buy_objects_list.append(diner_object)
 
@@ -475,9 +473,53 @@ def products_analytics(request):
                     if cartridge_item['id'] == ticket_detail_item.cartridge.id:
                         cartridge_item['frequency'] += ticket_detail_item.quantity
                         break
-
         return cartridges_list
 
+    def drinks_sold():
+        sales_helper = SalesHelper()
+        products_helper = ProductsHelper()
+        initial_date = date.today()
+        final_date = initial_date + timedelta(days=1)
+        drinks_list = []
+        filtered_ticket_details = sales_helper.get_tickets_details(initial_date, final_date)
+        all_cartridges = products_helper.get_all_cartridges()
+
+        for cartridge_item in all_cartridges:
+            if cartridge_item.category == 'CO':
+                drinks_sold = {
+                    'id': cartridge_item.id,
+                    'name': cartridge_item.name,
+                    'frequency': 0,
+                    'category': cartridge_item.category,
+                }
+                drinks_list.append(drinks_sold)
+            else:
+                print(cartridge_item.category)
+        for ticket_detail_item in filtered_ticket_details:
+            if ticket_detail_item.cartridge:
+                pass
+        return drinks_list
+
+    def food_sold():
+        sales_helper = SalesHelper()
+        products_helper = ProductsHelper()
+        initial_date = date.today()
+        final_date = initial_date + timedelta(days=1)
+        food_list = []
+        filtered_ticket_details = sales_helper.get_tickets_details(initial_date, final_date)
+        all_cartridges = products_helper.get_all_cartridges()
+
+        for cartridge_item in all_cartridges:
+            if cartridge_item.category == 'FD':
+                food_sold = {
+                    'id': cartridge_item.id,
+                    'name': cartridge_item.name,
+                    'category': cartridge_item.category,
+                }
+                food_list.append(food_sold)
+
+    hola = drinks_sold()
+    adios = food_sold()
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
     list_x = [1, 2, 3, 4, 5, 6]
