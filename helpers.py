@@ -11,6 +11,7 @@ from products.models import Supply, Cartridge, PackageCartridge, CartridgeRecipe
     ExtraIngredient
 from sales.models import Ticket, TicketDetail, TicketExtraIngredient
 
+
 class Helper(object):
     def __init__(self):
         self.tz = pytz.timezone('America/Mexico_City')
@@ -806,10 +807,10 @@ class ProductsHelper(object):
                         supply = ingredient.supply
                         name = ingredient.supply.name
                         cost = ingredient.supply.presentation_cost                        
-                        measurement_unit = ingredient.supply.unit_convertion(ingredient.quantity)
-                        measurement_quantity = ingredient.supply.measurement_convertion(ingredient.quantity)
-                        supplier_unit = ingredient.supply.unit_convertion(ingredient.supply.measurement_quantity)
-                        supplier_quantity = ingredient.supply.measurement_convertion(ingredient.supply.measurement_quantity)
+                        measurement_unit = ingredient.supply.unit_conversion(ingredient.quantity)
+                        measurement_quantity = ingredient.supply.measurement_conversion(ingredient.quantity)
+                        supplier_unit = ingredient.supply.unit_conversion(ingredient.supply.measurement_quantity)
+                        supplier_quantity = ingredient.supply.measurement_conversion(ingredient.supply.measurement_quantity)
                         quantity = ingredient.quantity
                         supplier = ingredient.supply.supplier
                             
