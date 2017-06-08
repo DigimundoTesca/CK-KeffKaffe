@@ -295,7 +295,6 @@ def catering(request):
     products_helper = ProductsHelper()
     required_supplies = products_helper.get_required_supplies()
 
-
     estimated_total_cost = 0
 
     if request.method == 'POST':
