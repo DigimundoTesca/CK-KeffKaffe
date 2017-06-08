@@ -1,9 +1,8 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 
-from datetime import timedelta, datetime, date
+from datetime import timedelta, date
 
-from decimal import Decimal
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
@@ -13,17 +12,13 @@ from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
 from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
-from kitchen.models import Warehouse, Delivery
+from kitchen.models import Warehouse
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
 
 
-
 # -------------------------------------  Suppliers -------------------------------------
-from sales.models import TicketDetail
-
-
 @login_required(login_url='users:login')
 def suppliers(request):
     suppliers_list = Supplier.objects.order_by('id')
@@ -360,17 +355,16 @@ def warehouse_movements(request):
             try:
                 on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
                 on_stock.quantity += float(number)
-                on_stock.save();
+                on_stock.save()
             except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="ST")
         else:
             try:
                 on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="AS")
                 on_stock.quantity += float(number)
-                on_stock.save();
+                on_stock.save()
             except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
-
 
     for supply in supplies_list:
         try:
@@ -385,7 +379,7 @@ def warehouse_movements(request):
                 Warehouse.objects.get(supply=prediction['supply'], status="PR")
             except Warehouse.DoesNotExist:
                 Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'],
-                 quantity=prediction['required'], status="PR")
+                                         quantity=prediction['required'], status="PR")
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
@@ -406,9 +400,8 @@ def products_analytics(request):
         initial_dt = helper.naive_to_datetime(date(int(initial_dt[2]), int(initial_dt[1]), int(initial_dt[0])))
         final_dt = final_dt.split('-')
         final_dt = helper.naive_to_datetime(date(int(final_dt[2]), int(final_dt[1]), int(final_dt[0])))
-
-        filtered_tickets_details = sales_helper.get_all_tickets_details().filter(ticket__created_at__range=
-                                                                                 [initial_dt, final_dt])
+        filtered_tickets_details = sales_helper.get_all_tickets_details().\
+            filter(ticket__created_at__range=[initial_dt, final_dt])
         all_cartridge_recipes = CartridgeRecipe.objects.select_related('cartridge').all()
         supplies_list = []
         date_dict = {}
