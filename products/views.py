@@ -494,7 +494,7 @@ def products_analytics(request):
                 }
                 drinks_list.append(drinks_sold)
             else:
-                print(cartridge_item.category)
+                pass
         for ticket_detail_item in filtered_ticket_details:
             if ticket_detail_item.cartridge:
                 pass

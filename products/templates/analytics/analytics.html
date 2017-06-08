@@ -11,9 +11,9 @@
 <div class="container-fluid">
   <select class="custom-select" id=""></select>
 </div>
-<div class="chart-container">
-  <div class="doughnut-chart-container">
-    <canvas id="myChart"></canvas>
+<div class="container-fluid">
+  <div id="doughnut-chart" class="chart-container" style="width:50% !important">
+      <canvas id="nutChar"></canvas>
   </div>
 </div>
 <div class="container-fluid">
@@ -71,14 +71,17 @@
     }
   });
 
-  var ctx = document.getElementById("myChart").getContext('2d');
-  var myChart = new Chart(ctx, {
+  var ctx = document.getElementById("nutChar").getContext('2d');
+  var sold_drinks = [];
+
+  // for(let i=0;i < {{ cartridge.frequency }}; i++){
+    
+  // }
+  var nutChar = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
       datasets: [{
-        label: '# of Votes',
-        data: [12, 19, 3, 5, 2, 3],
+        data: [13, 19, 3, 20, 2, 3],
         backgroundColor: [
         'Red',
         'Blue',
