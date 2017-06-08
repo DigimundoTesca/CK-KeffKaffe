@@ -88,7 +88,7 @@
             </div>
             <div class="modal-body">
                 <div class="container-fluid container-sales">
-                    <div class="group-sales col-xs-12 col-md-12 col-lg-6">
+                    <div class="group-sales col-xs-6 col-md-6 col-lg-6">
                         <div class="card card-block card-product-title card-outline-info">
                             <h3>Por comprar</h3>
                         </div>
@@ -96,28 +96,33 @@
                             <div class="card col-xs-12 card-scroll card-outline-info" id="group-provider">
                                 <div class="card-block products-block">
                                     {% for supplies in supply_list %}
-                                    <div class="card-block product-container" id="supplies.supply-{{ supplies.supply.pk }}">
-                                        <h6 id ="{{ supplies.name }}" class="product-name">{{ supplies.name }}</h6>
+                                    <div class="card-block product-container" id="supplies.supply-{{ supplies.pk }}">
+                                        <h7 class="product_name" id ="supply_name-{{ supplies.name }}" >{{ supplies.name }}</h7>
                                         <img src="{{ supplies.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-list" width="200" height="200" draggable=true>
+                                        <h7 class="provider_unit" id="supplies.quantity-{{ supplies.self_measurement_conversion }},{{ supplies.self_unit_conversion }}" > Unidad: {{ supplies.self_measurement_conversion }} {{ supplies.self_unit_conversion }} </h7>
                                     </div>
                                     {% endfor %}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="group-sales col-xs-12 col-md-12 col-lg-6">
+                    <div class="group-sales col-xs-6 col-md-6 col-lg-6">
                         <table class="table table-kitchen table-striped table-hover" align="right" id="TableID">
                             <thead class="thead-inverse">
                             <tbody>
                                 <tr>
                                     <th>Nombre</th>
                                     <th>Requeridos</th>
+                                    <th>Medida</th>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button id="btn-save-ticket_local-csv" class="offset-md-7 btn btn-primary d-flex">
+                        <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
+                    </button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -131,9 +136,10 @@
     <script src="{% static 'js/blob.js' %}" defer></script>
     <script src="{% static 'js/fileSaver.min.js' %}" defer></script>
     <script type="text/javascript" charset="utf-8">
+
         $(function(){
 
-            $(this).on('click', '#btn-save-ticket-csv', function(event) {
+            $(this).on('click', '#btn-save-ticket-csv , #btn-save-ticket_local-csv' , function(event) {
                 /**
                  * Convert JSON TO CSV
                  */
@@ -186,19 +192,56 @@
                 });
             });
 
+            var list_array = [];
+
             $(".product-img-list").on("click",function(e){
 
-                let element = $(this);
-                let element_unit = element.parent().children(".product-name").attr('id');
-                console.log(element_unit);
+                var element = $(this);
+                var product_name = element.parent().children(".product_name").attr('id').substring(12);
+                var product_measurement = element.parent().children(".provider_unit").attr('id').substring(18);
+                var obj_wh = product_measurement.split(',');
+                var obj_unit = obj_wh[0];
+                var obj_measurement = obj_wh[1];
 
-                $("#TableID").find('tbody')
-                    .append($(
+                var string = [product_name,obj_unit,obj_measurement];
+
+                var html_list = "";
+
+                if (list_array.length===0){
+                    list_array.push(string);
+                }else{
+                    var igual = false;
+                    for (i = 0; i < list_array.length; i++){
+                       if (list_array[i][0]===product_name){
+                           list_array[i][1] = parseInt(list_array[i][1]) + parseInt(obj_unit);
+                           igual = true;
+                       }
+                    }
+                    if(!igual){
+                        list_array.push(string);
+                    }
+                }
+
+                for (i = 0; i < list_array.length; i++) {
+                    html_list +=
                         '<tr>' +
-                            '<th>'+element_unit+'</th>' +
-                            '<th>1</th>' +
-                        '</tr>')
-                    );
+                            '<th>' + list_array[i][0] + '</th>' +
+                            '<th>' + list_array[i][1] + '</th>' +
+                            '<th>' + list_array[i][2] + '</th>' +
+                        '</tr>'
+                }
+
+                $("#TableID tbody tr").remove();
+                $("#TableID tbody")
+                        .append($(
+                            '<tr>'+
+                                '<th>Nombre</th>'+
+                                '<th>Requeridos</th>'+
+                                '<th>Medida</th>'+
+                            '</tr>'
+                            + html_list
+                        ));
+
             });
 
         });

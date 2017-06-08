@@ -300,10 +300,7 @@ def catering(request):
 
     if request.method == 'POST':
         buy_objects_list = []
-
         for required in required_supplies:
-                       
-
             diner_object = {    
                 'Nombre': required['name'], 
                 'Requeridos': required['quantity'],
@@ -313,10 +310,8 @@ def catering(request):
                 'Cantidad x Unidad' : required['measurement_quantity'],
                 'Costo x Unidad': required['cost'],
                 'Costo Total': required['full_cost'],                    
-            }            
-
+            }
             buy_objects_list.append(diner_object)
-
         return JsonResponse({'buy_list': buy_objects_list})
 
     for required in required_supplies:

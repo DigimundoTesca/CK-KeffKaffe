@@ -104,8 +104,25 @@ class Supply(models.Model):
         else:
             return self.measurement_quantity
 
+    def self_measurement_conversion(self):
+        if self.measurement_quantity >= 1000:
+            return self.measurement_quantity / 1000
+        else:
+            return self.measurement_quantity
+
     def unit_conversion(self, quantity):
         if quantity >= 1000:
+            if self.measurement_unit == 'GR':
+                return "Kilos"
+            elif self.measurement_unit == 'MI':
+                return "Litros"
+            else:
+                return "Pieza"
+        else:
+            return self.measurement_unit
+
+    def self_unit_conversion(self):
+        if self.measurement_quantity >= 1000:
             if self.measurement_unit == 'GR':
                 return "Kilos"
             elif self.measurement_unit == 'MI':
