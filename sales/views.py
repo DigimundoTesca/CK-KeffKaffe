@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -217,16 +218,12 @@ def new_sale(request):
                 cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=cartridge_object)
 
                 for element in cartridge_recipe:
-                    stock = Warehouse.objects.filter(supply=element.supply, status="AS")
-                    print(stock)
-                    if stock:
-                        print("Stock_quantity:")
-                        print(stock.quantity)
-                        print("Element_quantity:")
-                        print(element.quantity)
-                        stock.quantity = stock.quantity - element.quantity
-                        print("NEW Stock_quantity:")
-                        print(stock.quantity)
+                    try:
+                        stock = Warehouse.objects.get(supply=element.supply, status="AS")
+                        stock.quantity -= element.quantity
+
+                    except ObjectDoesNotExist:
+                        print("No hay stock en Assembly")
 
             for ticket_detail in ticket_detail_json_object['extra_ingredients_cartridges']:
                 cartridge_object = get_object_or_404(Cartridge, id=ticket_detail['cartridge_id'])
@@ -239,6 +236,16 @@ def new_sale(request):
                     price=price
                 )
                 new_ticket_detail_object.save()
+
+                cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=cartridge_object)
+
+                for element in cartridge_recipe:
+                    try:
+                        stock = Warehouse.objects.get(supply=element.supply, status="AS")
+                        stock.quantity -= element.quantity
+
+                    except ObjectDoesNotExist:
+                        print("No hay stock en Assembly")
 
                 for ingredient in ticket_detail['extra_ingredients']:
                     extra_ingredient_object = ExtraIngredient.objects.get(id=ingredient['id'])
@@ -263,6 +270,21 @@ def new_sale(request):
                     price=price
                 )
                 new_ticket_detail_object.save()
+
+                package_recipe = PackageCartridgeRecipe.objects.filter(package_cartridges=package_object)
+
+                for element_p in package_recipe:
+
+                    cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=element_p)
+
+                    for element in cartridge_recipe:
+                        try:
+                            stock = Warehouse.objects.get(supply=element.supply, status="AS")
+                            stock.quantity -= element.quantity
+
+                        except ObjectDoesNotExist:
+                            print("No hay stock en Assembly")
+
 
             json_response = {
                 'status': 'ready',
