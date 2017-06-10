@@ -10,15 +10,23 @@
 {% block content %}
 <div class="container-fluid">
   <select class="custom-select" id=""></select>
+<button id="random" class="btn btn-primary">Random</button>
 </div>
-<div class="container-fluid">
-  <div id="doughnut-chart" class="chart-container" style="width:50% !important">
+<div class="row container-fluid">
+<div class="col-xs-12 col-md-4">
+    <div class="chart-container" style="width:300px !important">
       <canvas id="nutChar"></canvas>
+    </div>
+  </div>
+  <div class="col-xs-12 col-md-8">
+    <div class="chart-container">
+      <canvas id="quantity-bar"></canvas>
+    </div>
   </div>
 </div>
 <div class="container-fluid">
-  <div>      
-    <table id="analytics-table" class="table table-kitchen table-straped table-hover" align="right">
+  <div class="mt-2">      
+    <table id="analytics-table" class="table table-kitchen table-straped table-hover">
       <thead class="thead-inverse">
         <tr>
           <th>Producto</th>
@@ -52,6 +60,9 @@
 
 <script type="text/javascript">
   $(function() {   
+    let ctx = document.getElementById("nutChar").getContext('2d');
+    let bar_ctx = document.getElementById("quantity-bar").getContext('2d');
+    let sold_drinks = [];
     /** 
     * Gets the csrf cookie from cache
     */ 
@@ -69,45 +80,98 @@
       }
       return cookie_value;
     }
-  });
 
-  var ctx = document.getElementById("nutChar").getContext('2d');
-  var sold_drinks = [];
-
-  // for(let i=0;i < {{ cartridge.frequency }}; i++){
-    
-  // }
-  var nutChar = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      datasets: [{
-        data: [13, 19, 3, 20, 2, 3],
-        backgroundColor: [
-        'Red',
-        'Blue',
-        'Yellow',
-        'Green',
-        'Purple',
-        'Orange'
-        ],
-        borderColor: [
-        'rgba(255,99,132,1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 159, 64, 1)'
-        ],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      cutoutPercentage: 40, 
-      animation: {
-        animateScale: true,
+    function get_random_list(size){
+      aux_list = [];
+      for (let i = 0; i < size; i++) {
+        aux_list[i] = parseInt(Math.random() * 10);
       }
+      return aux_list;
     }
+
+    let nutChar = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        datasets: [{
+          data: get_random_list(6),
+          backgroundColor: [
+          '#01579B',
+          '#80CBC4',
+          '#18FFFF',
+          '#0097A7',
+          '#4DB6AC',
+          '#4FC3F7',
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        cutoutPercentage: 40, 
+        animation: {
+          animateScale: true,
+        }
+      }
+    });
+
+    let quantity_bar = new Chart(bar_ctx, {
+      type: 'bar',
+      data: {
+        labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+        datasets: [{
+          label: '# of Votes',
+          data: [12, 19, 3, 5, 2, 3],
+          backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+          ],
+          borderColor: [
+          'rgba(255,99,132,1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero:true
+            }
+          }]
+        }
+      }
+    });
+
+    $(this).on('click', '#random', function(event) {
+      $.ajax({
+        url: "{% url 'products:analytics' %}",
+        type: 'POST',
+        datatype: 'jsonp',
+        traditional: true,
+        data: {
+          type: 'random',
+          csrfmiddlewaretoken: get_cookie('csrftoken'),
+        },
+        success: function(result) {
+          console.log('aqca no hay pedo');
+          console.log(result);
+          console.log('aqca zhi');
+        },
+        error: function(result) {
+          console.log('ERROR');
+          console.log(result);
+        },
+      });
+    });
   });
 </script>
 {% endblock javascript %}

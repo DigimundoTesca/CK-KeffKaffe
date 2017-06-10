@@ -1,14 +1,15 @@
 #analytics-table { 
-  border-collapse: collapse;
-  width: 100%;
+  	border-collapse: collapse;
+ 	width: 100%;
 }
 
 #analytics-table tr:nth-child(even){
- background-color:  rgba(120, 204, 200,0.5);
+	background-color:  rgba(120, 204, 200,0.5);
 }
 
 
 #analytics-table tr:hover{
  background-color:  rgba(75, 127, 125, 0.8);
 }
+
 

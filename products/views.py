@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 
+import random
 from datetime import timedelta, datetime, date
 
 from decimal import Decimal
@@ -464,6 +465,7 @@ def products_analytics(request):
                 'id': cartridge_item.id,
                 'name': cartridge_item.name,
                 'frequency': 0,
+                'category': cartridge_item.category,
             }
             cartridges_list.append(cartridge_object)
 
@@ -473,69 +475,44 @@ def products_analytics(request):
                     if cartridge_item['id'] == ticket_detail_item.cartridge.id:
                         cartridge_item['frequency'] += ticket_detail_item.quantity
                         break
+
         return cartridges_list
 
-    def drinks_sold():
-        sales_helper = SalesHelper()
-        products_helper = ProductsHelper()
-        initial_date = date.today()
-        final_date = initial_date + timedelta(days=1)
-        drinks_list = []
-        filtered_ticket_details = sales_helper.get_tickets_details(initial_date, final_date)
-        all_cartridges = products_helper.get_all_cartridges()
+    def get_sold_category():
+        drinks_sold = []
+        food_sold = []
+        for element in get_products_sold():
+            category_object = {
+                'id': element['id'],
+                'name': element['name'],
+                'category': element['category'],
+                'quantity': element['frequency']
+            }
+            if element['frequency'] > 0:
+                if element['category'] == 'CO':
+                    drinks_sold.append(category_object)
+                else:
+                    food_sold.append(category_object)
+        return {'drinks_sold': drinks_sold, 'food_sold': food_sold}
 
-        for cartridge_item in all_cartridges:
-            if cartridge_item.category == 'CO':
-                drinks_sold = {
-                    'id': cartridge_item.id,
-                    'name': cartridge_item.name,
-                    'frequency': 0,
-                    'category': cartridge_item.category,
-                }
-                drinks_list.append(drinks_sold)
-            else:
-                pass
-        for ticket_detail_item in filtered_ticket_details:
-            if ticket_detail_item.cartridge:
-                pass
-        return drinks_list
+    if request.method == 'POST':
+        if request.POST['type'] == 'category':
+            sold_categories = get_sold_category()
+            return JsonResponse({'hola': 'jejeje'})
+        elif request.POST['type'] == 'random':
+            aux_list = []
+            for x in range(1,10):
+                aux_list.append(random.randrange(1,100))
 
-    def food_sold():
-        sales_helper = SalesHelper()
-        products_helper = ProductsHelper()
-        initial_date = date.today()
-        final_date = initial_date + timedelta(days=1)
-        food_list = []
-        filtered_ticket_details = sales_helper.get_tickets_details(initial_date, final_date)
-        all_cartridges = products_helper.get_all_cartridges()
-
-        for cartridge_item in all_cartridges:
-            if cartridge_item.category == 'FD':
-                food_sold = {
-                    'id': cartridge_item.id,
-                    'name': cartridge_item.name,
-                    'category': cartridge_item.category,
-                }
-                food_list.append(food_sold)
-
-    hola = drinks_sold()
-    adios = food_sold()
-    template = 'analytics/analytics.html'
-    title = 'Products - Analytics'
-    list_x = [1, 2, 3, 4, 5, 6]
-    list_y = [10, 20, 30, 40, 50, 60]
+            return JsonResponse({'random_list': aux_list})
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
-    list_x = [1, 2, 3, 4, 5, 6]
-    list_y = [10, 20, 30, 40, 50, 60]
 
-    latest_squares = LeastSquares(list_x, list_y)
     sold_product = get_products_sold()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
-        'least_squares': latest_squares,
         'today_sold_product': sold_product,
     }
 
