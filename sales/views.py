@@ -12,7 +12,9 @@ from django.db.models import Max, Min
 from branchoffices.models import CashRegister
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, SalesHelper
-from products.models import Cartridge, PackageCartridge, PackageCartridgeRecipe, ExtraIngredient
+from kitchen.models import Warehouse
+from products.models import Cartridge, PackageCartridge, PackageCartridgeRecipe, ExtraIngredient, CartridgeRecipe, \
+    Supply
 from sales.models import Ticket, TicketDetail, TicketExtraIngredient
 from users.models import User as UserProfile
 
@@ -171,6 +173,7 @@ def new_sale(request):
             user_profile_object = get_object_or_404(UserProfile, username=username)
             cash_register = CashRegister.objects.first()
             ticket_detail_json_object = json.loads(request.POST.get('ticket'))
+            ticket_detail_json_object
             payment_type = ticket_detail_json_object['payment_type']
             order_number = 1
             """ 
@@ -210,6 +213,20 @@ def new_sale(request):
                     price=price
                 )
                 new_ticket_detail_object.save()
+
+                cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=cartridge_object)
+
+                for element in cartridge_recipe:
+                    stock = Warehouse.objects.filter(supply=element.supply, status="AS")
+                    print(stock)
+                    if stock:
+                        print("Stock_quantity:")
+                        print(stock.quantity)
+                        print("Element_quantity:")
+                        print(element.quantity)
+                        stock.quantity = stock.quantity - element.quantity
+                        print("NEW Stock_quantity:")
+                        print(stock.quantity)
 
             for ticket_detail in ticket_detail_json_object['extra_ingredients_cartridges']:
                 cartridge_object = get_object_or_404(Cartridge, id=ticket_detail['cartridge_id'])
