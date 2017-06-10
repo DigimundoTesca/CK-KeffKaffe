@@ -158,13 +158,11 @@
         datatype: 'jsonp',
         traditional: true,
         data: {
-          type: 'random',
+          type: 'category',
           csrfmiddlewaretoken: get_cookie('csrftoken'),
         },
         success: function(result) {
-          console.log('aqca no hay pedo');
           console.log(result);
-          console.log('aqca zhi');
         },
         error: function(result) {
           console.log('ERROR');

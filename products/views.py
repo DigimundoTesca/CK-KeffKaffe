@@ -498,7 +498,7 @@ def products_analytics(request):
     if request.method == 'POST':
         if request.POST['type'] == 'category':
             sold_categories = get_sold_category()
-            return JsonResponse({'hola': 'jejeje'})
+            return JsonResponse(sold_categories)
         elif request.POST['type'] == 'random':
             aux_list = []
             for x in range(1,10):
