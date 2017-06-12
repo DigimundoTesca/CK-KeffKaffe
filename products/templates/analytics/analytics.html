@@ -10,7 +10,7 @@
 {% block content %}
 <div class="container-fluid">
   <div>
-    <select class="custom-select" id=""></select>
+    <select class="custom-select" id="cat-sold"></select>
     <button id="random" class="btn btn-primary">Hecho</button>
 
   </div>
@@ -63,12 +63,11 @@
 
 <script type="text/javascript">
   $(function() {   
-    console.log('hola');
-    let today_sold_product = JSON.parse("{{ today_sold_product | safe }}");
-    console.log('flag');
     let ctx = document.getElementById("nutChar").getContext('2d');
     let bar_ctx = document.getElementById("quantity-bar").getContext('2d');
-    let category_sold = JSON.parse("{{ category_sold | safe }}");
+    let today_sold_product = JSON.parse('{{ today_sold_product_json | safe }}');
+    let nutChar, quantity_bar;
+    // let category_sold = JSON.parse('{{ category_sold | safe }}');
 
     /** 
     * Gets the csrf cookie from cache
@@ -100,14 +99,14 @@
       let labels_list = [];
       console.log(today_sold_product);
 
-      for (let i = 0 ; ; i++) {
-        labels_list[i] = '{{ cartridge.name }}';
-        i+=1;
-      }
+      // for (let i = 0 ; ; i++) {
+      //   labels_list[i] = '{{ cartridge.name }}';
+      //   i+=1;
+      // }
 
     }
 
-    let nutChar = new Chart(ctx, {
+    nutChar = new Chart(ctx, {
       type: 'doughnut',
       data: {
         datasets: [{
@@ -132,7 +131,7 @@
       }
     });
 
-    let quantity_bar = new Chart(bar_ctx, {
+    quantity_bar = new Chart(bar_ctx, {
       type: 'bar',
       data: {
         labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],

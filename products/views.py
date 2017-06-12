@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import random
+import json
 from datetime import timedelta, datetime, date
 
 from decimal import Decimal
@@ -493,7 +494,7 @@ def products_analytics(request):
                     drinks_sold.append(category_object)
                 else:
                     food_sold.append(category_object)
-        return {'drinks_sold': drinks_sold, 'food_sold': food_sold}
+        return ({'drinks_sold': drinks_sold, 'food_sold': food_sold})
 
     if request.method == 'POST':
         if request.POST['type'] == 'category':
@@ -510,12 +511,14 @@ def products_analytics(request):
     title = 'Products - Analytics'
 
     sold_product = get_products_sold()
+    categories_sold = get_sold_category()
     print(get_sold_category())
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
+        'today_sold_product_json': json.dumps(sold_product),
         'today_sold_product': sold_product,
-        'category_sold': get_sold_category(),
+        'category_sold': json.dumps(categories_sold),
     }
 
     return render(request, template, context)
