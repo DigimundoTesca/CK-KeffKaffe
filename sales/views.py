@@ -290,6 +290,7 @@ def new_sale(request):
                 'status': 'ready',
                 'ticket_id': new_ticket_object.id,
                 'ticket_order': new_ticket_object.order_number,
+                'ticket_payment': new_ticket_object.payment_type,
             }
             return JsonResponse(json_response)
 
