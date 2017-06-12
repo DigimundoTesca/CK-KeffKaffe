@@ -510,10 +510,12 @@ def products_analytics(request):
     title = 'Products - Analytics'
 
     sold_product = get_products_sold()
+    print(get_sold_category())
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
         'today_sold_product': sold_product,
+        'category_sold': get_sold_category(),
     }
 
     return render(request, template, context)

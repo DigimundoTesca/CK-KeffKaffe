@@ -9,8 +9,11 @@
 
 {% block content %}
 <div class="container-fluid">
-  <select class="custom-select" id=""></select>
-<button id="random" class="btn btn-primary">Random</button>
+  <div>
+    <select class="custom-select" id=""></select>
+    <button id="random" class="btn btn-primary">Hecho</button>
+
+  </div>
 </div>
 <div class="row container-fluid">
 <div class="col-xs-12 col-md-4">
@@ -60,9 +63,13 @@
 
 <script type="text/javascript">
   $(function() {   
+    console.log('hola');
+    let today_sold_product = JSON.parse("{{ today_sold_product | safe }}");
+    console.log('flag');
     let ctx = document.getElementById("nutChar").getContext('2d');
     let bar_ctx = document.getElementById("quantity-bar").getContext('2d');
-    let sold_drinks = [];
+    let category_sold = JSON.parse("{{ category_sold | safe }}");
+
     /** 
     * Gets the csrf cookie from cache
     */ 
@@ -87,6 +94,17 @@
         aux_list[i] = parseInt(Math.random() * 10);
       }
       return aux_list;
+    }
+
+    function get_doughnut_labels(){
+      let labels_list = [];
+      console.log(today_sold_product);
+
+      for (let i = 0 ; ; i++) {
+        labels_list[i] = '{{ cartridge.name }}';
+        i+=1;
+      }
+
     }
 
     let nutChar = new Chart(ctx, {
@@ -162,11 +180,24 @@
           csrfmiddlewaretoken: get_cookie('csrftoken'),
         },
         success: function(result) {
+          get_doughnut_labels()
           console.log(result);
+          swal({
+            title: 'Hecho',
+            text: 'Categoría seleccionada',
+            type: 'success',
+            timer: 750,
+            showConfirmButton: false,
+          });
         },
         error: function(result) {
-          console.log('ERROR');
-          console.log(result);
+          swal({
+            title: "Error",
+            text: 'No se pudo generar la gráfica',
+            type: "error",
+            timer: 750,
+            showConfirmButton: false,
+          });
         },
       });
     });
