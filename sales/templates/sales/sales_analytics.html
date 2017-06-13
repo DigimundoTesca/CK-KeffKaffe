@@ -582,7 +582,7 @@
     $(this).on('change', '#dt-week', function(event) {
       let dt_year = $('#dt-year').val();
       let dt_week = $('#dt-week').val();
-      
+
       $.ajax({
         url: "{% url 'sales:sales' %}",
         type: 'POST',

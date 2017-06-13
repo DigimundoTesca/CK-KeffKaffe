@@ -11,10 +11,9 @@
 <div class="container-fluid">
   <div class="form-inline" id="categories-selector-form">
     <select class="custom-select" id="cat-sold">
-      <option value="1">Bebidas</option>
-      <option value="2">Platillos</option>
+      <option value="drinks">Bebidas</option>
+      <option value="foods">Platillos</option>
     </select>
-    <button id="random" class="btn btn-primary">Hecho</button>
   </div>
 </div>
 <div class="row container-fluid">
@@ -69,9 +68,9 @@
     let bar_ctx = document.getElementById("quantity-bar").getContext('2d');
     let today_sold_product = JSON.parse('{{ today_sold_product_json | safe }}');
     let category_sold = JSON.parse('{{ category_sold | safe }}');
-    console.log(category_sold);
+    let all_categories = JSON.parse('{{ all_categories | safe }}');
     let nutChar, quantity_bar;
-
+    console.log(category_sold);
     /** 
     * Gets the csrf cookie from cache
     */ 
@@ -99,14 +98,17 @@
     }
 
     function fill_categories_selector(){
-      let selected_category;
-      let aux_list = []
-      for (let i = 0 ;i < 2 ; i++) {
+      drinks_aux = category_sold['drinks_sold'];
+      foods_aux = category_sold['foods_sold'];
+      
+      for(let i = 0; i < drinks_aux.length; i++){
+       drinks_quant = drinks_aux[i]['quantity'];
+       drinks_name = drinks_aux[i]['name'];
       }
-      $.each(category_sold, function(index, item){
-      });
+
 
     }
+      
 
     nutChar = new Chart(ctx, {
       type: 'doughnut',
@@ -170,17 +172,32 @@
       }
     });
 
-    $(this).on('click', '#random', function(event) {
+    $(this).on('change', '#categories-selector-form', function(event) {
+      let drinks = $('#drinks').val();
+      let food = $('#foods').val();
       $.ajax({
         url: "{% url 'products:analytics' %}",
         type: 'POST',
-        datatype: 'jsonp',
-        traditional: true,
         data: {
-          type: 'category',
           csrfmiddlewaretoken: get_cookie('csrftoken'),
+          'drinks': drinks,
+          'food': food,
+          'type': 'category',
         },
-        success: function(result) {
+        beforeSend: function(){
+          swal({
+            title: "Obteniendo registros",
+            text: "Espere mientras obtenemos toda la información",
+          });
+          swal.enableLoading();
+        },
+        traditional: true,
+        datatype: 'jsonp',
+        success: function(result, status, XHR) {
+          let drinks = result['drinks_sold'];
+          let food = result['food_sold'];
+          let drinks_list = [];
+          let food_list = [];
           swal({
             title: 'Hecho',
             text: 'Categoría seleccionada',

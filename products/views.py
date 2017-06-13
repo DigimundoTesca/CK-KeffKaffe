@@ -412,6 +412,7 @@ def warehouse_movements(request):
 
 @login_required(login_url='users:login')
 def products_analytics(request):
+    products_helper = ProductsHelper()
     def get_period(initial_dt, final_dt):
         helper = Helper()
         sales_helper = SalesHelper()
@@ -491,10 +492,13 @@ def products_analytics(request):
             }
             if element['frequency'] > 0:
                 if element['category'] == 'CO':
+
                     drinks_sold.append(category_object)
                 else:
                     food_sold.append(category_object)
         return ({'drinks_sold': drinks_sold, 'food_sold': food_sold})
+
+
 
     if request.method == 'POST':
         if request.POST['type'] == 'category':
@@ -512,12 +516,14 @@ def products_analytics(request):
 
     sold_product = get_products_sold()
     categories_sold = get_sold_category()
+    all_categories = products_helper.get_all_cartridges_categories()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
         'today_sold_product_json': json.dumps(sold_product),
         'today_sold_product': sold_product,
         'category_sold': json.dumps(categories_sold),
+        'all_categories': json.dumps(all_categories),
     }
 
     return render(request, template, context)
