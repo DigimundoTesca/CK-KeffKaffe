@@ -9,10 +9,12 @@
 
 {% block content %}
 <div class="container-fluid">
-  <div>
-    <select class="custom-select" id="cat-sold"></select>
+  <div class="form-inline" id="categories-selector-form">
+    <select class="custom-select" id="cat-sold">
+      <option value="1">Bebidas</option>
+      <option value="2">Platillos</option>
+    </select>
     <button id="random" class="btn btn-primary">Hecho</button>
-
   </div>
 </div>
 <div class="row container-fluid">
@@ -66,8 +68,9 @@
     let ctx = document.getElementById("nutChar").getContext('2d');
     let bar_ctx = document.getElementById("quantity-bar").getContext('2d');
     let today_sold_product = JSON.parse('{{ today_sold_product_json | safe }}');
+    let category_sold = JSON.parse('{{ category_sold | safe }}');
+    console.log(category_sold);
     let nutChar, quantity_bar;
-    // let category_sold = JSON.parse('{{ category_sold | safe }}');
 
     /** 
     * Gets the csrf cookie from cache
@@ -95,14 +98,13 @@
       return aux_list;
     }
 
-    function get_doughnut_labels(){
-      let labels_list = [];
-      console.log(today_sold_product);
-
-      // for (let i = 0 ; ; i++) {
-      //   labels_list[i] = '{{ cartridge.name }}';
-      //   i+=1;
-      // }
+    function fill_categories_selector(){
+      let selected_category;
+      let aux_list = []
+      for (let i = 0 ;i < 2 ; i++) {
+      }
+      $.each(category_sold, function(index, item){
+      });
 
     }
 
@@ -179,8 +181,6 @@
           csrfmiddlewaretoken: get_cookie('csrftoken'),
         },
         success: function(result) {
-          get_doughnut_labels()
-          console.log(result);
           swal({
             title: 'Hecho',
             text: 'Categoría seleccionada',
@@ -200,6 +200,7 @@
         },
       });
     });
+  fill_categories_selector();
   });
 </script>
 {% endblock javascript %}

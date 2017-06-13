@@ -512,7 +512,6 @@ def products_analytics(request):
 
     sold_product = get_products_sold()
     categories_sold = get_sold_category()
-    print(get_sold_category())
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
