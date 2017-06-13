@@ -11,8 +11,8 @@
 <div class="container-fluid">
   <div class="form-inline" id="categories-selector-form">
     <select class="custom-select" id="cat-sold">
-      <option value="drinks">Bebidas</option>
-      <option value="foods">Platillos</option>
+      <option value="drinks" id="drinks_value">Bebidas</option>
+      <option value="foods" id="food_value">Platillos</option>
     </select>
   </div>
 </div>
@@ -70,7 +70,23 @@
     let category_sold = JSON.parse('{{ category_sold | safe }}');
     let all_categories = JSON.parse('{{ all_categories | safe }}');
     let nutChar, quantity_bar;
-    console.log(category_sold);
+    let color_dict = [
+      '#EF5350',
+      '#E91E63',
+      '#BA68C8',
+      '#7E57C2',
+      '#9FA8DA',
+      '#E040FB',
+      '#5E35B1',
+      '#00E676',
+      '#FBC02D',
+      '#FFC107',
+      '#A1887F',
+      '#DD2C00',
+      '#B0BEC5',
+      '#EEFF41',
+      '#827717',
+    ]
     /** 
     * Gets the csrf cookie from cache
     */ 
@@ -97,32 +113,26 @@
       return aux_list;
     }
 
-    function fill_categories_selector(){
-      drinks_aux = category_sold['drinks_sold'];
-      foods_aux = category_sold['foods_sold'];
-      
+    function fill_nut_char(){
+      let drinks_aux = category_sold['drinks_sold'];
+      let foods_aux = category_sold['foods_sold'];
+      let drinks_value = $('#drinks_value').val();
+      let products_list = [];
+
       for(let i = 0; i < drinks_aux.length; i++){
-       drinks_quant = drinks_aux[i]['quantity'];
-       drinks_name = drinks_aux[i]['name'];
+        drinks_quant = drinks_aux[i]['quantity'];
+        products_list[i] = drinks_quant;
       }
-
-
+      return products_list  
     }
-      
-
+    
+    
     nutChar = new Chart(ctx, {
       type: 'doughnut',
       data: {
         datasets: [{
-          data: get_random_list(6),
-          backgroundColor: [
-          '#01579B',
-          '#80CBC4',
-          '#18FFFF',
-          '#0097A7',
-          '#4DB6AC',
-          '#4FC3F7',
-          ],
+          data: fill_nut_char(),
+          backgroundColor: color_dict,
           borderWidth: 0
         }]
       },
@@ -196,8 +206,6 @@
         success: function(result, status, XHR) {
           let drinks = result['drinks_sold'];
           let food = result['food_sold'];
-          let drinks_list = [];
-          let food_list = [];
           swal({
             title: 'Hecho',
             text: 'Categoría seleccionada',
@@ -217,7 +225,7 @@
         },
       });
     });
-  fill_categories_selector();
+  fill_nut_char();
   });
 </script>
 {% endblock javascript %}
