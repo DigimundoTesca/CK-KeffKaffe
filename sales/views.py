@@ -160,7 +160,8 @@ def delete_sale(request):
     if request.method == 'POST':
         ticket_id = request.POST['ticket_id']
         ticket = Ticket.objects.get(id=ticket_id)
-        ticket.delete()
+        ticket.is_active = False
+        ticket.save()
         return JsonResponse({'result': 'excelente!'})
 
 
