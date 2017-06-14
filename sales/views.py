@@ -142,6 +142,7 @@ def sales(request):
     title = 'Registro de Ventas'
     context = {
         'title': PAGE_TITLE + ' | ' + title,
+        'user': request.user,
         'page_title': title,
         'actual_year': datetime.now().year,
         'sales_week': sales_helper.get_sales_actual_week(),
