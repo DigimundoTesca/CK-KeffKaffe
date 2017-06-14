@@ -113,7 +113,7 @@
       return aux_list;
     }
 
-    function fill_nut_char(){
+    function fill_drinks_nut_char(){
       let drinks_aux = category_sold['drinks_sold'];
       let foods_aux = category_sold['foods_sold'];
       let drinks_value = $('#drinks_value').val();
@@ -126,12 +126,26 @@
       return products_list  
     }
     
+    function fill_food_nut_char(){
+      let drinks_aux = category_sold['drinks_sold'];
+      let foods_aux = category_sold['foods_sold'];
+      let drinks_value = $('#drinks_value').val();
+      let products_list = [];
+
+      for(let i = 0; i < foods_aux.length; i++){
+        food_quant = foods_aux[i]['quantity'];
+        products_list[i] = food_quant;
+      }
+      return products_list  
+    }
+    
     
     nutChar = new Chart(ctx, {
       type: 'doughnut',
       data: {
+        labels: ['Cafe', 'Capuccino'],
         datasets: [{
-          data: fill_nut_char(),
+          data: fill_drinks_nut_char(),
           backgroundColor: color_dict,
           borderWidth: 0
         }]
@@ -206,6 +220,14 @@
         success: function(result, status, XHR) {
           let drinks = result['drinks_sold'];
           let food = result['food_sold'];
+          let drinks_value = $('#drinks_value').val();
+          let food_value = $('#food_value').val();
+          if (drinks_value == 'drinks'){
+            nutChar.data.datasets[0].data = fill_drinks_nut_char();
+          }
+          else if(food_value == 'food'){
+            nutChar.data.datasets[0].data = fill_food_nut_char();
+          }
           swal({
             title: 'Hecho',
             text: 'Categoría seleccionada',
@@ -225,7 +247,7 @@
         },
       });
     });
-  fill_nut_char();
+  fill_drinks_nut_char();
   });
 </script>
 {% endblock javascript %}
