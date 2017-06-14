@@ -99,7 +99,7 @@
                                     <div class="card-block product-container" id="supplies.supply-{{ supplies.pk }}">
                                         <h7 class="product_name" id ="supply_name-{{ supplies.name }}" >{{ supplies.name }}</h7>
                                         <img src="{{ supplies.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}" class="product-img-list" width="200" height="200" draggable=true>
-                                        <h7 class="provider_unit" id="supplies.quantity-{{ supplies.self_measurement_conversion }},{{ supplies.self_unit_conversion }}" > Unidad: {{ supplies.self_measurement_conversion }} {{ supplies.self_unit_conversion }} </h7>
+                                        <h7 class="provider_unit" id="supplies.quantity-{{ supplies.self_measurement_conversion }},{{ supplies.self_unit_conversion }},{{ supplies.presentation_cost }}" > Unidad: {{ supplies.self_measurement_conversion }} {{ supplies.self_unit_conversion }} </h7>
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -114,6 +114,7 @@
                                     <th>Nombre</th>
                                     <th>Requeridos</th>
                                     <th>Medida</th>
+                                    <th>Total</th>
                                 </tr>
                             </tbody>
                         </table>
@@ -139,7 +140,7 @@
 
         $(function(){
 
-            $(this).on('click', '#btn-save-ticket-csv , #btn-save-ticket_local-csv' , function(event) {
+            $(this).on('click', '#btn-save-ticket-csv' , function(event) {
                 /**
                  * Convert JSON TO CSV
                  */
@@ -192,6 +193,38 @@
                 });
             });
 
+            $(this).on('click', '#btn-save-ticket_local-csv' , function(event) {
+                swal({
+                    title: "Generando Excel",
+                    text: "Espere mientras obtenemos toda la información",
+                });
+                swal.enableLoading();
+
+                diner_details = Papa.unparse({
+                    fields: ["Nombre", "Por_Comprar", "Unidad", "Costo x Unidad", "Costo_Total"],
+                    data: list_array
+                });
+
+                var blob = new Blob([ diner_details ], {
+                    type: "text/csv;charset=UTF-8" }
+                );
+
+                var datetime = new Date();
+                saveAs(blob, datetime + '.csv');
+
+                swal({
+                    title: "Éxito",
+                    text: "Datos obtenidos",
+                    type: "info",
+                    timer: 750,
+                    showConfirmButton: false
+                }).then(
+                    function(){},
+                    function(dismiss){}
+                );
+            });
+
+
             var list_array = [];
 
             $(".product-img-list").on("click",function(e){
@@ -202,8 +235,15 @@
                 var obj_wh = product_measurement.split(',');
                 var obj_unit = obj_wh[0];
                 var obj_measurement = obj_wh[1];
+                var obj_cost = obj_wh[2];
 
-                var string = [product_name,obj_unit,obj_measurement];
+                var string = {
+                    'Nombre': product_name,
+                    'Por_Comprar': obj_unit,
+                    'Unidad': obj_measurement,
+                    'Costo x Unidad': obj_cost,
+                    'Costo_Total': obj_cost
+                };
 
                 var html_list = "";
 
@@ -212,8 +252,9 @@
                 }else{
                     var igual = false;
                     for (i = 0; i < list_array.length; i++){
-                       if (list_array[i][0]===product_name){
-                           list_array[i][1] = parseInt(list_array[i][1]) + parseInt(obj_unit);
+                       if (list_array[i].Nombre===product_name){
+                           list_array[i].Por_Comprar = parseInt(list_array[i].Por_Comprar) + parseInt(obj_unit);
+                           list_array[i].Costo_Total = parseInt(list_array[i].Costo_Total) + parseInt(obj_cost);
                            igual = true;
                        }
                     }
@@ -225,9 +266,10 @@
                 for (i = 0; i < list_array.length; i++) {
                     html_list +=
                         '<tr>' +
-                            '<th>' + list_array[i][0] + '</th>' +
-                            '<th>' + list_array[i][1] + '</th>' +
-                            '<th>' + list_array[i][2] + '</th>' +
+                            '<th>' + list_array[i].Nombre + '</th>' +
+                            '<th>' + list_array[i].Por_Comprar + '</th>' +
+                            '<th>' + list_array[i].Unidad + '</th>' +
+                            '<th>' + list_array[i].Costo_Total + '$</th>' +
                         '</tr>'
                 }
 
@@ -238,6 +280,7 @@
                                 '<th>Nombre</th>'+
                                 '<th>Requeridos</th>'+
                                 '<th>Medida</th>'+
+                                '<th>Total</th>'+
                             '</tr>'
                             + html_list
                         ));

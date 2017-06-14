@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -12,7 +13,9 @@ from django.db.models import Max, Min
 from branchoffices.models import CashRegister
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, SalesHelper
-from products.models import Cartridge, PackageCartridge, PackageCartridgeRecipe, ExtraIngredient
+from kitchen.models import Warehouse
+from products.models import Cartridge, PackageCartridge, PackageCartridgeRecipe, ExtraIngredient, CartridgeRecipe, \
+    Supply
 from sales.models import Ticket, TicketDetail, TicketExtraIngredient
 from users.models import User as UserProfile
 
@@ -157,7 +160,8 @@ def delete_sale(request):
     if request.method == 'POST':
         ticket_id = request.POST['ticket_id']
         ticket = Ticket.objects.get(id=ticket_id)
-        ticket.delete()
+        ticket.is_active = False
+        ticket.save()
         return JsonResponse({'result': 'excelente!'})
 
 
@@ -171,6 +175,7 @@ def new_sale(request):
             user_profile_object = get_object_or_404(UserProfile, username=username)
             cash_register = CashRegister.objects.first()
             ticket_detail_json_object = json.loads(request.POST.get('ticket'))
+            ticket_detail_json_object
             payment_type = ticket_detail_json_object['payment_type']
             order_number = 1
             """ 
@@ -211,6 +216,16 @@ def new_sale(request):
                 )
                 new_ticket_detail_object.save()
 
+                cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=cartridge_object)
+
+                for element in cartridge_recipe:
+                    try:
+                        stock = Warehouse.objects.get(supply=element.supply, status="AS")
+                        stock.quantity -= element.quantity
+
+                    except ObjectDoesNotExist:
+                        print("No hay stock en Assembly")
+
             for ticket_detail in ticket_detail_json_object['extra_ingredients_cartridges']:
                 cartridge_object = get_object_or_404(Cartridge, id=ticket_detail['cartridge_id'])
                 quantity = ticket_detail['quantity']
@@ -222,6 +237,16 @@ def new_sale(request):
                     price=price
                 )
                 new_ticket_detail_object.save()
+
+                cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=cartridge_object)
+
+                for element in cartridge_recipe:
+                    try:
+                        stock = Warehouse.objects.get(supply=element.supply, status="AS")
+                        stock.quantity -= element.quantity
+
+                    except ObjectDoesNotExist:
+                        print("No hay stock en Assembly")
 
                 for ingredient in ticket_detail['extra_ingredients']:
                     extra_ingredient_object = ExtraIngredient.objects.get(id=ingredient['id'])
@@ -247,10 +272,26 @@ def new_sale(request):
                 )
                 new_ticket_detail_object.save()
 
+                package_recipe = PackageCartridgeRecipe.objects.filter(package_cartridges=package_object)
+
+                for element_p in package_recipe:
+
+                    cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=element_p)
+
+                    for element in cartridge_recipe:
+                        try:
+                            stock = Warehouse.objects.get(supply=element.supply, status="AS")
+                            stock.quantity -= element.quantity
+
+                        except ObjectDoesNotExist:
+                            print("No hay stock en Assembly")
+
+
             json_response = {
                 'status': 'ready',
                 'ticket_id': new_ticket_object.id,
                 'ticket_order': new_ticket_object.order_number,
+                'ticket_payment': new_ticket_object.payment_type,
             }
             return JsonResponse(json_response)
 
