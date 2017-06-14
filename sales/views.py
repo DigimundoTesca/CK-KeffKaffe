@@ -137,21 +137,23 @@ def sales(request):
             }
             return JsonResponse(data)
 
+    if request.user.is_superuser:
+        tickets = [x for x in sales_helper.get_tickets_today_list() if x["ticket_parent"].is_active==True]
+    else:
+        tickets = sales_helper.get_tickets_today_list()
     # Any other request method:
     template = 'sales/sales_analytics.html'
     title = 'Registro de Ventas'
     context = {
         'title': PAGE_TITLE + ' | ' + title,
-        'user': request.user,
         'page_title': title,
         'actual_year': datetime.now().year,
         'sales_week': sales_helper.get_sales_actual_week(),
         'today_name': helper.get_name_day(datetime.now()),
         'today_number': helper.get_number_day(datetime.now()),
         'week_number': helper.get_week_number(datetime.now()),
-        'tickets': sales_helper.get_tickets_today_list(),
+        'tickets': tickets,
         'dates_range': sales_helper.get_dates_range_json(),
-
     }
     return render(request, template, context)
 
