@@ -137,10 +137,23 @@ def sales(request):
             }
             return JsonResponse(data)
 
+    all_tickets = [x for x in sales_helper.get_tickets_today_list() if x["ticket_parent"].is_active == True]
+    active_tickets = sales_helper.get_tickets_today_list()
+
     if request.user.is_superuser:
-        tickets = [x for x in sales_helper.get_tickets_today_list() if x["ticket_parent"].is_active==True]
+        user_tickets = all_tickets
     else:
-        tickets = sales_helper.get_tickets_today_list()
+        user_tickets = active_tickets
+
+
+    total_cost = 0
+    all_tickets_cost = 0
+    for ticket in active_tickets:
+        total_cost += ticket["ticket_parent"].total()
+
+    for ticket in all_tickets:
+        all_tickets_cost += ticket["ticket_parent"].total()
+
     # Any other request method:
     template = 'sales/sales_analytics.html'
     title = 'Registro de Ventas'
@@ -152,7 +165,10 @@ def sales(request):
         'today_name': helper.get_name_day(datetime.now()),
         'today_number': helper.get_number_day(datetime.now()),
         'week_number': helper.get_week_number(datetime.now()),
-        'tickets': tickets,
+        'total_cost' : total_cost,
+        'all_tickets_cost': all_tickets_cost,
+        'tickets': user_tickets,
+        'user' : request.user,
         'dates_range': sales_helper.get_dates_range_json(),
     }
     return render(request, template, context)

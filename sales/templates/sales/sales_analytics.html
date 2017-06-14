@@ -111,8 +111,36 @@
             </td>
           </tr>
           {% endfor %}
+          <tr>
+            <th>Total </th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th>{{ total_cost }}</th>
+            <th></th>
+          </tr>
+          {% if user.is_superuser %}
+          <tr>
+            <th>SU_Total</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th>{{ all_tickets_cost }}</th>
+            <th></th>
+          </tr>
+          {% endif %}
           </tbody>
         </table>
+        <table>
+
+        </table>
+
       </div>
     </div>
   </div>
