@@ -353,7 +353,7 @@ class SalesHelper(object):
         helper = Helper()
 
         tickets_list = []
-        filtered_tickets = self.get_all_tickets().filter(created_at__gte=helper.naive_to_datetime(date.today()))
+        filtered_tickets = self.get_all_tickets().filter(created_at__gte=helper.naive_to_datetime(date.today()), is_active=True)
 
         for ticket in filtered_tickets:
             ticket_object = {
@@ -410,7 +410,7 @@ class SalesHelper(object):
 
             tickets_per_year = self.get_all_tickets().filter(
                 created_at__range=[helper.naive_to_datetime(date(max_year, 1, 1)),
-                                   helper.naive_to_datetime(date(max_year, 12, 31))])
+                                   helper.naive_to_datetime(date(max_year, 12, 31))],is_active=True)
             for ticket_item in tickets_per_year:
                 if len(year_object['weeks_list']) == 0:
                     """
@@ -519,7 +519,7 @@ class SalesHelper(object):
             }
 
             day_tickets = self.get_all_tickets().filter(
-                created_at__range=[helper.start_datetime(days_to_count), helper.end_datetime(days_to_count)])
+                created_at__range=[helper.start_datetime(days_to_count), helper.end_datetime(days_to_count)],is_active=True)
 
             for ticket_item in day_tickets:
                 for ticket_detail_item in self.get_all_tickets_details():

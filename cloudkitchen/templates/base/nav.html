@@ -5,11 +5,12 @@ TODO: Fix navs id's
   <div class="container-fluid">
     <a class="navbar-brand" href="{% url 'users:login' %}"><h3>{{ page_title }}</h3></a>
     <ul class="nav navbar-nav float-xs-right">
-      <li class="nav-item" id="link-sales">
-        <a class="nav-link" href="{% url 'sales:sales' %}">Ventas<span class="sr-only">(current)</span></a>
-      </li>
-      <li class="nav-item" id="link-new-sale">
-        <a class="nav-link" href="{% url 'sales:new_sale' %}">POS<span class="sr-only">(current)</span></a>
+      <li class="nav-item dropdown" id="link-sales">
+        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ventas</a>
+        <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">
+          <a class="dropdown-item" href="{% url 'sales:sales' %}">Analytics</a>
+          <a class="dropdown-item" href="{% url 'sales:new_sale' %}">POS</a>
+        </div>
       </li>
       <li class="nav-item dropdown" id="link-kitchen">
         <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">NetKitchen</a>
@@ -27,8 +28,6 @@ TODO: Fix navs id's
           <a class="dropdown-item" href="{% url 'products:cartridges' %}">Productos</a>          
           <a class="dropdown-item" href="{% url 'products:wh_movements' %}">Movimientos</a>          
           <a class="dropdown-item" href="{% url 'products:catering' %}">Abastecimiento</a>
-          <a class="dropdown-item" href="{% url 'products:categories' %}">Categorias</a>
-          <a class="dropdown-item" href="{% url 'products:suppliers' %}">Proveedores</a>
         </div>
       </li>
       <li class="nav-item dropdown" >

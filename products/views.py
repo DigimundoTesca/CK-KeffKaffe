@@ -460,21 +460,10 @@ def products_analytics(request):
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
-    list_x = [1, 2, 3, 4, 5, 6]
-    list_y = [10, 20, 30, 40, 50, 60]
 
-    template = 'analytics/analytics.html'
-    title = 'Products - Analytics'
-    list_x = [1, 2, 3, 4, 5, 6]
-    list_y = [10, 20, 30, 40, 50, 60]
-
-    latest_squares = LeastSquares(list_x, list_y)
-    sold_product = get_products_sold()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
-        'least_squares': latest_squares,
-        'today_sold_product': sold_product,
     }
 
     return render(request, template, context)
