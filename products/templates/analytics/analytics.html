@@ -11,8 +11,8 @@
 <div class="container-fluid">
   <div class="form-inline" id="categories-selector-form">
     <select class="custom-select" id="cat-sold">
-      <option value="drinks" id="drinks_value">Bebidas</option>
-      <option value="foods" id="food_value">Platillos</option>
+      <option value="drinks_sold" id="drinks_value">Bebidas</option>
+      <option value="food_sold" id="food_value">Platillos</option>
     </select>
   </div>
 </div>
@@ -70,7 +70,7 @@
     let category_sold = JSON.parse('{{ category_sold | safe }}');
     let all_categories = JSON.parse('{{ all_categories | safe }}');
     let nutChar, quantity_bar;
-    let color_dict = [
+    let color_list = [
       '#EF5350',
       '#E91E63',
       '#BA68C8',
@@ -115,7 +115,7 @@
 
     function fill_drinks_nut_char(){
       let drinks_aux = category_sold['drinks_sold'];
-      let foods_aux = category_sold['foods_sold'];
+      let foods_aux = category_sold['food_sold'];
       let drinks_value = $('#drinks_value').val();
       let products_list = [];
 
@@ -128,17 +128,21 @@
     
     function fill_food_nut_char(){
       let drinks_aux = category_sold['drinks_sold'];
-      let foods_aux = category_sold['foods_sold'];
+      let food_aux = category_sold['food_sold'];
       let drinks_value = $('#drinks_value').val();
       let products_list = [];
 
-      for(let i = 0; i < foods_aux.length; i++){
-        food_quant = foods_aux[i]['quantity'];
+      for(let i = 0; i < food_aux.length; i++){
+        food_quant = food_aux[i]['quantity'];
         products_list[i] = food_quant;
       }
       return products_list  
     }
     
+    function get_type_product(large_element){
+      large_element = large_element.substring(0,3);
+      return large_element;
+    }
     
     nutChar = new Chart(ctx, {
       type: 'doughnut',
@@ -146,7 +150,7 @@
         labels: ['Cafe', 'Capuccino'],
         datasets: [{
           data: fill_drinks_nut_char(),
-          backgroundColor: color_dict,
+          backgroundColor: color_list,
           borderWidth: 0
         }]
       },
@@ -196,9 +200,12 @@
       }
     });
 
-    $(this).on('change', '#categories-selector-form', function(event) {
+    $(this).on('change', '.custom-select', function(event) {
       let drinks = $('#drinks').val();
       let food = $('#foods').val();
+      let large_element = $(this)[0].value;
+      let short_element = get_type_product(large_element);
+
       $.ajax({
         url: "{% url 'products:analytics' %}",
         type: 'POST',
@@ -220,12 +227,11 @@
         success: function(result, status, XHR) {
           let drinks = result['drinks_sold'];
           let food = result['food_sold'];
-          let drinks_value = $('#drinks_value').val();
-          let food_value = $('#food_value').val();
-          if (drinks_value == 'drinks'){
+
+          if (short_element == 'dri'){
             nutChar.data.datasets[0].data = fill_drinks_nut_char();
           }
-          else if(food_value == 'food'){
+          else if(short_element == 'foo'){
             nutChar.data.datasets[0].data = fill_food_nut_char();
           }
           swal({
@@ -234,7 +240,9 @@
             type: 'success',
             timer: 750,
             showConfirmButton: false,
-          });
+          }).then(
+          function(){},
+          function(dismiss){});
         },
         error: function(result) {
           swal({
