@@ -71,6 +71,7 @@
     let category_sold = JSON.parse('{{ category_sold | safe }}');
     let all_categories = JSON.parse('{{ all_categories | safe }}');
     let nutChar, quantity_bar;
+    let its_empty;
     let color_list = [
       '#EF5350',
       '#E91E63',
@@ -145,12 +146,21 @@
       return kind_of_food;
     }
     
+    function color_chart(){
+      its_empty = true;
+      if(nutChar.data.datasets[0].data == 1){
+        nutChar.data.datasets[0].data = 1;
+        nutChar.data.datasets[1].backgroundColor = rggba(126, 127, 115, 1);
+      }
+
+    }
+
     nutChar = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: ['Cafe', 'Capuccino'],
         datasets: [{
-          data: [0,],
+          data: [1],
           backgroundColor: color_list,
           borderWidth: 0
         }]
@@ -260,6 +270,7 @@
     });
   fill_drinks_nut_char();
   fill_food_nut_char();
+  color_chart();
   });
 </script>
 {% endblock javascript %}
