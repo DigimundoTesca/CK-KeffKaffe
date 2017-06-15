@@ -80,7 +80,11 @@
           </thead>
           <tbody>
           {% for ticket in tickets %}
-          <tr>
+          {% if ticket.is_active == False %}
+            <tr class="table-warning">
+          {% else %}
+            <tr>
+          {% endif %}
             <th class="header-id">{{ ticket.ticket_parent }}</th>
             <th>{{ ticket.order_number }}</th>
             <td class="header-date">{{ ticket.ticket_parent.created_at }}</td>

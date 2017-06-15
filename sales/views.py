@@ -137,8 +137,8 @@ def sales(request):
             }
             return JsonResponse(data)
 
-    all_tickets = [x for x in sales_helper.get_tickets_today_list() if x["ticket_parent"].is_active == True]
-    active_tickets = sales_helper.get_tickets_today_list()
+    active_tickets = [x for x in sales_helper.get_tickets_today_list() if x['is_active'] == True]
+    all_tickets = sales_helper.get_tickets_today_list()
 
     if request.user.is_superuser:
         user_tickets = all_tickets
