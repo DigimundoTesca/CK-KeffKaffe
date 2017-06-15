@@ -11,6 +11,7 @@
 <div class="container-fluid">
   <div class="form-inline" id="categories-selector-form">
     <select class="custom-select" id="cat-sold">
+      <option value="select">Seleccionar categoría</option>
       <option value="drinks_sold" id="drinks_value">Bebidas</option>
       <option value="food_sold" id="food_value">Platillos</option>
     </select>
@@ -86,7 +87,7 @@
       '#B0BEC5',
       '#EEFF41',
       '#827717',
-    ]
+    ];
     /** 
     * Gets the csrf cookie from cache
     */ 
@@ -123,7 +124,7 @@
         drinks_quant = drinks_aux[i]['quantity'];
         products_list[i] = drinks_quant;
       }
-      return products_list  
+      return products_list;  
     }
     
     function fill_food_nut_char(){
@@ -136,12 +137,12 @@
         food_quant = food_aux[i]['quantity'];
         products_list[i] = food_quant;
       }
-      return products_list  
+      return products_list;  
     }
     
-    function get_type_product(large_element){
-      large_element = large_element.substring(0,3);
-      return large_element;
+    function get_type_product(kind_of_food){
+      kind_of_food = kind_of_food.substring(0,3);
+      return kind_of_food;
     }
     
     nutChar = new Chart(ctx, {
@@ -149,7 +150,7 @@
       data: {
         labels: ['Cafe', 'Capuccino'],
         datasets: [{
-          data: fill_drinks_nut_char(),
+          data: [0,],
           backgroundColor: color_list,
           borderWidth: 0
         }]
@@ -203,16 +204,14 @@
     $(this).on('change', '.custom-select', function(event) {
       let drinks = $('#drinks').val();
       let food = $('#foods').val();
-      let large_element = $(this)[0].value;
-      let short_element = get_type_product(large_element);
+      let kind_of_food = $(this)[0].value;
+      let short_element = get_type_product(kind_of_food);
 
       $.ajax({
         url: "{% url 'products:analytics' %}",
         type: 'POST',
         data: {
           csrfmiddlewaretoken: get_cookie('csrftoken'),
-          'drinks': drinks,
-          'food': food,
           'type': 'category',
         },
         beforeSend: function(){
@@ -229,11 +228,15 @@
           let food = result['food_sold'];
 
           if (short_element == 'dri'){
-            nutChar.data.datasets[0].data = fill_drinks_nut_char();
+            drinks_data = fill_drinks_nut_char();
+              nutChar.data.datasets[0].data = drinks_data;
+              nutChar.update();
           }
           else if(short_element == 'foo'){
-            nutChar.data.datasets[0].data = fill_food_nut_char();
-          }
+            food_data = fill_food_nut_char();
+              nutChar.data.datasets[0].data = food_data;
+              nutChar.update();
+          } 
           swal({
             title: 'Hecho',
             text: 'Categoría seleccionada',
@@ -256,6 +259,7 @@
       });
     });
   fill_drinks_nut_char();
+  fill_food_nut_char();
   });
 </script>
 {% endblock javascript %}

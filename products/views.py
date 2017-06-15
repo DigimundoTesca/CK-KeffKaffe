@@ -413,6 +413,7 @@ def warehouse_movements(request):
 @login_required(login_url='users:login')
 def products_analytics(request):
     products_helper = ProductsHelper()
+
     def get_period(initial_dt, final_dt):
         helper = Helper()
         sales_helper = SalesHelper()
@@ -496,26 +497,21 @@ def products_analytics(request):
                     drinks_sold.append(category_object)
                 else:
                     food_sold.append(category_object)
-        return ({'drinks_sold': drinks_sold, 'food_sold': food_sold})
-
-
+        return {'drinks_sold': drinks_sold, 'food_sold': food_sold}
 
     if request.method == 'POST':
         if request.POST['type'] == 'category':
             sold_categories = get_sold_category()
             return JsonResponse(sold_categories)
-        elif request.POST['type'] == 'random':
-            aux_list = []
-            for x in range(1,10):
-                aux_list.append(random.randrange(1,100))
-
-            return JsonResponse({'random_list': aux_list})
+        else:
+            return JsonResponse('Hola')
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
 
-    sold_product = get_products_sold()
     categories_sold = get_sold_category()
+    sold_product = get_products_sold()
+    print(categories_sold)
     all_categories = products_helper.get_all_cartridges_categories()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
