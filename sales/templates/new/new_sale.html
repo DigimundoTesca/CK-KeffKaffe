@@ -61,7 +61,7 @@
                           <span class="font-weight-bold">$ </span><span class="product-cost font-weight-bold">{{ cartridge.price }}</span>
                         </div>
                         {% for extra in extra_ingredients_products_list %}
-                          {% if extra.name == cartridge.name and cartridge.kind_of_food == 'FO'  %}
+                          {% if extra.name == cartridge.name %}
                             <div class="extra-ingredients-cont">
                               <button id="btn-extra-ing-{{ cartridge.id }}" class="btn btn-outline-primary btn-extra-ing" data-toggle="modal" data-target="#extra-ingredient-modal">Ingrediente Extra</button>
                             </div>
@@ -113,7 +113,7 @@
                 <div class="card col-xs-12 card-scroll packages-block card-outline-info" id="group-dishes">
                   <div class="card-block">
                     {% for package in package_cartridges %}
-                      {% if package.is_active and package.kind_of_food == 'FO' %}
+                      {% if package.is_active %}
                         <div class="card-block product-container" id="package-{{ package.pk }}">
                           <h6 class="product-name">{{ package.name }}</h6>
                           <img src="{{ package.image.url }}" id="package-img-{{ package.pk }}" class="product-img" alt="Imagen del Paquete">
@@ -171,6 +171,9 @@
                 </ul>
                 <div class="ticket-id-container">
                   <span>ID: </span><span id="ticket-id"></span>
+                </div>
+                <div class="ticket-payment-container">
+                  <span>Pago: </span><span id="ticket-payment"></span>
                 </div>
                 <div class="ticket-contact">
                   <p class="text-xs-center">
@@ -1115,6 +1118,7 @@
                 $('#btn-pago-tarjeta').attr('disabled', 'true');
                 $('.ticket-id-container').find('span#ticket-id').text(result.ticket_id);
                 $('.ticket-order-container').find('#ticket-order').text(result.ticket_order);
+                $('.ticket-payment-container').find('#ticket-payment').text(result.ticket_payment);
                 let options = {
                   mode: 'iframe',
                   popClose: true,
@@ -1129,7 +1133,7 @@
                   type: "error",
                   showConfirmButton: false
                 });
-                setTimeout(rel, 3000);
+                setTimeout(rel, 30000);
               },
             });
           }

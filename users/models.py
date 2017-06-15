@@ -9,6 +9,7 @@ from django.utils import six
 
 class Rol(models.Model):
     rol = models.CharField(max_length=90, default='')
+    level = models.IntegerField(default=1)
 
     class Meta:
         verbose_name = 'Rol'

@@ -59,7 +59,7 @@ class Supply(models.Model):
     # presentation unit
     PACKAGE = 'PA'
     BOX = 'BO'
-    PIECE = 'PI'
+    PIECE = 'PZ'
     PRESENTATION_UNIT = (
         (PACKAGE, 'Paquete'),
         (BOX, 'Caja'),
@@ -69,7 +69,7 @@ class Supply(models.Model):
     # metrics
     GRAM = 'GR'
     MILLILITER = 'MI'
-    PIECE = 'PI'
+    PIECE = 'PZ'
 
     METRICS = (
         (GRAM, 'gramo'),
@@ -98,6 +98,40 @@ class Supply(models.Model):
     def __str__(self):
         return self.name
 
+    def measurement_conversion(self, quantity):
+        if quantity >= 1000:
+            return self.measurement_quantity / 1000
+        else:
+            return self.measurement_quantity
+
+    def self_measurement_conversion(self):
+        if self.measurement_quantity >= 1000:
+            return self.measurement_quantity / 1000
+        else:
+            return self.measurement_quantity
+
+    def unit_conversion(self, quantity):
+        if quantity >= 1000:
+            if self.measurement_unit == 'GR':
+                return "Kilos"
+            elif self.measurement_unit == 'MI':
+                return "Litros"
+            else:
+                return "Pieza"
+        else:
+            return self.measurement_unit
+
+    def self_unit_conversion(self):
+        if self.measurement_quantity >= 1000:
+            if self.measurement_unit == 'GR':
+                return "Kilos"
+            elif self.measurement_unit == 'MI':
+                return "Litros"
+            else:
+                return "Pieza"
+        else:
+            return self.measurement_unit
+
     class Meta:
         ordering = ('id',)
         verbose_name = 'Insumo'
@@ -114,22 +148,12 @@ class Cartridge(models.Model):
         (COMPLEMENTS, 'Complementos'),
     )
 
-    # Kinf of food
-    BREAKFAST = 'BF'
-    FOOD = 'FO'
-    
-    KIND_OF_FOOD = (
-        (BREAKFAST, 'Desayunos'),
-        (FOOD, 'Comidas'),
-    )
-
     name = models.CharField(max_length=128, default='')
     price = models.DecimalField(decimal_places=2, default=0, max_digits=12)
     category = models.CharField(choices=CATEGORIES, default=FOOD_DISHES, max_length=2)
     created_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(blank=False, upload_to='cartridges')
     is_active = models.BooleanField(default=True)
-    kind_of_food = models.CharField(choices=KIND_OF_FOOD, default=BREAKFAST, max_length=2)
 
     def __str__(self):
         return self.name
@@ -138,7 +162,7 @@ class Cartridge(models.Model):
         return """
         <img src="%s" alt="Product image" height="80" >
 
-        """  % self.image.url
+        """ % self.image.url
 
     get_image.allow_tags = True
     get_image.short_description = 'Foto'
@@ -182,21 +206,11 @@ class ExtraIngredient(models.Model):
 
 
 class PackageCartridge(models.Model):
-    # Kind of food
-    BREAKFAST = 'BF'
-    FOOD = 'FO'
-    
-    KIND_OF_FOOD = (
-        (BREAKFAST, 'Desayunos'),
-        (FOOD, 'Comidas'),
-    )
-
     name = models.CharField(max_length=90)
     price = models.DecimalField(default=0, max_digits=12, decimal_places=2)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(blank=False, upload_to='cartridges', default='')
-    kind_of_food = models.CharField(choices=KIND_OF_FOOD, default=BREAKFAST, max_length=2)
     
     def __str__(self):
         return self.name
@@ -206,8 +220,7 @@ class PackageCartridge(models.Model):
         options = []
 
         for recipe in recipes:
-            options.append(("<option value=%s selected>%s</option>" %
-                                (recipe, recipe.cartridge)))
+            options.append(("<option value=%s selected>%s</option>" % (recipe, recipe.cartridge)))
         tag = """<select multiple disabled>%s</select>""" % str(options)
         return tag
 
@@ -231,7 +244,3 @@ class PackageCartridgeRecipe(models.Model):
         ordering = ('id',)
         verbose_name = 'Receta del Paquete'
         verbose_name_plural = 'Recetas de Paquetes'
-
-
-
-

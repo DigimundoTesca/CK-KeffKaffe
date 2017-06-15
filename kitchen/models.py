@@ -2,8 +2,9 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from products.models import Supply, Cartridge, PackageCartridge
-from sales.models import Ticket, TicketDetail
+from products.models import Supply
+from sales.models import Ticket
+import math
 
 
 class ProcessedProduct(models.Model):
@@ -45,19 +46,6 @@ class ProcessedProduct(models.Model):
 
 
 class Warehouse(models.Model):
-    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)    
-    cost = models.FloatField(default=0)
-    
-    def __str__(self):
-        return '%s' % self.supply.name
-
-    class Meta:
-        ordering = ('id',)
-        verbose_name = 'Insumo en Almacén'
-        verbose_name_plural = 'Insumos en el Almacén'
-
-
-class WarehouseDetails(models.Model):
     PROVIDER = 'PR'
     STOCK = 'ST'
     ASSEMBLED = 'AS'
@@ -68,17 +56,42 @@ class WarehouseDetails(models.Model):
         (ASSEMBLED, 'Assembled'),
         (SOLD, 'Sold'),
     )
-    
-    warehouse = models.ForeignKey(Warehouse, default=1, on_delete=models.CASCADE)
+
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+    cost = models.FloatField(default=0)
     status = models.CharField(choices=STATUS, default=PROVIDER, max_length=15)
     created_at = models.DateField(editable=False, auto_now_add=True)
     expiry_date = models.DateField(editable=True, auto_now_add=True)
     quantity = models.FloatField(default=0)
 
     def __str__(self):
-        return '%s' % self.warehouse.supply
+        return '%s' % self.supply.name
+
+    def required_quantity(self):
+        required = math.ceil(self.quantity / self.supply.measurement_quantity) * self.supply.measurement_quantity
+        if required >= 1000:
+            required /= 1000
+        return required
+
+    def get_unit(self):
+        return self.supply.unit_conversion(
+            math.ceil(self.quantity / self.supply.measurement_quantity) * self.supply.measurement_quantity)
 
     class Meta:
         ordering = ('id',)
-        verbose_name = 'Insumo en Almacén - Detalles'
-        verbose_name_plural = 'Insumos en el Almacén - Detalles'
+        verbose_name = 'Insumo en Almacén'
+        verbose_name_plural = 'Insumos en el Almacén'
+
+
+class Delivery(models.Model):
+    deliveries = models.ManyToManyField(Warehouse)
+    delivery_day = models.DateField(editable=False, auto_now_add=True)
+
+    def __str__(self):
+        # return '%s' % self.warehouse.supply
+        return '%s' % self.id
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Entrega'
+        verbose_name_plural = 'Entregas'

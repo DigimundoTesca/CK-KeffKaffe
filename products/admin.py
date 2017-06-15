@@ -37,9 +37,9 @@ class ExtraIngredientInline(admin.TabularInline):
 
 @admin.register(Cartridge)
 class AdminCartridge(admin.ModelAdmin):
-    list_display = ('id', 'name', 'price', 'category', 'kind_of_food', 'is_active','created_at', 'get_image', 'image')
+    list_display = ('id', 'name', 'price', 'category', 'is_active','created_at', 'get_image', 'image')
     list_display_links = ('id', 'name')
-    list_editable = ('price', 'image', 'category', 'is_active', 'kind_of_food')
+    list_editable = ('price', 'image', 'category', 'is_active',)
     inlines = [CartridgeRecipeInline, ExtraIngredientInline]
     ordering = ['name']
 
@@ -56,8 +56,8 @@ class PackageCartridgeRecipeInline(admin.TabularInline):
 
 @admin.register(PackageCartridge)
 class AdminPackageCartridge(admin.ModelAdmin):
-    list_display = ('id', 'name', 'price', 'kind_of_food', 'is_active', 'package_recipe')
+    list_display = ('id', 'name', 'price', 'is_active', 'package_recipe')
     list_display_links = ('id', 'name')
-    list_editable = ('price', 'is_active', 'kind_of_food')
+    list_editable = ('price', 'is_active',)
     inlines = [PackageCartridgeRecipeInline]
     ordering = ['name']

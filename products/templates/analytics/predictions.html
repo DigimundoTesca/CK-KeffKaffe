@@ -1,14 +1,11 @@
-{% extends 'base/base_nav_footer.html' %}
-
-{% load static %}
+{% extends "base/base_nav_footer.html" %}
 
 {% block link %}    
-  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css"/>
-  <link rel="stylesheet" href="{% static "css/styles27052017.css" %}">
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" />
 {% endblock link %}
 
 {% block content %}
-<div class="container"/>
+<div class="container-fluid">
   <div class="form-inline">
     <label class="sr-only" for="initial-date">Fecha inicial</label>
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="initial-date" placeholder="Primer Fecha">
@@ -20,47 +17,7 @@
 
     <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" onclick="" id="create-predictions">Generar</button>
   </div>
-  <div>
-    <table id="analytics-prro" class="table table-kitchen table-straped table-hover" align="right">
-      <thead class="thead-inverse">
-        <tr>
-          <th>Producto</th>
-          <th>Cantidad</th>
-        </tr>
-      </thead>  
-        <tbody>
-            {% for cartridge in today_sold_product %}
-            <tr>
-              <td>
-                <span>
-                  {{ cartridge.name }}
-                </span>
-              </td>
-              <td>
-                <span class="badge badge-success">
-                  {{ cartridge.frequency }}
-                </span>
-              </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-  </div>
 </div>
-<!-- <style type="text/css">
-  /*---------- Tables ------------ */
-tr:nth-child(even){
- background-color:  rgba(131,78,0,0.5);
-}
-tr:hover{
- background-color:  rgba(131,78,0,1) !important;
-}
-
-table{
-  border-collapse: collapse;
-  width: 100%
-}*/
-</style> -->
 
 {% endblock content %}
 

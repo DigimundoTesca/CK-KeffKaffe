@@ -26,6 +26,7 @@ class Ticket(models.Model):
         choices=PAYMENT_TYPE, default=CASH, max_length=2)
     order_number = models.IntegerField(
         null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return '%s' % self.id
