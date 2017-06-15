@@ -291,7 +291,7 @@ def new_sale(request):
                 )
                 new_ticket_detail_object.save()
 
-                package_recipe = PackageCartridgeRecipe.objects.filter(package_cartridges=package_object)
+                package_recipe = PackageCartridgeRecipe.objects.filter(package_cartridge=package_object)
 
                 for element_p in package_recipe:
 
