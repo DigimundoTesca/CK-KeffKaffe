@@ -81,10 +81,10 @@
           <tbody>
           {% for ticket in tickets %}
           {% if ticket.is_active == False %}
-            <tr class="table-warning">
-          {% else %}
-            <tr>
-          {% endif %}
+          <tr class="table-danger">
+            {% else %}
+          <tr>
+            {% endif %}
             <th class="header-id">{{ ticket.ticket_parent }}</th>
             <th>{{ ticket.order_number }}</th>
             <td class="header-date">{{ ticket.ticket_parent.created_at }}</td>
@@ -110,8 +110,14 @@
               {{ ticket.total }}
             </td>
             <td class="header-actions">
-              <span class="sales-actions delete-ticket"><i class="material-icons text-muted">delete</i></span>
+              {% if user.is_superuser == False %}
+              <span class="sales-actions deactivate-ticket"><i class="material-icons text-muted">delete</i></span>
               <span class="sales-actions print-ticket"><i class="material-icons text-primary">local_printshop</i></span>
+              {% else %}
+              <span class="sales-actions delete-ticket"><i class="material-icons text-muted">delete</i></span>
+              <span class="sales-actions activate-ticket"><i class="material-icons text-muted">restore</i></span>
+              <span class="sales-actions print-ticket"><i class="material-icons text-primary">local_printshop</i></span>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}
@@ -887,7 +893,7 @@
 
             function delete_ticket() {
                 $.ajax({
-                    url: "{% url 'sales:delete-sale' %}",
+                    url: "{% url 'sales:modify-sale' %}",
                     type: 'POST',
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
@@ -932,6 +938,8 @@
                 },
                 function(dismiss){});
         });
+
+
 
         /**
          * Saves the ticket a csv file

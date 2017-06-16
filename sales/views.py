@@ -175,13 +175,20 @@ def sales(request):
 
 
 @login_required(login_url='users:login')
-def delete_sale(request):
+def modify_sale(request):
     if request.method == 'POST':
         ticket_id = request.POST['ticket_id']
         ticket = Ticket.objects.get(id=ticket_id)
-        ticket.is_active = False
-        ticket.save()
-        return JsonResponse({'result': 'excelente!'})
+        if request.POST['action'] == "delete":
+            ticket.is_active = False
+            ticket.save()
+            return JsonResponse({'result': 'excelente!'})
+
+
+
+
+
+
 
 
 @login_required(login_url='users:login')
