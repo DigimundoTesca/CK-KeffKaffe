@@ -179,15 +179,15 @@ def delete_sale(request):
     if request.method == 'POST':
         ticket_id = request.POST['ticket_id']
         ticket = Ticket.objects.get(id=ticket_id)
-        if request.method == 'activate-ticket':
+        if request.POST['action'] == 'activate-ticket':
             ticket.is_active = True
             ticket.save()
             return JsonResponse({'result': 'excelente!'})
-        if request.method == 'deactivate-ticket':
+        if request.POST['action'] == 'deactivate-ticket':
             ticket.is_active = False
             ticket.save()
             return JsonResponse({'result': 'excelente!'})
-        if request.method == 'delete-ticket':
+        if request.POST['action'] == 'delete-ticket':
             ticket.delete()
             return JsonResponse({'result': 'excelente!'})
 
