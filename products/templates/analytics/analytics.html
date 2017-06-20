@@ -73,10 +73,10 @@
     let nutChar, quantity_bar;
     let itsEmpty;
 
-    let emptyColor = [
-      '#FFFFF',
-
-    ]
+    // let emptyColor = [
+    //   '#FFFFF',
+      
+    // ]
     let colorList = [
       '#EF5350',
       '#E91E63',
@@ -153,9 +153,9 @@
     
     function emptyColor(){
       itsEmpty = true;
-      if(nutChar.data.datasets[0].data == 1){
-        nutChar.data.datasets[1].backgroundColor = emptyColor;   
-      }
+      // if(nutChar.data.datasets[0].data == 1){
+        // nutChar.data.datasets[1].backgroundColor = emptyColor;   
+      // }
 
     }
 
@@ -275,7 +275,7 @@
     });
   fillDrinksNutChar();
   fillFoodNutChar();
-  // emptyColor();
+  emptyColor();
   });
 </script>
 {% endblock javascript %}
