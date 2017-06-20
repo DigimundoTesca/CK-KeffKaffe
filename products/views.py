@@ -390,6 +390,15 @@ def warehouse_movements(request):
     }
     return render(request, template, context)
 
+@login_required(login_url='users:login')
+def shop_list(request):
+    template = 'catering/shop_list.html'
+    title = 'Lista de Compras'
+    context = {
+        'title': title,
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
 
 @login_required(login_url='users:login')
 def products_analytics(request):
