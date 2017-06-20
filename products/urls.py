@@ -49,6 +49,7 @@ urlpatterns = [
     url(r'^warehouse/catering/$', views.catering, name='catering'),
     url(r'^warehouse/movements/$', views.warehouse_movements, name='wh_movements'),
 
+
 ]
 
 # test
