@@ -72,11 +72,11 @@
     let all_categories = JSON.parse('{{ all_categories | safe }}');
     let nutChar, quantity_bar;
     let itsEmpty;
-
-    // let emptyColor = [
-    //   '#FFFFF',
-      
-    // ]
+    let labelName = [];
+    
+    let neutralColor = [
+      '#FFFFF',
+    ]
     let colorList = [
       '#EF5350',
       '#E91E63',
@@ -121,10 +121,10 @@
     }
 
     function fillDrinksNutChar(){
-      let drinksAux = category_sold['drinks_sold'];
+      var drinksAux = category_sold['drinks_sold'];
       let foodsAux = category_sold['food_sold'];
       let drinksValue = $('#drinksValue').val();
-      let productsList = [];
+      productsList = [];
 
       for(let i = 0; i < drinksAux.length; i++){
         drinksQuant = drinksAux[i]['quantity'];
@@ -135,9 +135,9 @@
     
     function fillFoodNutChar(){
       let drinksAux = category_sold['drinks_sold'];
-      let foodAux = category_sold['food_sold'];
+      foodAux = category_sold['food_sold'];
       let drinksValue = $('#drinksValue').val();
-      let productsList = [];
+      productsList = [];
 
       for(let i = 0; i < foodAux.length; i++){
         food_quant = foodAux[i]['quantity'];
@@ -151,7 +151,7 @@
       return kindOfFood;
     }
     
-    function emptyColor(){
+    function getNeutralColor(){
       itsEmpty = true;
       // if(nutChar.data.datasets[0].data == 1){
         // nutChar.data.datasets[1].backgroundColor = emptyColor;   
@@ -164,13 +164,24 @@
       data: {
         labels: ['Cafe', 'Capuccino'],
         datasets: [{
-          data: [1],
+          data: [0],
           backgroundColor: colorList,
           borderWidth: 0
         }]
       },
       options: {
         responsive: true,
+        onClick: function(event, legendItem) {
+          try {
+            console.log('perro');
+            let itemSelected = legendItem[0]._index;
+            for (let i = 0; i < productsList.length; i++) { 
+              console.log('entra');
+            }
+          } catch (error) {
+            console.log(error.message);
+          }
+        },
         cutoutPercentage: 40, 
         animation: {
           animateScale: true,
@@ -275,7 +286,7 @@
     });
   fillDrinksNutChar();
   fillFoodNutChar();
-  emptyColor();
+  getNeutralColor();
   });
 </script>
 {% endblock javascript %}

@@ -224,6 +224,7 @@
         for (let j = 0; j < sales_list.length; j++) {
           if (sales_list[j].number_day == i) {
             week_list[i] = sales_list[j]['earnings']
+            console.log(week_list);
           }
         }
       }
@@ -452,6 +453,7 @@
         responsive: true,
         onClick: function(event, legendItem) {
           try {
+            console.log('perro');
             let selected_day = legendItem[0]._index;
             for (let i = 0; i < sales_week.length; i++) {
               if (sales_week[i].number_day == selected_day) {
