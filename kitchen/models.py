@@ -95,13 +95,14 @@ class Delivery(models.Model):
         verbose_name = 'Entrega'
         verbose_name_plural = 'Entregas'
 
+
 class DeliveryList(models.Model):
-    delivery = models.ForeignKey(PackageCartridge, default=1, on_delete=models.CASCADE)
-    supply = models.ForeignKey(Cartridge, default=1, on_delete=models.CASCADE)
+    delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE)
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
     quantity = models.IntegerField()
 
     def __str__(self):
-        return '%s %s' % (self.quantity, self.cartridge)
+        return '%s %s' % (self.quantity, self.supply)
 
     class Meta:
         ordering = ('id',)

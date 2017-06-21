@@ -1,0 +1,100 @@
+{% extends "base/base_nav_footer.html" %}
+{% load static %}
+{% block link %}
+  <link rel="stylesheet" href="{% static "css/shop_list.css" %}">
+{% endblock link %}
+{% block content %}
+
+<div class="container">
+
+    <div class="g col-md-12">
+        <div class="d row">
+            <div class="b col-md-6">
+                <button class="btn_pre_list col-md-12">
+                    Predecir lista de Compras
+                </button>
+            </div>
+            <div class="c col-md-6">
+                <button class="btn_manual_list col-md-12">
+                    Crear lista de Compras
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="a col-md-12">
+        <div class="r row">
+            <div class="d col-md-6">
+                <h1 align="center">Insumos</h1>
+            </div>
+        </div>
+        <div class="s card_list col-md-6">
+            {% for supplies in supply_list %}
+                <div class="card_element col-md-12" id="supplies.supply-{{ supplies.pk }}">
+                    <div class="card_image col-md-6">
+                        <img src="{{ supplies.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}"  width="100" height="100">
+                    </div>
+                    <div class="card_element_info col-md-6">
+                        <h7 class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></h7><br>
+                        <h7 class="provider_unit" id="supplies.quantity-{{ supplies.self_measurement_conversion }},{{ supplies.self_unit_conversion }},{{ supplies.presentation_cost }}" > Unidad: {{ supplies.self_measurement_conversion }} {{ supplies.self_unit_conversion }} </h7>
+                    </div>
+                    <div class="overlay"></div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock content %}
+{% block javascript %}
+    <script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+
+        $(".card_element").on("click",function(e){
+
+            var element = $(this);
+            var element_id = element.attr('id').substring(16)
+            var element_name = element.children(".card_element_info").children('.product_name').attr('id').substring(12)
+            var element_quantity = element.children(".card_element_info").children('.provider_unit').attr('id').substring(18)
+            var element_wh = element_quantity.split(',');
+            var element_unit = element_wh[0];
+            var element_measurement = element_wh[1];
+            var element_cost = element_wh[2];
+
+
+
+
+        });
+
+        $(".btn_pre_list").on("click",function(e){
+            $(".a").fadeToggle(500);
+
+        });
+
+
+    });
+    </script>
+{% endblock javascript %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

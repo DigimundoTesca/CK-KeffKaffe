@@ -392,10 +392,14 @@ def warehouse_movements(request):
 
 @login_required(login_url='users:login')
 def shop_list(request):
-    template = 'catering/shop_list.html'
+
+    products_helper = ProductsHelper()
+
+    template = 'catering/shoplist.html'
     title = 'Lista de Compras'
     context = {
         'title': title,
+        'supply_list' : products_helper.get_all_supplies(),
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
