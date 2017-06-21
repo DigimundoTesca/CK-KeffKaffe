@@ -37,7 +37,9 @@
                         <h7 class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></h7><br>
                         <h7 class="provider_unit" id="supplies.quantity-{{ supplies.unidad }},{{ supplies.medida }},{{ supplies.costo }}" > Unidad: {{ supplies.unidad }} {{ supplies.medida }} </h7>
                         <div class="overlay"></div>
-                        <div class="button"><a href="#"> BUTTON </a></div>
+                        {% for presentations in supplies.presentations %}
+                            <div class="button"><a href="#"> {{ presentations }} </a></div>
+                        {% endfor %}
                     </div>
                 </div>
             {% endfor %}
@@ -67,7 +69,7 @@
 
         });
 
-        $(".btn_pre_list").on("click",function(e){
+        $(".btn_manual_list").on("click",function(e){
             $(".a").fadeToggle(500);
 
         });

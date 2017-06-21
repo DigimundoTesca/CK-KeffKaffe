@@ -409,8 +409,13 @@ def shop_list(request):
             'costo': sup.presentation_cost,
         }
         presentations = SupplyPresentation.objects.filter(supply=sup)
+        supp_pres = []
+
         for presentation in presentations:
-            print(presentation)
+            supp_pres.append(presentation)
+
+        element_object['presentations'] = supp_pres
+
         supply_list.append(element_object)
 
 
