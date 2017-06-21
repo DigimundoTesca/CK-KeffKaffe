@@ -11,7 +11,7 @@ from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
 from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm
-from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
+from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe, SupplyPresentation, Presentation
 from kitchen.models import Warehouse
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
@@ -397,15 +397,28 @@ def shop_list(request):
 
     supps = products_helper.get_all_supplies()
 
+    supply_list = []
+
+
     for sup in supps:
-        SupplyPresentation = SupplyPresentation.objects.get(supply=)
+        element_object = {
+            'name': sup.name,
+            'imagen': sup.image.url,
+            'unidad': sup.self_measurement_conversion,
+            'medida': sup.self_unit_conversion,
+            'costo': sup.presentation_cost,
+        }
+        presentations = SupplyPresentation.objects.filter(supply=sup)
+        for presentation in presentations:
+            print(presentation)
+        supply_list.append(element_object)
 
 
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
     context = {
         'title': title,
-        'supply_list' : products_helper.get_all_supplies(),
+        'supply_list': supply_list,
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)

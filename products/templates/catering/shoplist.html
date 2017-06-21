@@ -31,11 +31,11 @@
             {% for supplies in supply_list %}
                 <div class="card_element col-md-12" id="supplies.supply-{{ supplies.pk }}">
                     <div class="card_image col-md-6">
-                        <img src="{{ supplies.image.url }}" id="supplies.pr.supply-img-{{ supplies.pk }}"  width="100" height="100">
+                        <img src="{{ supplies.imagen }}" id="supplies.pr.supply-img-{{ supplies.pk }}"  width="100" height="100">
                     </div>
                     <div class="card_element_info col-md-6">
                         <h7 class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></h7><br>
-                        <h7 class="provider_unit" id="supplies.quantity-{{ supplies.self_measurement_conversion }},{{ supplies.self_unit_conversion }},{{ supplies.presentation_cost }}" > Unidad: {{ supplies.self_measurement_conversion }} {{ supplies.self_unit_conversion }} </h7>
+                        <h7 class="provider_unit" id="supplies.quantity-{{ supplies.unidad }},{{ supplies.medida }},{{ supplies.costo }}" > Unidad: {{ supplies.unidad }} {{ supplies.medida }} </h7>
                         <div class="overlay"></div>
                         <div class="button"><a href="#"> BUTTON </a></div>
                     </div>
