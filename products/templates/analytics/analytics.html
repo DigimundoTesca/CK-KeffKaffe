@@ -18,9 +18,11 @@
   </div>
 </div>
 <div class="row container-fluid">
-<div class="col-xs-12 col-md-4">
-    <div class="chart-container" style="width:300px !important">
+  <div class="col-xs-12 col-md-4">
+    <div class="chart-container nutChar" style="width:300px !important; margin-top: 1cm;">
       <canvas id="nutChar"></canvas>
+    </div>
+    <div class='container-fluid col-xl-8'>
     </div>
   </div>
   <div class="col-xs-12 col-md-8">
@@ -121,7 +123,7 @@
     }
 
     function fillDrinksNutChar(){
-      var drinksAux = category_sold['drinks_sold'];
+      drinksAux = category_sold['drinks_sold'];
       let foodsAux = category_sold['food_sold'];
       let drinksValue = $('#drinksValue').val();
       productsList = [];
@@ -159,60 +161,33 @@
 
     }
 
-    nutChar = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Cafe', 'Capuccino'],
-        datasets: [{
-          data: [0],
-          backgroundColor: colorList,
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        onClick: function(event, legendItem) {
-          try {
-            console.log('perro');
-            let itemSelected = legendItem[0]._index;
-            for (let i = 0; i < productsList.length; i++) { 
-              console.log('entra');
-            }
-          } catch (error) {
-            console.log(error.message);
-          }
-        },
-        cutoutPercentage: 40, 
-        animation: {
-          animateScale: true,
-        }
+    function getLabelFoodNutChar(){
+      labelList = []
+      for(i = 0; i < foodAux.length; i++){
+        labelList[i] = foodAux[i]['name'];
       }
-    });
+      return labelList;
+    }
+
+    function getLabelDrinkNutChar(){
+      labelList = []
+      for(i = 0; i < drinksAux.length; i++){
+        labelList[i] = drinksAux[i]['name'];
+      }
+      return labelList;
+    }
+
 
     quantity_bar = new Chart(bar_ctx, {
-      type: 'bar',
+      type: 'line',
       data: {
         labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
         datasets: [{
-          label: '# of Votes',
-          data: [12, 19, 3, 5, 2, 3],
-          backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(54, 162, 235, 0.2)',
-          'rgba(255, 206, 86, 0.2)',
-          'rgba(75, 192, 192, 0.2)',
-          'rgba(153, 102, 255, 0.2)',
-          'rgba(255, 159, 64, 0.2)'
-          ],
-          borderColor: [
-          'rgba(255,99,132,1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)'
-          ],
-          borderWidth: 1
+          label: 'Número de ventas',
+          data: [],
+          // backgroundColor: colorList,
+          borderColor: 'blue',
+          borderWidth: 5,
         }]
       },
       options: {
@@ -225,6 +200,38 @@
         }
       }
     });
+
+    nutChar = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: [],
+        datasets: [{
+          data: [0],
+          backgroundColor: colorList,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        onClick: function(event, legendItem) {
+          try {
+            let itemSelected = legendItem[0]._index;
+            for (let i = 0; i < productsList.length; i++) { 
+            }
+          } catch (error) {
+            console.log(error.message);
+          }
+        },
+        cutoutPercentage: 40, 
+        legend: {
+          display: false
+        },
+        animation: {
+          animateScale: true,
+        }
+      }
+    });
+
 
     $(this).on('change', '.custom-select', function(event) {
       let drinks = $('#drinks').val();
@@ -254,11 +261,24 @@
 
           if (short_element == 'dri'){
             drinks_data = fillDrinksNutChar();
+            labels = getLabelDrinkNutChar();
+            console.log(labels);
+            for(i = 0; i < drinksAux.length; i++){
+              nutChar.data.labels[i] = labels[i];
+              quantity_bar.data.labels[i] = labels[i];
+
+            }
               nutChar.data.datasets[0].data = drinks_data;
+              quantity_bar.data.datasets[0].data = drinks_data;
               nutChar.update();
+              quantity_bar.update();
           }
           else if(short_element == 'foo'){
+            labels = getLabelFoodNutChar();
             food_data = fillFoodNutChar();
+            for(i = 0; i < drinksAux.length; i++){
+              nutChar.data.labels[i] = labels[i];
+            }
               nutChar.data.datasets[0].data = food_data;
               nutChar.update();
           }
@@ -287,6 +307,8 @@
   fillDrinksNutChar();
   fillFoodNutChar();
   getNeutralColor();
+  getLabelFoodNutChar();
+  getLabelDrinkNutChar();
   });
 </script>
 {% endblock javascript %}
