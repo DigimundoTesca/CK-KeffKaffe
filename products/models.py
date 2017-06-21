@@ -166,13 +166,27 @@ class Presentation(models.Model):
     presentation_cost = models.FloatField(default=0)
 
     def __str__(self):
-        return self.measurement_quantity
+        return str(self.measurement_quantity)
 
 
     class Meta:
         ordering = ('id',)
         verbose_name = 'Presentacion'
         verbose_name_plural = 'Presentaciones'
+
+
+class SupplyPresentation(models.Model):
+    presentation = models.ForeignKey(Presentation, default=1, on_delete=models.CASCADE)
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '%s' % self.presentation
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Presentacion de Insumo'
+        verbose_name_plural = 'Presentaciones de Insumos'
+
 
 class Cartridge(models.Model):
     # Categories

@@ -36,8 +36,9 @@
                     <div class="card_element_info col-md-6">
                         <h7 class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></h7><br>
                         <h7 class="provider_unit" id="supplies.quantity-{{ supplies.self_measurement_conversion }},{{ supplies.self_unit_conversion }},{{ supplies.presentation_cost }}" > Unidad: {{ supplies.self_measurement_conversion }} {{ supplies.self_unit_conversion }} </h7>
+                        <div class="overlay"></div>
+                        <div class="button"><a href="#"> BUTTON </a></div>
                     </div>
-                    <div class="overlay"></div>
                 </div>
             {% endfor %}
         </div>

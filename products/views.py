@@ -395,6 +395,12 @@ def shop_list(request):
 
     products_helper = ProductsHelper()
 
+    supps = products_helper.get_all_supplies()
+
+    for sup in supps:
+        SupplyPresentation = SupplyPresentation.objects.get(supply=)
+
+
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
     context = {
