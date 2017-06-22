@@ -33,11 +33,14 @@
     border-radius: 5px; /* 5px rounded corners */
 }
 
-
+.table{
+    padding
+}
 
 .add_btn ,.pres_btn{
     transition: 0.3s;
     opacity: 0;
+    cursor: pointer;
 }
 
 .card_element:hover {
