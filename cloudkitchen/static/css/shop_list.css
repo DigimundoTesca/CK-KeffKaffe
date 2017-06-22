@@ -33,13 +33,15 @@
     border-radius: 5px; /* 5px rounded corners */
 }
 
-.product-name{
-    top: 100px;
-}
+
 
 .add_btn ,.pres_btn{
     transition: 0.3s;
     opacity: 0;
+}
+
+.card_element:hover {
+    background: lightgray;
 }
 
 .card_element:hover .add_btn{
@@ -49,6 +51,8 @@
 .card_element:hover .pres_btn{
     opacity:1;
 }
+
+
 
 
 
