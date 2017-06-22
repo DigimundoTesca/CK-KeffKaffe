@@ -1,81 +1,139 @@
 {% extends "base/base_nav_footer.html" %}
 {% load static %}
 {% block link %}
-  <link rel="stylesheet" href="{% static "css/shop_list.css" %}">
+    <link rel="stylesheet" href="{% static "css/shop_list.css" %}">
 {% endblock link %}
 {% block content %}
-
-<div class="container">
-
-    <div class="g col-md-12">
-        <div class="d row">
-            <div class="b col-md-6">
-                <button class="btn_pre_list col-md-12">
-                    Predecir lista de Compras
-                </button>
-            </div>
-            <div class="c col-md-6">
-                <button class="btn_manual_list col-md-12">
-                    Crear lista de Compras
-                </button>
-            </div>
-        </div>
-    </div>
-    <div class="a col-md-12">
-        <div class="r row">
-            <div class="d col-md-6">
-                <h1 align="center">Insumos</h1>
-            </div>
-        </div>
-        <div class="s card_list col-md-6">
-            {% for supplies in supply_list %}
-                <div class="card_element col-md-12" id="supplies.supply-{{ supplies.pk }}">
-                    <div class="card_image col-md-6">
-                        <img src="{{ supplies.imagen }}" id="supplies.pr.supply-img-{{ supplies.pk }}"  width="100" height="100">
-                    </div>
-                    <div class="card_element_info col-md-6">
-                        <h7 class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></h7><br>
-                        <h7 class="provider_unit" id="supplies.quantity-{{ supplies.unidad }},{{ supplies.medida }},{{ supplies.costo }}" > Unidad: {{ supplies.unidad }} {{ supplies.medida }} </h7>
-                        <div class="overlay"></div>
-                        {% for presentations in supplies.presentations %}
-                            <div class="button"><a href="#"> {{ presentations }} </a></div>
-                        {% endfor %}
-                    </div>
+    <div class="container">
+        <div class="g col-md-12">
+            <div class="d row">
+                <div class="b col-md-6">
+                    <button class="btn_pre_list col-md-12">
+                        Predecir lista de Compras
+                    </button>
                 </div>
-            {% endfor %}
+                <div class="c col-md-6">
+                    <button class="btn_manual_list col-md-12">
+                        Crear lista de Compras
+                    </button>
+                </div>
+            </div>
         </div>
-
     </div>
-</div>
-
+    <div class="container container_manual_list">
+        <div class="a col-md-12">
+            <div class="title row">
+                <div class="d col-md-6">
+                    <h1 align="center">Insumos</h1>
+                </div>
+            </div>
+            <div class="block_card card_list col-md-6">
+                {% for supplies in supply_list %}
+                    <div class="card card_element col-sm-12 col-md-12 col-lg-12" id="supplies.supply-{{ supplies.pk }}">
+                        <div class="overlay"></div>
+                        <div class="card_image col-sm-4 col-md-4 col-lg-4">
+                            <img class="ele_image" src="{{ supplies.imagen }}" id="supplies.pr.supply-img-{{ supplies.pk }}"  width="100" height="100">
+                        </div>
+                        <div class="card_ele_info col-sm-8 col-md-8 col-lg-8">
+                            <h7 class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></h7><br>
+                            <h7 class="provider_unit" id="supplies.quantity-{{ supplies.unidad }},{{ supplies.medida }},{{ supplies.costo }}" > Unidad: {{ supplies.unidad }} {{ supplies.medida }} </h7>                        <br>
+                            <div class="pres_card col-md-12 col-lg-12">
+                                {% for presentations in supplies.presentations %}
+                                    <div class="pres_btn col-sm-3 col-lg-3 col-md-3">
+                                        <span class="material-icons">lens</span><br>
+                                        <span> {{ presentations }}</span>
+                                    </div>
+                                {% endfor %}
+                                {% if supplies.presentations|length <= 2  %}
+                                    <div class="add_btn col-sm-3 col-md-3 col-lg-3">
+                                        <span class="material-icons">add</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="container container_pred_list">
+        <table class="table table-kitchen table-striped table-hover" align="right">
+            <thead class="thead-inverse">
+            <tr>
+                <th>Nombre</th>
+                <th>Requeridos</th>
+                <th>Stock</th>
+                <th>Por Comprar</th>
+                <th>Proveedor</th>
+                <th>Cantidad x Unidad</th>
+                <th>Costo x Unidad</th>
+                <th>Costo Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for required in required_supplies %}
+                {% if required.measurement_quantity == 1  %}
+                    {% if required.stock <= 50 %}
+                        <tr class="table-danger">
+                            {% elif required.stock <= 25 %}
+                        <tr class="table-warning">
+                            {% elif required.stock <= 10 %}
+                        <tr class="table-success">
+                    {% endif %}
+                {% else %}
+                {% if required.stock <= 500 %}
+                    <tr class="table-danger">
+                        {% elif required.stock <= 1000 %}
+                    <tr class="table-warning">
+                        {% elif required.stock <= 2000 %}
+                    <tr class="table-success">
+                {% endif %}
+                {% endif %}
+            <td>{{ required.name }}</td>
+            <td>{{ required.quantity }} {{ required.measurement_unit }}</td>
+            <td>{{ required.stock }} {{ required.measurement_unit }}</td>
+            <td>{{ required.required }} {{ required.measurement_unit }}</td>
+            <td>{{ required.supplier }}</td>
+            <td>{{ required.supplier_quantity }} {{ required.supplier_unit }}</td>
+            <td>${{ required.cost }}</td>
+            <td>${{ required.full_cost }}</td>
+                <tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock content %}
 {% block javascript %}
     <script type="text/javascript" charset="utf-8">
-    $(document).ready(function() {
+        $(document).ready(function() {
 
-        $(".card_element").on("click",function(e){
+            $(".card_element").on("click",function(e){
 
-            var element = $(this);
-            var element_id = element.attr('id').substring(16)
-            var element_name = element.children(".card_element_info").children('.product_name').attr('id').substring(12)
-            var element_quantity = element.children(".card_element_info").children('.provider_unit').attr('id').substring(18)
-            var element_wh = element_quantity.split(',');
-            var element_unit = element_wh[0];
-            var element_measurement = element_wh[1];
-            var element_cost = element_wh[2];
+                var element = $(this);
+                var element_id = element.attr('id').substring(16)
+                var element_name = element.children(".card_element_info").children('.product_name').attr('id').substring(12)
+                var element_quantity = element.children(".card_element_info").children('.provider_unit').attr('id').substring(18)
+                var element_wh = element_quantity.split(',');
+                var element_unit = element_wh[0];
+                var element_measurement = element_wh[1];
+                var element_cost = element_wh[2];
 
+            });
 
+            $(".container_pred_list").hide();
+
+            $(".btn_manual_list").on("click",function(e){
+                $(".container_pred_list").slideToggle(500);
+                $(".container_manual_list").slideToggle(500);
+            });
+
+            $(".btn_pre_list").on("click",function(e){
+                $(".container_pred_list").slideToggle(500);
+                $(".container_manual_list").slideToggle(500);
+            });
 
 
         });
-
-        $(".btn_manual_list").on("click",function(e){
-            $(".a").fadeToggle(500);
-
-        });
-
-
-    });
     </script>
 {% endblock javascript %}
 

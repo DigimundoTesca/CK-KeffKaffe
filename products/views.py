@@ -394,12 +394,8 @@ def warehouse_movements(request):
 def shop_list(request):
 
     products_helper = ProductsHelper()
-
     supps = products_helper.get_all_supplies()
-
     supply_list = []
-
-
     for sup in supps:
         element_object = {
             'name': sup.name,
@@ -413,11 +409,8 @@ def shop_list(request):
 
         for presentation in presentations:
             supp_pres.append(presentation)
-
         element_object['presentations'] = supp_pres
-
         supply_list.append(element_object)
-
 
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
