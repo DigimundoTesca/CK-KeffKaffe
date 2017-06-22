@@ -22,7 +22,9 @@
     <div class="chart-container nutChar" style="width:300px !important; margin-top: 1cm;">
       <canvas id="nutChar"></canvas>
     </div>
-    <div class='container-fluid col-xl-8'>
+    <div class='container-fluid col-xl-8' style="margin-top: 1cm;">
+      <span id='label-box'>
+      </span>
     </div>
   </div>
   <div class="col-xs-12 col-md-8">
@@ -136,7 +138,7 @@
     }
     
     function fillFoodNutChar(){
-      let drinksAux = category_sold['drinks_sold'];
+
       foodAux = category_sold['food_sold'];
       let drinksValue = $('#drinksValue').val();
       productsList = [];
@@ -162,6 +164,7 @@
     }
 
     function getLabelFoodNutChar(){
+      let foodAux = category_sold['food_sold'];
       labelList = []
       for(i = 0; i < foodAux.length; i++){
         labelList[i] = foodAux[i]['name'];
@@ -177,6 +180,9 @@
       return labelList;
     }
 
+    hola = getLabelFoodNutChar();
+    $('#label-box') = hola[0];
+    console.log(hola);
 
     quantity_bar = new Chart(bar_ctx, {
       type: 'line',
@@ -262,7 +268,6 @@
           if (short_element == 'dri'){
             drinks_data = fillDrinksNutChar();
             labels = getLabelDrinkNutChar();
-            console.log(labels);
             for(i = 0; i < drinksAux.length; i++){
               nutChar.data.labels[i] = labels[i];
               quantity_bar.data.labels[i] = labels[i];
