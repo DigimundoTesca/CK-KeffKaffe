@@ -2,43 +2,53 @@
 /*
     Table and contents
  */
-.btn_pre_list, .btn_manual_list {
-    height:100px;
+.btn_pre_list {
+    height:40px;
     width:50px;
-    background-color: #004c83;
+    background-color: #0275d8;
     color: white;
     border: none;
     font-size: 25px;    
     border-radius: 50px;
 }
 
-.card_list{
+.container_manual_list .a .block_card{
     min-height: calc(90vh - 16rem);
     max-height: calc(90vh - 16rem);
     overflow-y: scroll;
     direction: rtl;
 }
 
+.container_manual_list .a .block_list{
+    min-height: calc(90vh - 16rem);
+    max-height: calc(90vh - 16rem);
+    overflow-y: scroll;
+
+}
+
+.container_pred_list .pred_list {
+    min-height: calc(90vh - 16rem);
+    max-height: calc(90vh - 16rem);
+    overflow-y: scroll;
+}
+
 .ele_image{
     border-radius: 50%;
+    max-width:100%;
+    max-height:100%;
 }
 
 .card_element {
     transition: 0.3s;
     width: 40%;
-    text-align: center;
     padding: 16px;
     margin: 10px;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     border-radius: 5px; /* 5px rounded corners */
 }
 
-.table{
-    padding
-}
-
 .add_btn ,.pres_btn{
-    transition: 0.3s;
+    left: -20px;
     opacity: 0;
     cursor: pointer;
 }
@@ -48,15 +58,29 @@
 }
 
 .card_element:hover .add_btn{
+    transition: 0.3s;
+    left: 0;
     opacity:1;
+
 }
 
 .card_element:hover .pres_btn{
+    transition: 0.3s;
+    left: 0;
     opacity:1;
+
 }
 
+.card_element:hover .block_info{
+    transition: 0.3s;
+    top: 0;
+}
 
-
+.block_info{
+    position: inherit;
+    text-align: center;
+    top: 20px;
+}
 
 
 
