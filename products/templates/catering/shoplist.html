@@ -17,7 +17,10 @@
         <div class="a col-md-12">
             <div class="title row">
                 <div class="d col-md-6">
-                    <h1 align="center">Insumos</h1>
+                    <h2 align="center">Insumos</h2>
+                </div>
+                <div class="d col-md-6">
+                    <h2 align="center">Lista de Compra</h2>
                 </div>
             </div>
             <div class="block_card col-md-6">
@@ -112,10 +115,37 @@
         </div>
     </div>
     <div class="container">
-        <button id="btn-save-ticket-csv" class="offset-md-7 btn btn-primary d-flex">
+        <button id="btn-save-ticket-csv" class="offset-md-10 col-md-2 btn btn-primary d-flex">
             <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
         </button>
     </div>
+
+<div class="container">
+    <div class="row">
+        <p align="center" class="offset-md-2 col-md-2">Cantidad</p>
+        <input class="col-md-4" type="text" min="1" max="1000"><br>
+    </div><br>
+    <div class="row">
+        <p align="center" class="offset-md-2 col-md-2">Medida</p>
+        <select class="col-md-4" name="measurement_unit" id="id_measurement_unit">
+            <option value="GB" selected>gramo</option>
+            <option value="MI">mililitro</option>
+            <option value="PZ">pieza</option>
+        </select>
+    </div><br>
+    <div class="row">
+        <p align="center" class="offset-md-2 col-md-2">Presentacion</p>
+        <select class="col-md-4" name="presentation_unit" id="id_presentation_unit">
+            <option value="PA" selected>Paquete</option>
+            <option value="BO">Caja</option>
+            <option value="PZ">pieza</option>
+        </select><br>
+    </div><br>
+    <div class="row">
+        <p align="center" class="offset-md-2 col-md-2">Costo</p>
+        <input class="col-md-4" type="text" min="1" max="1000"><br>
+    </div>
+</div>
 
 {% endblock content %}
 {% block javascript %}
@@ -212,10 +242,32 @@
                 swal({
                     title: 'Agregar Presentacion',
                     html:
-                    '<a>Cantidad</a><input type="number" id="swal-input1" class="cant-input" min="1" max="1000"><br>' +
-                    '<a>Medida</a><input type="text" id="swal-input2" class="med-input"><br>' +
-                    '<a>Presentacion</a><input id="swal-input3" class="pre-input"><br>' +
-                    '<a>Costo</a><input id="swal-input4" class="cos-input"><br>',
+                    '<div class="container">' +
+                        '<div class="row">' +
+                            '<p align="center" class="offset-md-2 col-md-2">Cantidad</p>' +
+                            '<input class="col-md-4" type="text" min="1" max="1000"><br>' +
+                        '</div><br>' +
+                        '<div class="row">' +
+                            '<p align="center" class="offset-md-2 col-md-2">Medida</p>' +
+                            '<select class="col-md-4" name="measurement_unit" id="id_measurement_unit">' +
+                                '<option value="GB" selected>gramo</option>' +
+                                '<option value="MI">mililitro</option>' +
+                                '<option value="PZ">pieza</option>' +
+                            '</select>' +
+                        '</div><br>' +
+                        '<div class="row">' +
+                            '<p align="center" class="offset-md-2 col-md-2">Presentacion</p>' +
+                            '<select class="col-md-4" name="presentation_unit" id="id_presentation_unit">' +
+                                '<option value="PA" selected>Paquete</option>' +
+                                '<option value="BO">Caja</option>' +
+                                '<option value="PZ">pieza</option>' +
+                            '</select><br>' +
+                        '</div><br>' +
+                        '<div class="row">' +
+                            '<p align="center" class="offset-md-2 col-md-2">Costo</p>' +
+                            '<input class="col-md-4" type="text" min="1" max="1000"><br>' +
+                        '</div>' +
+                    '</div>',
                     preConfirm: function () {
                         return new Promise(function (resolve) {
                             resolve([

@@ -396,6 +396,7 @@ def shop_list(request):
     products_helper = ProductsHelper()
     supps = products_helper.get_all_supplies()
     supply_list = []
+
     for sup in supps:
         element_object = {
             'name': sup.name,

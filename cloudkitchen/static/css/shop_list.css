@@ -48,7 +48,7 @@
 }
 
 .add_btn ,.pres_btn{
-    left: -20px;
+    top: 20px;
     opacity: 0;
     cursor: pointer;
 }
