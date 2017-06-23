@@ -11,7 +11,7 @@ from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
 from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm
-from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
+from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe, SupplyPresentation, Presentation
 from kitchen.models import Warehouse
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
@@ -390,6 +390,38 @@ def warehouse_movements(request):
     }
     return render(request, template, context)
 
+@login_required(login_url='users:login')
+def shop_list(request):
+
+    products_helper = ProductsHelper()
+    supps = products_helper.get_all_supplies()
+    supply_list = []
+    for sup in supps:
+        element_object = {
+            'name': sup.name,
+            'imagen': sup.image.url,
+            'unidad': sup.self_measurement_conversion,
+            'medida': sup.self_unit_conversion,
+            'costo': sup.presentation_cost,
+        }
+        supp_presentations = SupplyPresentation.objects.filter(supply=sup)
+        supp_pres = []
+
+        for supp_pre in supp_presentations:
+            supp_pres.append(supp_pre.presentation)
+
+        element_object['presentations'] = supp_pres
+        supply_list.append(element_object)
+
+    template = 'catering/shoplist.html'
+    title = 'Lista de Compras'
+    context = {
+        'required_supplies': products_helper.get_required_supplies(),
+        'title': title,
+        'supply_list': supply_list,
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
 
 @login_required(login_url='users:login')
 def products_analytics(request):

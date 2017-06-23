@@ -84,8 +84,7 @@ class Warehouse(models.Model):
 
 
 class Delivery(models.Model):
-    deliveries = models.ManyToManyField(Warehouse)
-    delivery_day = models.DateField(editable=False, auto_now_add=True)
+    created_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         # return '%s' % self.warehouse.supply
@@ -95,3 +94,17 @@ class Delivery(models.Model):
         ordering = ('id',)
         verbose_name = 'Entrega'
         verbose_name_plural = 'Entregas'
+
+
+class DeliveryList(models.Model):
+    delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE)
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+
+    def __str__(self):
+        return '%s %s' % (self.quantity, self.supply)
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Receta del Paquete'
+        verbose_name_plural = 'Recetas de Paquetes'
