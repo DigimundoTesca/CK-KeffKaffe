@@ -210,16 +210,18 @@
 
             $(".btn_add").on("click",function(e){
                 swal({
-                    title: 'Multiple inputs',
+                    title: 'Agregar Presentacion',
                     html:
-                    '<input id="swal-input1" class="swal2-input">' +
-                    '<input id="swal-input2" class="swal2-input">' +
-                    '<input id="swal-input1" class="swal2-input">' +
-                    '<input id="swal-input2" class="swal2-input">',
+                    '<a>Cantidad</a><input type="number" id="swal-input1" class="cant-input" min="1" max="1000"><br>' +
+                    '<a>Medida</a><input type="text" id="swal-input2" class="med-input"><br>' +
+                    '<a>Presentacion</a><input id="swal-input3" class="pre-input"><br>' +
+                    '<a>Costo</a><input id="swal-input4" class="cos-input"><br>',
                     preConfirm: function () {
                         return new Promise(function (resolve) {
                             resolve([
                                 $('#swal-input1').val(),
+                                $('#swal-input2').val(),
+                                $('#swal-input2').val(),
                                 $('#swal-input2').val()
                             ])
                         })
