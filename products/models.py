@@ -138,6 +138,56 @@ class Supply(models.Model):
         verbose_name_plural = 'Insumos'
 
 
+
+class Presentation(models.Model):
+
+    PACKAGE = 'PA'
+    BOX = 'BO'
+    PIECE = 'PZ'
+    PRESENTATION_UNIT = (
+        (PACKAGE, 'Paquete'),
+        (BOX, 'Caja'),
+        (PIECE, 'Pieza')
+    )
+
+    GRAM = 'GR'
+    MILLILITER = 'MI'
+    PIECE = 'PZ'
+
+    METRICS = (
+        (GRAM, 'gramo'),
+        (MILLILITER, 'mililitro'),
+        (PIECE, 'pieza'),
+    )
+
+    measurement_quantity = models.FloatField(default=0)
+    measurement_unit = models.CharField(max_length=10, choices=METRICS, default=PACKAGE)
+    presentation_unit = models.CharField(max_length=10, choices=PRESENTATION_UNIT, default=PACKAGE)
+    presentation_cost = models.FloatField(default=0)
+
+    def __str__(self):
+        return str(self.measurement_quantity)
+
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Presentacion'
+        verbose_name_plural = 'Presentaciones'
+
+
+class SupplyPresentation(models.Model):
+    presentation = models.ForeignKey(Presentation, default=1, on_delete=models.CASCADE)
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '%s' % self.presentation
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Presentacion de Insumo'
+        verbose_name_plural = 'Presentaciones de Insumos'
+
+
 class Cartridge(models.Model):
     # Categories
     FOOD_DISHES = 'FD'

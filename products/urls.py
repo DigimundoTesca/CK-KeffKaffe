@@ -48,6 +48,8 @@ urlpatterns = [
     url(r'^warehouse/$', views.warehouse, name='warehouse'),    
     url(r'^warehouse/catering/$', views.catering, name='catering'),
     url(r'^warehouse/movements/$', views.warehouse_movements, name='wh_movements'),
+    url(r'^warehouse/shoplist/$', views.shop_list, name='shoplist'),
+
 
 ]
 
