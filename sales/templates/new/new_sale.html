@@ -175,6 +175,9 @@
                 <div class="ticket-id-container">
                   <span>ID: </span><span id="ticket-id"></span>
                 </div>
+                <div class="ticket-payment-container">
+                  <span>Pago: </span><span id="ticket-payment"></span>
+                </div>
                 <div class="ticket-contact">
                   <p class="text-xs-center">
                     Contacto:<br>
@@ -1118,6 +1121,7 @@
                 $('#btn-pago-tarjeta').attr('disabled', 'true');
                 $('.ticket-id-container').find('span#ticket-id').text(result.ticket_id);
                 $('.ticket-order-container').find('#ticket-order').text(result.ticket_order);
+                $('.ticket-payment-container').find('#ticket-payment').text(result.ticket_payment);
                 let options = {
                   mode: 'iframe',
                   popClose: true,
@@ -1132,7 +1136,7 @@
                   type: "error",
                   showConfirmButton: false
                 });
-                setTimeout(rel, 3000);
+                setTimeout(rel, 30000);
               },
             });
           }

@@ -362,6 +362,7 @@ class SalesHelper(object):
                 'cartridges': [],
                 'packages': [],
                 'total': Decimal(0.00),
+                'is_active': ticket.is_active,
             }
 
             for ticket_details in self.get_all_tickets_details():
