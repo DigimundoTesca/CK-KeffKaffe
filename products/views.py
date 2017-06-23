@@ -397,6 +397,9 @@ def shop_list(request):
     supps = products_helper.get_all_supplies()
     supply_list = []
 
+    if request.method == 'POST':
+        print(request['data'])
+
     for sup in supps:
         element_object = {
             'name': sup.name,

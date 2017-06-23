@@ -120,31 +120,50 @@
         </button>
     </div>
 
-<div class="container">
-    <div class="row">
-        <p align="center" class="offset-md-2 col-md-2">Cantidad</p>
-        <input class="col-md-4" type="text" min="1" max="1000"><br>
-    </div><br>
-    <div class="row">
-        <p align="center" class="offset-md-2 col-md-2">Medida</p>
-        <select class="col-md-4" name="measurement_unit" id="id_measurement_unit">
-            <option value="GB" selected>gramo</option>
-            <option value="MI">mililitro</option>
-            <option value="PZ">pieza</option>
-        </select>
-    </div><br>
-    <div class="row">
-        <p align="center" class="offset-md-2 col-md-2">Presentacion</p>
-        <select class="col-md-4" name="presentation_unit" id="id_presentation_unit">
-            <option value="PA" selected>Paquete</option>
-            <option value="BO">Caja</option>
-            <option value="PZ">pieza</option>
-        </select><br>
-    </div><br>
-    <div class="row">
-        <p align="center" class="offset-md-2 col-md-2">Costo</p>
-        <input class="col-md-4" type="text" min="1" max="1000"><br>
+
+<!-- The Modal -->
+<div class="modal fade" id="NewPresentation" role="dialog" >
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 align="center">Agregar Presentacion</h1>
+                <h4 id="title_pres" align="center"></h4>
+            </div>
+            <div class="modal-body ">
+                <div class="row">
+                    <p align="center" class="offset-md-2 col-md-2">Cantidad</p>
+                    <input id="input_quantity" class="col-md-4" type="number" min="1" max="1000"><br>
+                </div><br>
+                <div class="row">
+                    <p align="center" class="offset-md-2 col-md-2">Medida</p>
+                    <select id="input_measurement" class="col-md-4" name="measurement_unit" id="id_measurement_unit">
+                        <option value="GB" selected>gramo</option>
+                        <option value="MI">mililitro</option>
+                        <option value="PZ">pieza</option>
+                    </select>
+                </div><br>
+                <div class="row">
+                    <p align="center" class="offset-md-2 col-md-2">Presentacion</p>
+                    <select id="input_presentation" class="col-md-4" name="presentation_unit" id="id_presentation_unit">
+                        <option value="PA" selected>Paquete</option>
+                        <option value="BO">Caja</option>
+                        <option value="PZ">pieza</option>
+                    </select><br>
+                </div><br>
+                <div class="row">
+                    <p align="center" class="offset-md-2 col-md-2">Costo</p>
+                    <input id="input_cost" class="col-md-4" type="number" min="1" max="1000"><br>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-list" class="offset-md-10 col-md-2 btn btn-primary d-flex">
+                    <span class="btn-reports d-flex align-items-center"><i class="material-icons"></i>Guardar</span>
+                </button>
+             </div>
+        </div>
     </div>
+
+
 </div>
 
 {% endblock content %}
@@ -157,7 +176,6 @@
             $(".btn_pres").on("click",function(e){
 
                 var element = $(this);
-
                 var element_name = element.parent().parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
                 console.log(element_name)
                 var element_quantity = element.parent().children('.info_pres').attr('id');
@@ -239,54 +257,44 @@
             });
 
             $(".btn_add").on("click",function(e){
-                swal({
-                    title: 'Agregar Presentacion',
-                    html:
-                    '<div class="container">' +
-                        '<div class="row">' +
-                            '<p align="center" class="offset-md-2 col-md-2">Cantidad</p>' +
-                            '<input class="col-md-4" type="text" min="1" max="1000"><br>' +
-                        '</div><br>' +
-                        '<div class="row">' +
-                            '<p align="center" class="offset-md-2 col-md-2">Medida</p>' +
-                            '<select class="col-md-4" name="measurement_unit" id="id_measurement_unit">' +
-                                '<option value="GB" selected>gramo</option>' +
-                                '<option value="MI">mililitro</option>' +
-                                '<option value="PZ">pieza</option>' +
-                            '</select>' +
-                        '</div><br>' +
-                        '<div class="row">' +
-                            '<p align="center" class="offset-md-2 col-md-2">Presentacion</p>' +
-                            '<select class="col-md-4" name="presentation_unit" id="id_presentation_unit">' +
-                                '<option value="PA" selected>Paquete</option>' +
-                                '<option value="BO">Caja</option>' +
-                                '<option value="PZ">pieza</option>' +
-                            '</select><br>' +
-                        '</div><br>' +
-                        '<div class="row">' +
-                            '<p align="center" class="offset-md-2 col-md-2">Costo</p>' +
-                            '<input class="col-md-4" type="text" min="1" max="1000"><br>' +
-                        '</div>' +
-                    '</div>',
-                    preConfirm: function () {
-                        return new Promise(function (resolve) {
-                            resolve([
-                                $('#swal-input1').val(),
-                                $('#swal-input2').val(),
-                                $('#swal-input2').val(),
-                                $('#swal-input2').val()
-                            ])
-                        })
-                    },
-                    onOpen: function () {
-                        $('#swal-input1').focus()
-                    }
-                }).then(function (result) {
-                    swal(JSON.stringify(result))
-                }).catch(swal.noop)
+                //Show modal
+                $("#NewPresentation").modal({show:true});
+                //Set Title
+                var element_name = $(this).parent().parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
+                $("#title_pres").html(element_name);
+                //Clear all inputs
+                $("#input_quantity").val("");
+                $("#input_measurement").val("");
+                $("#input_presentation").val("");
+                $("#input_cost").val("");
             });
 
+            $("#btn-save-list").on("click",function(e){
+                var quantity = $("#input_quantity").val();
+                var measurement = $("#input_measurement").val();
+                var presentation = $("#input_presentation").val();
+                var cost = $("#input_cost").val();
 
+                var new_present = {
+                    'quantity' : quantity,
+                    'measurement' : measurement,
+                    'presentation' : presentation,
+                    'qcost' : cost,
+                };
+
+                $.ajax({
+                    url: "{% url 'products:shoplist' %}",
+                    type: 'POST',
+                    data: {
+                        type: new_present,
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                    },
+                    success: function(result){
+                        $("#div1").html(result);
+                    }
+                });
+
+            });
 
         });
     </script>
