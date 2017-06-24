@@ -601,6 +601,7 @@ class ProductsHelper(object):
         self.__all_cartridges = None
         self.__all_packages_cartridges = None
         self.__all_supplies = None
+        self.__all_cartridges_categories = None
         self.__all_extra_ingredients = None
         self.__all_cartridges_recipes = None
         self.__all_tickets_details = None
@@ -629,6 +630,13 @@ class ProductsHelper(object):
             select_related('cartridge'). \
             select_related('supply'). \
             all()
+
+    def set_all_cartridges_categories(self):
+        cartridges = self.get_all_cartridges()
+        cartridges_categories_list = []
+        for cartridge in cartridges:
+            cartridges_categories_list.append(cartridge.category)
+        self.__all_cartridges_categories = cartridges_categories_list
 
     def set_all_package_cartridges_recipes(self):
         self.__all_packages_cartridges_recipes = PackageCartridgeRecipe.objects. \
@@ -757,6 +765,11 @@ class ProductsHelper(object):
         if self.__all_packages_cartridges is None:
             self.set_all_packages_cartridges()
         return self.__all_packages_cartridges
+
+    def get_all_cartridges_categories(self):
+        if self.__all_cartridges_categories is None:
+            self.set_all_cartridges_categories()
+        return self.__all_cartridges_categories
 
     def get_all_extra_ingredients(self):
         """

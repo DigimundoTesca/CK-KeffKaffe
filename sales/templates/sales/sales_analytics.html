@@ -2,8 +2,12 @@
 
 {% load static %}
 
+{% block link %}
+  <link rel="stylesheet" href="{% static "css/spin_style.css" %}">
+{% endblock link %}
+
 {% block page_title %}
-  {{ page_title }}
+  {{ page_title }} 
 {% endblock %}
 
 {% block content %}
@@ -170,6 +174,14 @@
     </div>
   </div>
 </div>
+
+<div id="bounce-cont">
+  <span class="msg-bounce">Generando Gráficas</span>
+  <div class="sk-double-bounce">
+    <div class="sk-child sk-double-bounce1"></div>
+    <div class="sk-child sk-double-bounce2"></div>
+  </div>
+</div>
 {% endblock content %}
 
 {% block javascript %}
@@ -212,6 +224,7 @@
         for (let j = 0; j < sales_list.length; j++) {
           if (sales_list[j].number_day == i) {
             week_list[i] = sales_list[j]['earnings']
+            console.log(week_list);
           }
         }
       }
@@ -340,7 +353,7 @@
           earnings += parseFloat(sales_list[i].earnings);
         }
       }
-      formatted_list.push(earnings)
+      formatted_list.push(earnings);
       return formatted_list.reverse();
     }
 
@@ -359,14 +372,9 @@
         },
         traditional: true,
         datatype: 'jsonp',
-        beforeSend: function(){
-          // swal({
-          //     title: "Generando gráficas",
-          //     text: "Espere mientras se calculan los datos",
-          //   });
-          // swal.enableLoading();
-        },
+        beforeSend: function(){},
         success: function(result) {
+          $('#bounce-cont').hide('900');
           let initial_hour = '07:00',
               final_hour = '22:00',
               separation_time = 60; // In minutes
@@ -376,19 +384,7 @@
           earnings_day_chart.data.datasets[0].data =  get_sales_day_list(
             initial_hour, final_hour, separation_time, sales_day_object_list);
           earnings_day_chart.update();
-
-          swal({
-            title: "Éxito",
-            text: "Gráfica generada",
-            type: "success",
-            timer: 600,
-            showConfirmButton: false
-          }).then(
-          function(){},
-          function(dismiss){}
-          );
         },
-
         error: function(result, jqXHR, textStatus, errorThrown) {
           console.log(result);
         },
@@ -423,7 +419,7 @@
               convert_date_to_str(item.start_date) +
               " - " + convert_date_to_str(item.end_date) +
               "</option>"
-            );
+);
           });
           return false;
         }
@@ -460,6 +456,7 @@
             let selected_day = legendItem[0]._index;
             for (let i = 0; i < sales_week.length; i++) {
               if (sales_week[i].number_day == selected_day) {
+                console.log(sales_week[i]);
                 set_sales_day_chart(sales_week[i].date);
               }
             }
@@ -587,7 +584,7 @@
     $(this).on('change', '#dt-week', function(event) {
       let dt_year = $('#dt-year').val();
       let dt_week = $('#dt-week').val();
-      
+
       $.ajax({
         url: "{% url 'sales:sales' %}",
         type: 'POST',
@@ -753,6 +750,7 @@
           let cost_base = parseFloat(element.total) / element.quantity;
           let total = parseFloat(element.total);
           let quantity = element.quantity;
+          let new_li;
 
           // Formats the names
           $.each(cartridges_list, function(index, item) {
@@ -786,14 +784,14 @@
         ticket_details.packages.forEach(iterate_packages);
         $("#ticket-id").text(id_element);
         
-        let nuevo_li = $("" +
+        new_li = $("" +
           "<li class='total-ticket-container mt-1'>" +
           " <span id='total-ticket'>$ <span class='total-ticket-cant'> " +
           " " + total +"</span></span> " +
           "</li>" +
           "");
 
-        sales_list_modal.append(nuevo_li);
+        sales_list_modal.append(new_li);
         $('#modal-ticket').modal('show');
       }
 

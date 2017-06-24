@@ -1,0 +1,107 @@
+{% extends "base/base_nav_footer.html" %}
+
+{% block link %}    
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" />
+{% endblock link %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="form-inline">
+    <label class="sr-only" for="initial-date">Fecha inicial</label>
+    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="initial-date" placeholder="Primer Fecha">
+
+    <label class="sr-only" for="final-date">Fecha Final</label>
+    <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+      <input type="text" class="form-control" id="final-date" placeholder="Última Fecha">
+    </div>
+
+    <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" onclick="" id="create-predictions">Generar</button>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.js">
+</script>
+
+<script type="text/javascript">
+  $(function() {   
+    /** 
+    * Gets the csrf cookie from cache
+    */ 
+    function get_cookie(name) {
+      let cookie_value = null;
+      if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          let cookie = jQuery.trim(cookies[i]);
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookie_value;
+    }
+
+    $('#initial-date').datepicker({
+      onSelect: function(selectedDate) {
+        let dataString = 'date='+selectedDate;
+      }
+    });
+
+    $('#final-date').datepicker({
+      onSelect: function(selectedDate) {
+        let dataString = 'date='+selectedDate;
+      }
+    });
+
+    $(this).on('click', '#create-predictions', function(event) {
+      let initial_date = $('#initial-date').val();
+      let final_date = $('#final-date').val();
+
+      aux_initial = initial_date.split('/')
+      initial_date = aux_initial[1] + '-' + aux_initial[0] + '-' + aux_initial[2];
+
+      aux_final = final_date.split('/')
+      final_date = aux_final[1] + '-' + aux_final[0] + '-' + aux_final[2];
+
+      let csrf_token = get_cookie('csrftoken');
+      console.log(initial_date)
+      $.ajax({
+        url: '{% url "products:analytics" %}',
+        type: 'POST',
+        data: {
+          'initial_date': initial_date,
+          'final_date': final_date,
+          csrfmiddlewaretoken: csrf_token,
+        },
+        traditional: true,
+        datatype: 'jsonp',
+        success: function(result) {
+          swal({
+            title: "Éxito",
+            text: "Datos obtenidos",
+            type: "success",
+            showConfirmButton: true,
+          });
+
+         console.log(result);
+
+        },
+        error: function(result, jqXHR, textStatus, errorThrown) {
+          swal({
+            title: "Datos no obtenidos!",
+            text: 'Contacte a soporte!\n ' + 'Errores: ' + textStatus + ', ' + jqXHR,
+            type: "error",
+            showConfirmButton: false,
+
+          });
+        },
+      });
+    });
+
+  });
+</script>
+{% endblock javascript %}

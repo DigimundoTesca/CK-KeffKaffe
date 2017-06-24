@@ -138,7 +138,7 @@ class Cartridge(models.Model):
         return """
         <img src="%s" alt="Product image" height="80" >
 
-        """  % self.image.url
+        """ % self.image.url
 
     get_image.allow_tags = True
     get_image.short_description = 'Foto'

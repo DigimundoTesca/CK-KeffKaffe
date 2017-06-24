@@ -1,12 +1,15 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 
+import random
+import json
 from datetime import timedelta, datetime, date
 
 from decimal import Decimal
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
+
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
@@ -17,9 +20,10 @@ from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
 
-
-
 # -------------------------------------  Suppliers -------------------------------------
+from sales.models import TicketDetail
+
+
 @login_required(login_url='users:login')
 def suppliers(request):
     suppliers_list = Supplier.objects.order_by('id')
@@ -283,7 +287,7 @@ class DeleteCartridge(DeleteView):
 # -------------------------------------  Catering -------------------------------------
 class AddStock(CreateView):
     model = WarehouseDetails
-    fields = ['warehouse','status','quantity']
+    fields = ['warehouse', 'status', 'quantity']
     template_name = 'catering/add_stock.html'
 
     def __init__(self, **kwargs):
@@ -311,16 +315,16 @@ def catering(request):
         buy_objects_list = []
 
         for required in required_supplies:
-            diner_object = {    
-                'Nombre': required['name'], 
+            diner_object = {
+                'Nombre': required['name'],
                 'Provedor': "proveedor",
                 'Cantidad': required['name'],
                 'Medida': required["measurement"],
                 'Presentacion': required['measurement_quantity'],
                 'Stock'
                 'Requerdio': required['required'],
-                'Costo': required['full_cost']                     
-            }            
+                'Costo': required['full_cost']
+            }
 
             buy_objects_list.append(diner_object)
 
@@ -400,36 +404,15 @@ def warehouse_movements(request):
     context = {
         'supps': all_supplies,
         'supply_list': supplies_on_stock,
-        'title': title,
-        'page_title': PAGE_TITLE
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title
     }
     return render(request, template, context)
 
 
 @login_required(login_url='users:login')
 def products_analytics(request):
-    def get_daily_period():
-        helper = Helper()
-        sales_helper = SalesHelper()
-
-        initial_date = helper.naive_to_datetime(date.today())
-        final_date = helper.naive_to_datetime(initial_date + timedelta(days=1))
-        filtered_tickets = sales_helper.get_all_tickets().filter(created_at__range=[initial_date, final_date])
-        tickets_details = sales_helper.get_all_tickets_details()
-        tickets_list = []
-        period_list = []
-        for ticket in filtered_tickets:
-            ticket_object = {
-                'total': Decimal(0.00),
-            }
-            for ticket_details in tickets_details:
-                if ticket_details.ticket == ticket:
-                    ticket_object['total'] += ticket_details.price
-            tickets_list.append(Decimal(ticket_object['total']))
-
-        for _ in tickets_list:
-            if ticket.created_at == ticket.created_at:
-                print('No corresponde a la hora')
+    products_helper = ProductsHelper()
 
     def get_period(initial_dt, final_dt):
         helper = Helper()
@@ -464,28 +447,95 @@ def products_analytics(request):
                 'recipe': filtered_cartridge_recipes_list
             }
             supplies_list.append(cartridge_object)
-            
+
+        if request.method == 'POST':
+            initial_date = request.POST['initial_date']
+            final_date = request.POST['final_date']
+            get_period(initial_date, final_date)
+            return JsonResponse({'resultado': 'algo xd'})
+
+    def get_products_sold():
+        sales_helper = SalesHelper()
+        products_helper = ProductsHelper()
+        initial_date = date.today()
+        final_date = initial_date + timedelta(days=1)
+        cartridges_list = []
+        filtered_ticket_details = sales_helper.get_tickets_details(initial_date, final_date)
+        all_cartridges = products_helper.get_all_cartridges()
+
+        for cartridge_item in all_cartridges:
+            cartridge_object = {
+                'id': cartridge_item.id,
+                'name': cartridge_item.name,
+                'frequency': 0,
+                'category': cartridge_item.category,
+            }
+            cartridges_list.append(cartridge_object)
+
+        for ticket_detail_item in filtered_ticket_details:
+            if ticket_detail_item.cartridge:
+                for cartridge_item in cartridges_list:
+                    if cartridge_item['id'] == ticket_detail_item.cartridge.id:
+                        cartridge_item['frequency'] += ticket_detail_item.quantity
+                        break
+
+        return cartridges_list
+
+    def get_sold_category():
+        drinks_sold = []
+        food_sold = []
+        for element in get_products_sold():
+            category_object = {
+                'id': element['id'],
+                'name': element['name'],
+                'category': element['category'],
+                'quantity': element['frequency']
+            }
+            if element['frequency'] > 0:
+                if element['category'] == 'CO':
+
+                    drinks_sold.append(category_object)
+                else:
+                    food_sold.append(category_object)
+        return {'drinks_sold': drinks_sold, 'food_sold': food_sold}
+
     if request.method == 'POST':
-        initial_date = request.POST['initial_date']
-        final_date = request.POST['final_date']
-        # get_daily_period()
-        get_period(initial_date, final_date)
-        return JsonResponse({'resultado': 'algo xd'})
+        if request.POST['type'] == 'category':
+            sold_categories = get_sold_category()
+            return JsonResponse(sold_categories)
+        else:
+            return JsonResponse('Hola')
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
-    list_x = [1, 2, 3, 4, 5, 6]
-    list_y = [10, 20, 30, 40, 50, 60]
 
-    latest_squares = LeastSquares(list_x, list_y)
+    categories_sold = get_sold_category()
+    sold_product = get_products_sold()
+    print(categories_sold)
+    all_categories = products_helper.get_all_cartridges_categories()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
-        'least_squares': latest_squares,
+        'today_sold_product_json': json.dumps(sold_product),
+        'today_sold_product': sold_product,
+        'category_sold': json.dumps(categories_sold),
+        'all_categories': json.dumps(all_categories),
     }
 
     return render(request, template, context)
 
 
+@login_required(login_url='users:login')
+def products_predictions(request):
+    template = 'analytics/predictions.html'
+    title = 'Predicciones'
+
+    context = {
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title
+    }
+    return render(request, template, context)
+
+
 def test(request):
-    return HttpResponse('Write yours test here')
+    return HttpResponse('Hola!!!')
