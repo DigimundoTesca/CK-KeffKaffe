@@ -398,7 +398,7 @@ def shop_list(request):
     supply_list = []
 
     if request.method == 'POST':
-        print(request['data'])
+        print(request[''])
 
     for sup in supps:
         element_object = {

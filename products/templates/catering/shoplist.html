@@ -195,22 +195,19 @@
 
                 var html_list = "";
 
-                if (list_array.length===0){
-                    console.log(string)
+                if (list_array.length===0){                    
                     list_array.push(string);
                 }else{
                     var igual = false;
                     for (i = 0; i < list_array.length; i++){
-                       if (list_array[i].Nombre===element_name){
-                           console.log("Elemento sumado")
+                       if (list_array[i].Nombre===element_name){                           
                            list_array[i].Por_Comprar = parseInt(list_array[i].Por_Comprar) + parseInt(element_unit);
                            list_array[i].Costo_Total = parseInt(list_array[i].Costo_Total) + parseInt(element_cost);
                            igual = true;
                        }
                     }
                     if(!igual){
-                        list_array.push(string);
-                        console.log(string)
+                        list_array.push(string);                        
                     }
                 }
 
@@ -282,17 +279,7 @@
                     'qcost' : cost,
                 };
 
-                $.ajax({
-                    url: "{% url 'products:shoplist' %}",
-                    type: 'POST',
-                    data: {
-                        type: new_present,
-                        csrfmiddlewaretoken: '{{ csrf_token }}',
-                    },
-                    success: function(result){
-                        $("#div1").html(result);
-                    }
-                });
+                
 
             });
 
