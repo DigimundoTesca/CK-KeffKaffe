@@ -5,18 +5,11 @@
 {% endblock link %}
 {% block content %}
     <div class="container">
-        <div class="g col-md-12">
-            <div class="d row">
-                <div class="b col-md-6">
-                    <button class="btn_pre_list col-md-12">
-                        Predecir lista de Compras
-                    </button>
-                </div>
-                <div class="c col-md-6">
-                    <button class="btn_manual_list col-md-12">
-                        Crear lista de Compras
-                    </button>
-                </div>
+        <div class="row">
+            <div class="col-md-12">
+                <button class="btn_pre_list offset-md-8 col-md-4 ">
+                    Lista Manual
+                </button>
             </div>
         </div>
     </div>
@@ -24,30 +17,32 @@
         <div class="a col-md-12">
             <div class="title row">
                 <div class="d col-md-6">
-                    <h1 align="center">Insumos</h1>
+                    <h2 align="center">Insumos</h2>
+                </div>
+                <div class="d col-md-6">
+                    <h2 align="center">Lista de Compra</h2>
                 </div>
             </div>
-            <div class="block_card card_list col-md-6">
+            <div class="block_card col-md-6">
                 {% for supplies in supply_list %}
                     <div class="card card_element col-sm-12 col-md-12 col-lg-12" id="supplies.supply-{{ supplies.pk }}">
                         <div class="card_image col-sm-4 col-md-4 col-lg-4">
-                            <img class="ele_image" src="{{ supplies.imagen }}" id="supplies.pr.supply-img-{{ supplies.pk }}"  width="100" height="100">
+                            <img class="ele_image" src="{{ supplies.imagen }}" id="supplies.pr.supply-img-{{ supplies.pk }}" >
                         </div>
                         <div class="card_ele_info col-sm-8 col-md-8 col-lg-8">
                             <div class="block_info">
-                                <h7 class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></h7><br>
-                                <h7 class="provider_unit" id="supplies.quantity-{{ supplies.unidad }},{{ supplies.medida }},{{ supplies.costo }}" > Unidad: {{ supplies.unidad }} {{ supplies.medida }} </h7>                        <br>
+                                <span class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></span><br>                                <span class="provider_unit" id="supplies.quantity-{{ supplies.unidad }},{{ supplies.medida }},{{ supplies.costo }}" > Unidad: {{ supplies.unidad }} {{ supplies.medida }} </span>                        <br>
                             </div>
-                            <div class="pres_card col-md-12 col-lg-12">
+                            <div class="block_btn">
                                 {% for presentations in supplies.presentations %}
-                                    <div class="pres_btn col-sm-3 col-lg-3 col-md-3">
-                                        <span class="material-icons">lens</span><br>
-                                        <span> {{ presentations }}</span>
+                                    <div class="pres_btn col-sm-3 col-md-3 col-lg-3">
+                                        <a class="btn_pres material-icons">lens</a><br>
+                                        <a class="info_pres" id="{{ presentations.measurement_quantity }},{{ presentations.measurement_unit }},{{ presentations.presentation_cost }}"> {{ presentations.measurement_quantity }} {{ presentations.measurement_unit }}</a>
                                     </div>
                                 {% endfor %}
                                 {% if supplies.presentations|length <= 2  %}
                                     <div class="add_btn col-sm-3 col-md-3 col-lg-3">
-                                        <span class="material-icons">add</span>
+                                        <span class="btn_add material-icons">add</span>
                                     </div>
                                 {% endif %}
                             </div>
@@ -55,8 +50,8 @@
                     </div>
                 {% endfor %}
             </div>
-            <div class="block_card card_list col-md-6">
-                <table class="table">
+            <div class="card_list block_list col-md-6">
+                <table class="table" id="TableID">
                     <thead>
                     <tr>
                         <th>Nombre</th>
@@ -72,7 +67,8 @@
         </div>
     </div>
     <div class="container container_pred_list">
-        <table class="table table-kitchen table-striped table-hover" align="right">
+        <div class ="pred_list">
+            <table class="table table-striped table-hover" align="right">
             <thead class="thead-inverse">
             <tr>
                 <th>Nombre</th>
@@ -116,21 +112,119 @@
             {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
+    <div class="container">
+        <button id="btn-save-ticket-csv" class="offset-md-10 col-md-2 btn btn-primary d-flex">
+            <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
+        </button>
+    </div>
+
+
+<!-- The Modal -->
+<div class="modal fade" id="NewPresentation" role="dialog" >
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 align="center">Agregar Presentacion</h1>
+                <h4 id="title_pres" align="center"></h4>
+            </div>
+            <div class="modal-body ">
+                <div class="row">
+                    <p align="center" class="offset-md-2 col-md-2">Cantidad</p>
+                    <input id="input_quantity" class="col-md-4" type="number" min="1" max="1000"><br>
+                </div><br>
+                <div class="row">
+                    <p align="center" class="offset-md-2 col-md-2">Medida</p>
+                    <select id="input_measurement" class="col-md-4" name="measurement_unit" id="id_measurement_unit">
+                        <option value="GB" selected>gramo</option>
+                        <option value="MI">mililitro</option>
+                        <option value="PZ">pieza</option>
+                    </select>
+                </div><br>
+                <div class="row">
+                    <p align="center" class="offset-md-2 col-md-2">Presentacion</p>
+                    <select id="input_presentation" class="col-md-4" name="presentation_unit" id="id_presentation_unit">
+                        <option value="PA" selected>Paquete</option>
+                        <option value="BO">Caja</option>
+                        <option value="PZ">pieza</option>
+                    </select><br>
+                </div><br>
+                <div class="row">
+                    <p align="center" class="offset-md-2 col-md-2">Costo</p>
+                    <input id="input_cost" class="col-md-4" type="number" min="1" max="1000"><br>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-list" class="offset-md-10 col-md-2 btn btn-primary d-flex">
+                    <span class="btn-reports d-flex align-items-center"><i class="material-icons"></i>Guardar</span>
+                </button>
+             </div>
+        </div>
+    </div>
+
+
+</div>
+
 {% endblock content %}
 {% block javascript %}
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function() {
 
-            $(".card_element").on("click",function(e){
+            var list_array = [];
+
+            $(".btn_pres").on("click",function(e){
+
                 var element = $(this);
-                var element_id = element.attr('id').substring(16)
-                var element_name = element.children(".card_element_info").children('.product_name').attr('id').substring(12)
-                var element_quantity = element.children(".card_element_info").children('.provider_unit').attr('id').substring(18)
+                var element_name = element.parent().parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
+                console.log(element_name)
+                var element_quantity = element.parent().children('.info_pres').attr('id');
+                console.log(element_quantity)
                 var element_wh = element_quantity.split(',');
                 var element_unit = element_wh[0];
                 var element_measurement = element_wh[1];
                 var element_cost = element_wh[2];
+
+                var string = {
+                    'Nombre': element_name,
+                    'Por_Comprar': element_unit,
+                    'Unidad': element_measurement,
+                    'Costo x Unidad': element_cost,
+                    'Costo_Total': element_cost
+                };
+
+                var html_list = "";
+
+                if (list_array.length===0){                    
+                    list_array.push(string);
+                }else{
+                    var igual = false;
+                    for (i = 0; i < list_array.length; i++){
+                       if (list_array[i].Nombre===element_name){                           
+                           list_array[i].Por_Comprar = parseInt(list_array[i].Por_Comprar) + parseInt(element_unit);
+                           list_array[i].Costo_Total = parseInt(list_array[i].Costo_Total) + parseInt(element_cost);
+                           igual = true;
+                       }
+                    }
+                    if(!igual){
+                        list_array.push(string);                        
+                    }
+                }
+
+                for (i = 0; i < list_array.length; i++) {
+                    html_list +=
+                        '<tr>' +
+                            '<th>' + list_array[i].Nombre + '</th>' +
+                            '<th>' + list_array[i].Por_Comprar + " " +list_array[i].Unidad + '</th>' +
+                            '<th>' + list_array[i].Costo_Total + '$</th>' +
+                        '</tr>'
+                }
+
+                $("#TableID tbody tr").remove();
+                $("#TableID tbody")
+                        .append($(
+                            html_list
+                        ));
 
             });
 
@@ -141,11 +235,53 @@
                 $(".container_manual_list").slideToggle(500);
             });
 
+            var status = 0;
             $(".btn_pre_list").on("click",function(e){
-                $(".container_pred_list").slideToggle(500);
-                $(".container_manual_list").slideToggle(500);
+
+                if(status===0){
+                    $(".container_pred_list").slideToggle(500);
+                    $(".container_manual_list").slideToggle(500);
+                    $(".btn_pre_list").html('Lista Manual');
+                    status=1;
+                }else{
+                    $(".container_pred_list").slideToggle(500);
+                    $(".container_manual_list").slideToggle(500);
+                    $(".btn_pre_list").html('Predecir Lista');
+                    status=0;
+                }
+
+
             });
 
+            $(".btn_add").on("click",function(e){
+                //Show modal
+                $("#NewPresentation").modal({show:true});
+                //Set Title
+                var element_name = $(this).parent().parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
+                $("#title_pres").html(element_name);
+                //Clear all inputs
+                $("#input_quantity").val("");
+                $("#input_measurement").val("");
+                $("#input_presentation").val("");
+                $("#input_cost").val("");
+            });
+
+            $("#btn-save-list").on("click",function(e){
+                var quantity = $("#input_quantity").val();
+                var measurement = $("#input_measurement").val();
+                var presentation = $("#input_presentation").val();
+                var cost = $("#input_cost").val();
+
+                var new_present = {
+                    'quantity' : quantity,
+                    'measurement' : measurement,
+                    'presentation' : presentation,
+                    'qcost' : cost,
+                };
+
+                
+
+            });
 
         });
     </script>

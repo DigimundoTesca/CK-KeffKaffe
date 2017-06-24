@@ -396,6 +396,10 @@ def shop_list(request):
     products_helper = ProductsHelper()
     supps = products_helper.get_all_supplies()
     supply_list = []
+
+    if request.method == 'POST':
+        print(request[''])
+
     for sup in supps:
         element_object = {
             'name': sup.name,
@@ -404,17 +408,19 @@ def shop_list(request):
             'medida': sup.self_unit_conversion,
             'costo': sup.presentation_cost,
         }
-        presentations = SupplyPresentation.objects.filter(supply=sup)
+        supp_presentations = SupplyPresentation.objects.filter(supply=sup)
         supp_pres = []
 
-        for presentation in presentations:
-            supp_pres.append(presentation)
+        for supp_pre in supp_presentations:
+            supp_pres.append(supp_pre.presentation)
+
         element_object['presentations'] = supp_pres
         supply_list.append(element_object)
 
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
     context = {
+        'required_supplies': products_helper.get_required_supplies(),
         'title': title,
         'supply_list': supply_list,
         'page_title': PAGE_TITLE
