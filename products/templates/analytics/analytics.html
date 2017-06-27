@@ -22,8 +22,8 @@
     <div class="chart-container nutChar" style="width:300px !important; margin-top: 1cm;">
       <canvas id="nutChar"></canvas>
     </div>
-    <div class='container-fluid col-xl-8' style="margin-top: 1cm;">
-      <span id='label-box'>
+    <div class='container-fluid col-xl-8' id="label-box" style="margin-top: 1cm;">
+      <span>
       </span>
     </div>
   </div>
@@ -117,15 +117,11 @@
     }
 
     function get_random_list(size){
-      aux_list = [];
+      let aux_list = [];
       for (let i = 0; i < size; i++) {
         aux_list[i] = parseInt(Math.random() * 10);
       }
       return aux_list;
-    }
-
-    function getLabelsName(){
-      console.log('Hola');
     }
 
     function fillDrinksNutChar(){
@@ -183,10 +179,6 @@
       }
       return labelList;
     }
-
-    hola = getLabelFoodNutChar();
-    $('#label-box') = hola[0];
-    console.log(hola);
 
     quantity_bar = new Chart(bar_ctx, {
       type: 'line',
@@ -275,7 +267,6 @@
             for(i = 0; i < drinksAux.length; i++){
               nutChar.data.labels[i] = labels[i];
               quantity_bar.data.labels[i] = labels[i];
-
             }
               nutChar.data.datasets[0].data = drinks_data;
               quantity_bar.data.datasets[0].data = drinks_data;
