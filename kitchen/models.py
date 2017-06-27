@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from products.models import Supply
+from products.models import Supply, Presentation
 from sales.models import Ticket
 import math
 
@@ -83,28 +83,29 @@ class Warehouse(models.Model):
         verbose_name_plural = 'Insumos en el Almacén'
 
 
-class Delivery(models.Model):
-    created_at = models.DateTimeField(auto_now=True)
+class ShopList(models.Model):
+
+    created_at = models.DateField(editable=False, auto_now_add=True)
 
     def __str__(self):
-        # return '%s' % self.warehouse.supply
         return '%s' % self.id
 
     class Meta:
         ordering = ('id',)
-        verbose_name = 'Entrega'
-        verbose_name_plural = 'Entregas'
+        verbose_name = 'Lista de Compra'
+        verbose_name_plural = 'Lista de Compras'
 
 
-class DeliveryList(models.Model):
-    delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE)
+class ShopListDetail(models.Model):
+    shop_list = models.ForeignKey(ShopList, default=1, on_delete=models.CASCADE)
     supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+    presentation = models.ForeignKey(Presentation, default=1, on_delete=models.CASCADE)
     quantity = models.IntegerField()
 
     def __str__(self):
-        return '%s %s' % (self.quantity, self.supply)
+        return '%s %s' % (self.quantity, self.shop_list)
 
     class Meta:
         ordering = ('id',)
-        verbose_name = 'Receta del Paquete'
-        verbose_name_plural = 'Recetas de Paquetes'
+        verbose_name = 'Lista de Compra-Detalles'
+        verbose_name_plural = 'Lista de Compras-Detalles'

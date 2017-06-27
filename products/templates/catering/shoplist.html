@@ -31,13 +31,14 @@
                         </div>
                         <div class="card_ele_info col-sm-8 col-md-8 col-lg-8">
                             <div class="block_info">
-                                <span class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></span><br>                                <span class="provider_unit" id="supplies.quantity-{{ supplies.unidad }},{{ supplies.medida }},{{ supplies.costo }}" > Unidad: {{ supplies.unidad }} {{ supplies.medida }} </span>                        <br>
+                                <span class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></span><br>
+                                <span class="provider_unit" id="supplies.quantity-{{ supplies.unidad }},{{ supplies.medida }},{{ supplies.costo }}" > Unidad: {{ supplies.unidad }} {{ supplies.medida }} </span>                        <br>
                             </div>
                             <div class="block_btn">
                                 {% for presentations in supplies.presentations %}
                                     <div class="pres_btn col-sm-3 col-md-3 col-lg-3">
                                         <a class="btn_pres material-icons">lens</a><br>
-                                        <a class="info_pres" id="{{ presentations.measurement_quantity }},{{ presentations.measurement_unit }},{{ presentations.presentation_cost }}"> {{ presentations.measurement_quantity }} {{ presentations.measurement_unit }}</a>
+                                        <a class="info_pres" id="{{ presentations.pk }},{{ presentations.measurement_quantity }},{{ presentations.measurement_unit }},{{ presentations.presentation_cost }}"> {{ presentations.measurement_quantity }} {{ presentations.measurement_unit }}</a>
                                     </div>
                                 {% endfor %}
                                 {% if supplies.presentations|length <= 2  %}
@@ -55,6 +56,7 @@
                     <thead>
                     <tr>
                         <th>Nombre</th>
+                        <th>Cantidad</th>
                         <th>Presentacion</th>
                         <th>Costo</th>
                     </tr>
@@ -65,6 +67,9 @@
                 </table>
             </div>
         </div>
+        <button id="btn_save_list" class="col-md-2 btn btn-primary d-flex">
+            <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Guardar Lista</span>
+        </button>
     </div>
     <div class="container container_pred_list">
         <div class ="pred_list">
@@ -130,36 +135,27 @@
                 <h4 id="title_pres" align="center"></h4>
             </div>
             <div class="modal-body ">
-                <div class="row">
-                    <p align="center" class="offset-md-2 col-md-2">Cantidad</p>
-                    <input id="input_quantity" class="col-md-4" type="number" min="1" max="1000"><br>
-                </div><br>
-                <div class="row">
-                    <p align="center" class="offset-md-2 col-md-2">Medida</p>
-                    <select id="input_measurement" class="col-md-4" name="measurement_unit" id="id_measurement_unit">
-                        <option value="GB" selected>gramo</option>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type='hidden' name='csrfmiddlewaretoken' value='pzHVh6z6E8JJlvNqIiPXiufE9A1L2ufHdpFhHGEhB3GHhHAWutcd0OK1b8QW5ZeZ' />
+                    <p><label for="id_supply">Numero de Insumo:</label> <input type="text" name="supply" id="id_supply" readonly="readonly"/></p>
+                    <p><label for="id_measurement_quantity">Capacidad:</label> <input type="number" name="measurement_quantity" value="0" step="any" required id="id_measurement_quantity" /></p>
+                    <p><label for="id_measurement_unit">Unidad:</label> <select name="measurement_unit" id="id_measurement_unit">
+                        <option value="GR">gramo</option>
                         <option value="MI">mililitro</option>
                         <option value="PZ">pieza</option>
-                    </select>
-                </div><br>
-                <div class="row">
-                    <p align="center" class="offset-md-2 col-md-2">Presentacion</p>
-                    <select id="input_presentation" class="col-md-4" name="presentation_unit" id="id_presentation_unit">
+                    </select></p>
+                    <p><label for="id_presentation_unit">Presentacion:</label> <select name="presentation_unit" id="id_presentation_unit">
                         <option value="PA" selected>Paquete</option>
                         <option value="BO">Caja</option>
-                        <option value="PZ">pieza</option>
-                    </select><br>
-                </div><br>
-                <div class="row">
-                    <p align="center" class="offset-md-2 col-md-2">Costo</p>
-                    <input id="input_cost" class="col-md-4" type="number" min="1" max="1000"><br>
-                </div>
+                        <option value="PZ">Pieza</option>
+                    </select></p>
+                    <p><label for="id_presentation_cost">Costo:</label> <input type="number" name="presentation_cost" value="0" step="any" required id="id_presentation_cost" /></p>
+                    <button class="btn wvaes-effect waves-light accent right large" type="submit">
+                        Submit <i class="material-icons right">send</i>
+                    </button>
+                </form>
             </div>
-            <div class="modal-footer">
-                <button id="btn-save-list" class="offset-md-10 col-md-2 btn btn-primary d-flex">
-                    <span class="btn-reports d-flex align-items-center"><i class="material-icons"></i>Guardar</span>
-                </button>
-             </div>
         </div>
     </div>
 
@@ -171,26 +167,43 @@
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function() {
 
+            function get_cookie(name) {
+                let cookie_value = null;
+                if (document.cookie && document.cookie !== '') {
+                    let cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        let cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookie_value;
+            }
+
             var list_array = [];
 
             $(".btn_pres").on("click",function(e){
 
                 var element = $(this);
+                var element_sup_pk = element.parent().parent().parent().parent().attr('id').substring(16);
                 var element_name = element.parent().parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
-                console.log(element_name)
                 var element_quantity = element.parent().children('.info_pres').attr('id');
-                console.log(element_quantity)
                 var element_wh = element_quantity.split(',');
-                var element_unit = element_wh[0];
-                var element_measurement = element_wh[1];
-                var element_cost = element_wh[2];
+                var element_prese_pk = element_wh[0];
+                var element_unit = element_wh[1];
+                var element_measurement = element_wh[2];
+                var element_cost = element_wh[3];
 
                 var string = {
                     'Nombre': element_name,
-                    'Por_Comprar': element_unit,
+                    'Cantidad': "1",
+                    'Medida': element_unit,
                     'Unidad': element_measurement,
-                    'Costo x Unidad': element_cost,
-                    'Costo_Total': element_cost
+                    'Costo': element_cost,
+                    'sup_pk': element_sup_pk,
+                    'pre_pk': element_prese_pk,
                 };
 
                 var html_list = "";
@@ -200,9 +213,9 @@
                 }else{
                     var igual = false;
                     for (i = 0; i < list_array.length; i++){
-                       if (list_array[i].Nombre===element_name){                           
-                           list_array[i].Por_Comprar = parseInt(list_array[i].Por_Comprar) + parseInt(element_unit);
-                           list_array[i].Costo_Total = parseInt(list_array[i].Costo_Total) + parseInt(element_cost);
+                       if (list_array[i].Nombre===element_name && list_array[i].Medida===element_unit){
+                           list_array[i].Cantidad = parseInt(list_array[i].Cantidad) + 1;
+                           list_array[i].Costo = parseInt(list_array[i].Costo) + parseInt(element_cost);
                            igual = true;
                        }
                     }
@@ -215,8 +228,9 @@
                     html_list +=
                         '<tr>' +
                             '<th>' + list_array[i].Nombre + '</th>' +
-                            '<th>' + list_array[i].Por_Comprar + " " +list_array[i].Unidad + '</th>' +
-                            '<th>' + list_array[i].Costo_Total + '$</th>' +
+                            '<th>' + list_array[i].Cantidad + '</th>' +
+                            '<th>' + list_array[i].Medida + " " +list_array[i].Unidad + '</th>' +
+                            '<th>' + list_array[i].Costo + '$</th>' +
                         '</tr>'
                 }
 
@@ -250,7 +264,6 @@
                     status=0;
                 }
 
-
             });
 
             $(".btn_add").on("click",function(e){
@@ -259,28 +272,43 @@
                 //Set Title
                 var element_name = $(this).parent().parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
                 $("#title_pres").html(element_name);
-                //Clear all inputs
-                $("#input_quantity").val("");
-                $("#input_measurement").val("");
-                $("#input_presentation").val("");
-                $("#input_cost").val("");
+
+                var element_pk = $(this).parent().parent().parent().parent().attr('id').substring(16);
+                $("#id_supply").val(element_pk);
+
             });
 
-            $("#btn-save-list").on("click",function(e){
-                var quantity = $("#input_quantity").val();
-                var measurement = $("#input_measurement").val();
-                var presentation = $("#input_presentation").val();
-                var cost = $("#input_cost").val();
+            $("#btn_save_list").on("click",function (e) {
 
-                var new_present = {
-                    'quantity' : quantity,
-                    'measurement' : measurement,
-                    'presentation' : presentation,
-                    'qcost' : cost,
-                };
-
-                
-
+                let csrf_token = get_cookie('csrftoken');
+                let JSONSale = JSON.stringify(list_array);
+                $.ajax({
+                    url: '{% url "products:shoplist" %}',
+                    type: 'POST',
+                    data: {
+                        'shop_list': JSONSale,
+                        csrfmiddlewaretoken: csrf_token,
+                    },
+                    traditional: true,
+                    datatype: 'jsonp',
+                    success: function(result) {
+                        swal({
+                            title: "Éxito",
+                            text: "Lista Guardada",
+                            type: "success",
+                            showConfirmButton: false,
+                        });
+                    },
+                    error: function(result, jqXHR, textStatus, errorThrown) {
+                        swal({
+                            title: "Lista no Guardada!",
+                            text: 'Contacte a soporte!\n ' + 'Errores: ' + textStatus + ', ' + jqXHR,
+                            type: "error",
+                            showConfirmButton: false
+                        });
+                        setTimeout(rel, 30000);
+                    },
+                });
             });
 
         });

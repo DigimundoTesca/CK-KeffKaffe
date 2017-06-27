@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
-
+import json
 from datetime import timedelta, date
 
 from django.http import HttpResponse, JsonResponse
@@ -10,9 +10,9 @@ from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
-from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm
-from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe, SupplyPresentation, Presentation
-from kitchen.models import Warehouse
+from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm, PresentationForm
+from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe, Presentation
+from kitchen.models import Warehouse, ShopList, ShopListDetail
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
@@ -398,21 +398,43 @@ def shop_list(request):
     supply_list = []
 
     if request.method == 'POST':
-        print(request[''])
+        form = PresentationForm(request.POST, request.FILES)
+        if form.is_valid():
+            presentation = form.save(commit=False)
+            presentation.save()
+            return redirect('/warehouse/shoplist')
+
+        if request.POST['shop_list']:
+            shop_l = json.loads(request.POST.get('shop_list'))
+
+            new_shop_list = ShopList.objects.create()
+            new_shop_list.save()
+
+            for item in shop_l:
+                ShopListDetail.objects.create(shop_list=new_shop_list, supply=item['sup_pk'], presentation=item['pre_pk'], quantity=item['Cantidad'])
+
+
+    else:
+        form = PresentationForm()
+
+
+
+    all_presentations = Presentation.objects.all()
 
     for sup in supps:
         element_object = {
+            'pk': sup.pk,
             'name': sup.name,
             'imagen': sup.image.url,
             'unidad': sup.self_measurement_conversion,
             'medida': sup.self_unit_conversion,
             'costo': sup.presentation_cost,
         }
-        supp_presentations = SupplyPresentation.objects.filter(supply=sup)
+        supp_presentations = all_presentations.filter(supply=sup)
         supp_pres = []
 
         for supp_pre in supp_presentations:
-            supp_pres.append(supp_pre.presentation)
+            supp_pres.append(supp_pre)
 
         element_object['presentations'] = supp_pres
         supply_list.append(element_object)
@@ -420,6 +442,7 @@ def shop_list(request):
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
     context = {
+        'form': form,
         'required_supplies': products_helper.get_required_supplies(),
         'title': title,
         'supply_list': supply_list,

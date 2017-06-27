@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.db.models import Min, Max
 from django.utils import timezone
 from diners.models import AccessLog, Diner
-from kitchen.models import Warehouse, ProcessedProduct, Delivery
+from kitchen.models import Warehouse, ProcessedProduct
 from products.models import Supply, Cartridge, PackageCartridge, CartridgeRecipe, PackageCartridgeRecipe, \
     ExtraIngredient
 from sales.models import Ticket, TicketDetail, TicketExtraIngredient

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from kitchen.models import ProcessedProduct, Warehouse, Delivery, DeliveryList
+from kitchen.models import ProcessedProduct, Warehouse, ShopList, ShopListDetail
 
 
 @admin.register(ProcessedProduct)
@@ -18,12 +18,14 @@ class AdminWarehouse(admin.ModelAdmin):
     list_display_links = ('id', 'supply')
 
 
-@admin.register(Delivery)
-class AdminDelivery(admin.ModelAdmin):
+@admin.register(ShopList)
+class AdminShopList(admin.ModelAdmin):
     list_display = ('id', 'created_at')
     list_display_links = ('id', 'created_at')
 
-@admin.register(DeliveryList)
-class AdminDeliveryList(admin.ModelAdmin):
-    list_display = ('id', 'delivery', 'supply')
-    list_display_links = ('id', 'supply')
+
+@admin.register(ShopListDetail)
+class AdminShopListDetail(admin.ModelAdmin):
+    list_display = ('id', 'shop_list', 'supply', 'quantity')
+    list_display_links = ('id', 'shop_list')
+
