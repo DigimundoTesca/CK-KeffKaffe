@@ -17,15 +17,16 @@ class AdminWarehouse(admin.ModelAdmin):
     list_display = ('id', 'supply', 'status', 'quantity', 'cost')
     list_display_links = ('id', 'supply')
 
+class ShopListDetailInline(admin.TabularInline):
+    model = ShopListDetail
+    extra = 0
+
 
 @admin.register(ShopList)
 class AdminShopList(admin.ModelAdmin):
     list_display = ('id', 'created_at')
     list_display_links = ('id', 'created_at')
+    inlines = [ShopListDetailInline]
 
 
-@admin.register(ShopListDetail)
-class AdminShopListDetail(admin.ModelAdmin):
-    list_display = ('id', 'shop_list', 'supply', 'quantity')
-    list_display_links = ('id', 'shop_list')
 

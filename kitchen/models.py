@@ -86,6 +86,7 @@ class Warehouse(models.Model):
 class ShopList(models.Model):
 
     created_at = models.DateField(editable=False, auto_now_add=True)
+    is_delivered = models.BooleanField(default=False)
 
     def __str__(self):
         return '%s' % self.id

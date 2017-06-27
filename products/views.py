@@ -411,13 +411,13 @@ def shop_list(request):
             new_shop_list.save()
 
             for item in shop_l:
-                ShopListDetail.objects.create(shop_list=new_shop_list, supply=item['sup_pk'], presentation=item['pre_pk'], quantity=item['Cantidad'])
+                sel_sup = Supply.objects.get(pk=item['sup_pk'])
+                sel_pre = Presentation.objects.get(pk=item['pre_pk'])
+                ShopListDetail.objects.create(shop_list=new_shop_list, supply=sel_sup, presentation=sel_pre, quantity=item['Cantidad'])
 
 
     else:
         form = PresentationForm()
-
-
 
     all_presentations = Presentation.objects.all()
 
