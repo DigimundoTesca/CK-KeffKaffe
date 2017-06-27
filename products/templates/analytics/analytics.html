@@ -267,6 +267,8 @@
             for(i = 0; i < drinksAux.length; i++){
               nutChar.data.labels[i] = labels[i];
               quantity_bar.data.labels[i] = labels[i];
+              $('#label-box').append('<span class="label-name">' +
+               ' ' + labels[i]+ '</span>');
             }
               nutChar.data.datasets[0].data = drinks_data;
               quantity_bar.data.datasets[0].data = drinks_data;
@@ -278,6 +280,8 @@
             food_data = fillFoodNutChar();
             for(i = 0; i < drinksAux.length; i++){
               nutChar.data.labels[i] = labels[i];
+              $('#label-box').append('<span class="label-name">' +
+               ' ' + labels[i]+ '</span>');
             }
               nutChar.data.datasets[0].data = food_data;
               nutChar.update();
