@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block link %}    
+{% block link %}
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css"/>
 <link rel="stylesheet" href="{% static "css/styles27052017.css" %}">
 {% endblock link %}
@@ -34,14 +34,14 @@
   </div>
 </div>
 <div class="container-fluid">
-  <div class="mt-2">      
+  <div class="mt-2">
     <table id="analytics-table" class="table table-kitchen table-straped table-hover">
       <thead class="thead-inverse">
         <tr>
           <th>Producto</th>
           <th>Cantidad</th>
         </tr>
-      </thead>  
+      </thead>
       <tbody>
         {% for cartridge in today_sold_product %}
         <tr>
@@ -68,7 +68,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.js"></script>
 
 <script type="text/javascript">
-  $(function() {   
+  $(function() {
     let ctx = document.getElementById("nutChar").getContext('2d');
     let bar_ctx = document.getElementById("quantity-bar").getContext('2d');
     let today_sold_product = JSON.parse('{{ today_sold_product_json | safe }}');
@@ -77,7 +77,7 @@
     let nutChar, quantity_bar;
     let itsEmpty;
     let labelName = [];
-    
+
     let neutralColor = [
       '#FFFFF',
     ]
@@ -98,9 +98,9 @@
       '#EEFF41',
       '#827717',
     ];
-    /** 
+    /**
     * Gets the csrf cookie from cache
-    */ 
+    */
     function getCookie(name) {
       let cookie_value = null;
       if (document.cookie && document.cookie !== '') {
@@ -124,6 +124,10 @@
       return aux_list;
     }
 
+    function getLabelsName(){
+      console.log('Hola');
+    }
+
     function fillDrinksNutChar(){
       drinksAux = category_sold['drinks_sold'];
       let foodsAux = category_sold['food_sold'];
@@ -134,9 +138,9 @@
         drinksQuant = drinksAux[i]['quantity'];
         productsList[i] = drinksQuant;
       }
-      return productsList;  
+      return productsList;
     }
-    
+
     function fillFoodNutChar(){
 
       foodAux = category_sold['food_sold'];
@@ -147,18 +151,18 @@
         food_quant = foodAux[i]['quantity'];
         productsList[i] = food_quant;
       }
-      return productsList;  
+      return productsList;
     }
-    
+
     function getTypeProduct(kindOfFood){
       kindOfFood = kindOfFood.substring(0,3);
       return kindOfFood;
     }
-    
+
     function getNeutralColor(){
       itsEmpty = true;
       // if(nutChar.data.datasets[0].data == 1){
-        // nutChar.data.datasets[1].backgroundColor = emptyColor;   
+        // nutChar.data.datasets[1].backgroundColor = emptyColor;
       // }
 
     }
@@ -222,13 +226,13 @@
         onClick: function(event, legendItem) {
           try {
             let itemSelected = legendItem[0]._index;
-            for (let i = 0; i < productsList.length; i++) { 
+            for (let i = 0; i < productsList.length; i++) {
             }
           } catch (error) {
             console.log(error.message);
           }
         },
-        cutoutPercentage: 40, 
+        cutoutPercentage: 40,
         legend: {
           display: false
         },
