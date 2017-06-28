@@ -23,8 +23,6 @@
       <canvas id="nutChar"></canvas>
     </div>
     <div class='container-fluid col-xl-8' id="label-box" style="margin-top: 1cm;">
-      <span>
-      </span>
     </div>
   </div>
   <div class="col-xs-12 col-md-8">
@@ -167,7 +165,7 @@
       let foodAux = category_sold['food_sold'];
       labelList = []
       for(i = 0; i < foodAux.length; i++){
-        labelList[i] = foodAux[i]['name'];
+        labelList[i] = foodAux[i];
       }
       return labelList;
     }
@@ -175,13 +173,13 @@
     function getLabelDrinkNutChar(){
       labelList = []
       for(i = 0; i < drinksAux.length; i++){
-        labelList[i] = drinksAux[i]['name'];
+        labelList[i] = drinksAux[i];
       }
       return labelList;
     }
 
     quantity_bar = new Chart(bar_ctx, {
-      type: 'line',
+      type: 'horizontalBar',
       data: {
         labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
         datasets: [{
@@ -265,10 +263,11 @@
             drinks_data = fillDrinksNutChar();
             labels = getLabelDrinkNutChar();
             for(i = 0; i < drinksAux.length; i++){
-              nutChar.data.labels[i] = labels[i];
-              quantity_bar.data.labels[i] = labels[i];
+              nutChar.data.labels[i] = labels[i]['name'];
+              quantity_bar.data.labels[i] = labels[i]['name'];
               $('#label-box').append('<span class="label-name">' +
-               ' ' + labels[i]+ '</span>');
+               ' ' + labels[i]['name'] + ': ' + labels[i]['quantity']
+                + '</span>' + '<br>');
             }
               nutChar.data.datasets[0].data = drinks_data;
               quantity_bar.data.datasets[0].data = drinks_data;
@@ -279,9 +278,10 @@
             labels = getLabelFoodNutChar();
             food_data = fillFoodNutChar();
             for(i = 0; i < drinksAux.length; i++){
-              nutChar.data.labels[i] = labels[i];
+              nutChar.data.labels[i] = labels[i]['name'];
               $('#label-box').append('<span class="label-name">' +
-               ' ' + labels[i]+ '</span>');  
+               ' ' + labels[i]['name'] + ': ' + labels[i]['quantity'] +
+                '</span>' + '<br>');
             }
               nutChar.data.datasets[0].data = food_data;
               nutChar.update();
