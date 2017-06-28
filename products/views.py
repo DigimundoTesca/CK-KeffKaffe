@@ -442,8 +442,6 @@ def shop_list(request):
             }
             return JsonResponse(list_naive_array)
 
-
-
     else:
         form = PresentationForm()
 

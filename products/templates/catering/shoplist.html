@@ -182,7 +182,6 @@
                 <div class="modal-body ">
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <input type='hidden' name='csrfmiddlewaretoken' value='pzHVh6z6E8JJlvNqIiPXiufE9A1L2ufHdpFhHGEhB3GHhHAWutcd0OK1b8QW5ZeZ' />
                         <p><label for="id_supply">Numero de Insumo:</label> <input type="text" name="supply" id="id_supply" readonly="readonly"/></p>
                         <p><label for="id_measurement_quantity">Capacidad:</label> <input type="number" name="measurement_quantity" value="0" step="any" min="0" required id="id_measurement_quantity" /></p>
                         <p><label for="id_measurement_unit">Unidad:</label> <select name="measurement_unit" id="id_measurement_unit">
@@ -396,7 +395,7 @@
                         .append($(
                             html_list
                         ));
-
+/**/
             });
 
             $(".btn_add").on("click",function(e){
