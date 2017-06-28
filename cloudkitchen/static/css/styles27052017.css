@@ -1,4 +1,4 @@
-#analytics-table { 
+#analytics-table {
   	border-collapse: collapse;
  	width: 100%;
 }
@@ -7,8 +7,11 @@
 	background-color:  rgba(120, 204, 200,0.5);
 }
 
-
 #analytics-table tr:hover{
  background-color:  rgba(75, 127, 125, 0.8);
 }
 
+.label-name{
+  font-size: 10px;
+  background-color: #F2F2F2;
+}
