@@ -3,7 +3,8 @@
 {% block link %}
     <link rel="stylesheet" href="{% static "css/shop_list.css" %}">
 {% endblock link %}
-{% block content %}\
+{% block content %}
+
     <div class="container">
         <div class="row">
             <div class="col-md-12">
@@ -19,7 +20,7 @@
     <div class="container container_view_lists">
         <div class="col-md-12">
             <div class="list_display col-md-6">
-                <table class="table" id="TableShopList">
+                <table class="table table-hover" id="TableShopList">
                     <thead>
                     <tr>
                         <th>ID</th>
@@ -40,13 +41,14 @@
                 </table>
             </div>
             <div class="card_list block_list col-md-6">
-                <table class="table" id="TableShopListDetail">
+                <table class="table table_shoplist_detail table-hover" id="TableShopListDetail">
                     <thead>
                     <tr>
                         <th>Nombre</th>
                         <th>Cantidad</th>
                         <th>Presentacion</th>
                         <th>Costo</th>
+                        <th>Status</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -54,6 +56,9 @@
                     </tbody>
                 </table>
             </div>
+            <button class="btn-supply-list offset-md-8 col-md-2 ">
+                Completar Lista
+            </button>
         </div>
     </div>
     <div class="container container_manual_list">
@@ -179,7 +184,7 @@
                         {% csrf_token %}
                         <input type='hidden' name='csrfmiddlewaretoken' value='pzHVh6z6E8JJlvNqIiPXiufE9A1L2ufHdpFhHGEhB3GHhHAWutcd0OK1b8QW5ZeZ' />
                         <p><label for="id_supply">Numero de Insumo:</label> <input type="text" name="supply" id="id_supply" readonly="readonly"/></p>
-                        <p><label for="id_measurement_quantity">Capacidad:</label> <input type="number" name="measurement_quantity" value="0" step="any" required id="id_measurement_quantity" /></p>
+                        <p><label for="id_measurement_quantity">Capacidad:</label> <input type="number" name="measurement_quantity" value="0" step="any" min="0" required id="id_measurement_quantity" /></p>
                         <p><label for="id_measurement_unit">Unidad:</label> <select name="measurement_unit" id="id_measurement_unit">
                             <option value="GR">gramo</option>
                             <option value="MI">mililitro</option>
@@ -190,7 +195,7 @@
                             <option value="BO">Caja</option>
                             <option value="PZ">Pieza</option>
                         </select></p>
-                        <p><label for="id_presentation_cost">Costo:</label> <input type="number" name="presentation_cost" value="0" step="any" required id="id_presentation_cost" /></p>
+                        <p><label for="id_presentation_cost">Costo:</label> <input type="number" name="presentation_cost" value="0" step="any" min="0" required id="id_presentation_cost" /></p>
                         <button class="btn wvaes-effect waves-light accent right large" type="submit">
                             Submit <i class="material-icons right">send</i>
                         </button>
@@ -198,13 +203,26 @@
                 </div>
             </div>
         </div>
+    </div>
 
+    <!-- Modal-for-Catering  -->
+    <div class="modal fade" id="AddToWarehouse" roles="dialog">
+        <div class="moda-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
 
+                </div>
+                <div class="modal-body">
+
+                </div>
+            </div>
+        </div>
     </div>
 
 {% endblock content %}
 {% block javascript %}
     <script type="text/javascript" charset="utf-8">
+
         $(document).ready(function() {
 
             function get_cookie(name) {
@@ -225,12 +243,16 @@
             var list_array = [];
             var status = 0;
 
+            var shop_list;
+
+            $(".btn-supply-list").on("click",function (e){
+                console.log(shop_list);
+            });
+
             $(".btn_view_lists").on("click",function (e) {
                 $(".container_pred_list").hide(500);
                 $(".container_manual_list").hide(500);
                 $(".container_view_lists").show(500);
-
-
             });
 
             $(".list-element").on("click",function(e){
@@ -256,28 +278,32 @@
                             title: "Éxito",
                             text: "Lista Cargada",
                             type: "success",
-                            showConfirmButton: false,
+                            showConfirmButton: false
                         });
 
-                        html_list_detail = ""
+                        html_list_detail = "";
 
-                        var shop_list = result['shop_list'];
+                        shop_list = result['shop_list'];
 
                         for (x=0;x<shop_list.length;x++){
                             html_list_detail +=
-                            '<tr>' +
+
+                            '<tr class="shoplistdetail_element">' +
                                 '<td>' + shop_list[x].nombre + '</td>' +
                                 '<td>' + shop_list[x].cantidad + '</td>' +
                                 '<td>' + shop_list[x].medida + " " + shop_list[x].unidad +'</td>' +
-                                '<td>' + shop_list[x].costo + '$</td>' +
+                                '<td>' + shop_list[x].costo + ' $</td>' +
+                                '<td>' + shop_list[x].status + '</td>' +
                             '</tr>'
                         }
 
+
                         $("#TableShopListDetail tbody tr").remove();
-                        $("#TableShopListDetail tbody")
-                            .append($(
-                                html_list_detail
-                            ));
+                        $("#TableShopListDetail tbody ")
+                        .append($(
+                            html_list_detail
+                        ));
+
 
                     },
                     error: function(result, jqXHR, textStatus, errorThrown) {
@@ -389,34 +415,45 @@
 
                 let csrf_token = get_cookie('csrftoken');
                 let JSONSale = JSON.stringify(list_array);
-                $.ajax({
-                    url: '{% url "products:shoplist" %}',
-                    type: 'POST',
-                    data: {
-                        'type' : 'shop_list',
-                        'shop_list': JSONSale,
-                        csrfmiddlewaretoken: csrf_token,
-                    },
-                    traditional: true,
-                    datatype: 'jsonp',
-                    success: function(result) {
-                        swal({
-                            title: "Éxito",
-                            text: "Lista Guardada",
-                            type: "success",
-                            showConfirmButton: false,
-                        });
-                    },
-                    error: function(result, jqXHR, textStatus, errorThrown) {
-                        swal({
-                            title: "Lista no Guardada!",
-                            text: 'Contacte a soporte!\n ' + 'Errores: ' + textStatus + ', ' + jqXHR,
-                            type: "error",
-                            showConfirmButton: false
-                        });
-                        setTimeout(rel, 30000);
-                    },
-                });
+                if(list_array.length>=1){
+                    $.ajax({
+                        url: '{% url "products:shoplist" %}',
+                        type: 'POST',
+                        data: {
+                            'type' : 'shop_list',
+                            'shop_list': JSONSale,
+                            csrfmiddlewaretoken: csrf_token,
+                        },
+                        traditional: true,
+                        datatype: 'jsonp',
+                        success: function(result) {
+                            swal({
+                                title: "Éxito",
+                                text: "Lista Guardada",
+                                type: "success",
+                                showConfirmButton: false,
+                            });
+                            location.reload(true);
+                        },
+                        error: function(result, jqXHR, textStatus, errorThrown) {
+                            swal({
+                                title: "Lista no Guardada!",
+                                text: 'Contacte a soporte!\n ' + 'Errores: ' + textStatus + ', ' + jqXHR,
+                                type: "error",
+                                showConfirmButton: false
+                            });
+                            setTimeout(rel, 30000);
+                        },
+                    });
+                }else{
+                    swal({
+                        title: "La lista esta vacia!",
+                        text: 'Agregue elementos a la lista!',
+                        type: "warning",
+                        showConfirmButton: false
+                    });
+                    setTimeout(rel, 30000);
+                }
             });
 
 
