@@ -2,7 +2,7 @@
 /*
     Table and contents
  */
-.btn_pre_list {
+.btn_pre_list, .btn_view_lists {
     height:40px;
     width:50px;
     background-color: #0275d8;

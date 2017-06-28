@@ -3,13 +3,56 @@
 {% block link %}
     <link rel="stylesheet" href="{% static "css/shop_list.css" %}">
 {% endblock link %}
-{% block content %}
+{% block content %}\
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <button class="btn_pre_list offset-md-8 col-md-4 ">
+                <button class="btn_view_lists offset-md-2 col-md-3 ">
+                    Ver Listas
+                </button>
+                <button class="btn_pre_list offset-md-2 col-md-3 ">
                     Lista Manual
                 </button>
+            </div>
+        </div>
+    </div>
+    <div class="container container_view_lists">
+        <div class="col-md-12">
+            <div class="list_display col-md-6">
+                <table class="table" id="TableShopList">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for element in shop_list %}
+                        <tr class="list-element" id="element-{{ element.id }}">
+                            <td>{{ element.id }}</td>
+                            <td>{{ element.created_at }}</td>
+                            <td>{{ element.status }}</td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="card_list block_list col-md-6">
+                <table class="table" id="TableShopListDetail">
+                    <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Cantidad</th>
+                        <th>Presentacion</th>
+                        <th>Costo</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -66,101 +109,98 @@
                     </tbody>
                 </table>
             </div>
+            <button id="btn_save_list" class="offset-md-2 col-md-2 btn btn-primary d-flex">
+                <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Guardar Lista</span>
+            </button>
+            <button id="btn-save-ticket-csv" class="offset-md-4 col-md-2 btn btn-primary d-flex">
+                <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
+            </button>
         </div>
-        <button id="btn_save_list" class="col-md-2 btn btn-primary d-flex">
-            <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Guardar Lista</span>
-        </button>
     </div>
     <div class="container container_pred_list">
         <div class ="pred_list">
             <table class="table table-striped table-hover" align="right">
-            <thead class="thead-inverse">
-            <tr>
-                <th>Nombre</th>
-                <th>Requeridos</th>
-                <th>Stock</th>
-                <th>Por Comprar</th>
-                <th>Proveedor</th>
-                <th>Cantidad x Unidad</th>
-                <th>Costo x Unidad</th>
-                <th>Costo Total</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for required in required_supplies %}
-                {% if required.measurement_quantity == 1  %}
-                    {% if required.stock <= 50 %}
+                <thead class="thead-inverse">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Requeridos</th>
+                    <th>Stock</th>
+                    <th>Por Comprar</th>
+                    <th>Proveedor</th>
+                    <th>Cantidad x Unidad</th>
+                    <th>Costo x Unidad</th>
+                    <th>Costo Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for required in required_supplies %}
+                    {% if required.measurement_quantity == 1  %}
+                        {% if required.stock <= 50 %}
+                            <tr class="table-danger">
+                                {% elif required.stock <= 25 %}
+                            <tr class="table-warning">
+                                {% elif required.stock <= 10 %}
+                            <tr class="table-success">
+                        {% endif %}
+                    {% else %}
+                    {% if required.stock <= 500 %}
                         <tr class="table-danger">
-                            {% elif required.stock <= 25 %}
+                            {% elif required.stock <= 1000 %}
                         <tr class="table-warning">
-                            {% elif required.stock <= 10 %}
+                            {% elif required.stock <= 2000 %}
                         <tr class="table-success">
                     {% endif %}
-                {% else %}
-                {% if required.stock <= 500 %}
-                    <tr class="table-danger">
-                        {% elif required.stock <= 1000 %}
-                    <tr class="table-warning">
-                        {% elif required.stock <= 2000 %}
-                    <tr class="table-success">
-                {% endif %}
-                {% endif %}
-            <td>{{ required.name }}</td>
-            <td>{{ required.quantity }} {{ required.measurement_unit }}</td>
-            <td>{{ required.stock }} {{ required.measurement_unit }}</td>
-            <td>{{ required.required }} {{ required.measurement_unit }}</td>
-            <td>{{ required.supplier }}</td>
-            <td>{{ required.supplier_quantity }} {{ required.supplier_unit }}</td>
-            <td>${{ required.cost }}</td>
-            <td>${{ required.full_cost }}</td>
-                <tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    </div>
-    <div class="container">
-        <button id="btn-save-ticket-csv" class="offset-md-10 col-md-2 btn btn-primary d-flex">
-            <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
-        </button>
-    </div>
-
-
-<!-- The Modal -->
-<div class="modal fade" id="NewPresentation" role="dialog" >
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 align="center">Agregar Presentacion</h1>
-                <h4 id="title_pres" align="center"></h4>
-            </div>
-            <div class="modal-body ">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <input type='hidden' name='csrfmiddlewaretoken' value='pzHVh6z6E8JJlvNqIiPXiufE9A1L2ufHdpFhHGEhB3GHhHAWutcd0OK1b8QW5ZeZ' />
-                    <p><label for="id_supply">Numero de Insumo:</label> <input type="text" name="supply" id="id_supply" readonly="readonly"/></p>
-                    <p><label for="id_measurement_quantity">Capacidad:</label> <input type="number" name="measurement_quantity" value="0" step="any" required id="id_measurement_quantity" /></p>
-                    <p><label for="id_measurement_unit">Unidad:</label> <select name="measurement_unit" id="id_measurement_unit">
-                        <option value="GR">gramo</option>
-                        <option value="MI">mililitro</option>
-                        <option value="PZ">pieza</option>
-                    </select></p>
-                    <p><label for="id_presentation_unit">Presentacion:</label> <select name="presentation_unit" id="id_presentation_unit">
-                        <option value="PA" selected>Paquete</option>
-                        <option value="BO">Caja</option>
-                        <option value="PZ">Pieza</option>
-                    </select></p>
-                    <p><label for="id_presentation_cost">Costo:</label> <input type="number" name="presentation_cost" value="0" step="any" required id="id_presentation_cost" /></p>
-                    <button class="btn wvaes-effect waves-light accent right large" type="submit">
-                        Submit <i class="material-icons right">send</i>
-                    </button>
-                </form>
-            </div>
+                    {% endif %}
+                <td>{{ required.name }}</td>
+                <td>{{ required.quantity }} {{ required.measurement_unit }}</td>
+                <td>{{ required.stock }} {{ required.measurement_unit }}</td>
+                <td>{{ required.required }} {{ required.measurement_unit }}</td>
+                <td>{{ required.supplier }}</td>
+                <td>{{ required.supplier_quantity }} {{ required.supplier_unit }}</td>
+                <td>${{ required.cost }}</td>
+                <td>${{ required.full_cost }}</td>
+                    <tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
+    <!-- The Modal -->
+    <div class="modal fade" id="NewPresentation" role="dialog" >
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 align="center">Agregar Presentacion</h1>
+                    <h4 id="title_pres" align="center"></h4>
+                </div>
+                <div class="modal-body ">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type='hidden' name='csrfmiddlewaretoken' value='pzHVh6z6E8JJlvNqIiPXiufE9A1L2ufHdpFhHGEhB3GHhHAWutcd0OK1b8QW5ZeZ' />
+                        <p><label for="id_supply">Numero de Insumo:</label> <input type="text" name="supply" id="id_supply" readonly="readonly"/></p>
+                        <p><label for="id_measurement_quantity">Capacidad:</label> <input type="number" name="measurement_quantity" value="0" step="any" required id="id_measurement_quantity" /></p>
+                        <p><label for="id_measurement_unit">Unidad:</label> <select name="measurement_unit" id="id_measurement_unit">
+                            <option value="GR">gramo</option>
+                            <option value="MI">mililitro</option>
+                            <option value="PZ">pieza</option>
+                        </select></p>
+                        <p><label for="id_presentation_unit">Presentacion:</label> <select name="presentation_unit" id="id_presentation_unit">
+                            <option value="PA" selected>Paquete</option>
+                            <option value="BO">Caja</option>
+                            <option value="PZ">Pieza</option>
+                        </select></p>
+                        <p><label for="id_presentation_cost">Costo:</label> <input type="number" name="presentation_cost" value="0" step="any" required id="id_presentation_cost" /></p>
+                        <button class="btn wvaes-effect waves-light accent right large" type="submit">
+                            Submit <i class="material-icons right">send</i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-</div>
+
+    </div>
 
 {% endblock content %}
 {% block javascript %}
@@ -183,6 +223,97 @@
             }
 
             var list_array = [];
+            var status = 0;
+
+            $(".btn_view_lists").on("click",function (e) {
+                $(".container_pred_list").hide(500);
+                $(".container_manual_list").hide(500);
+                $(".container_view_lists").show(500);
+
+
+            });
+
+            $(".list-element").on("click",function(e){
+
+               $(".list-element").css('backgroundColor', '#ffffff');
+               $(this).css('backgroundColor', '#abafff');
+               let csrf_token = get_cookie('csrftoken');
+               var element = $(this);
+               list_element_id = element.attr("id").substring(8);
+
+               $.ajax({
+                    url: '{% url "products:shoplist" %}',
+                    type: 'POST',
+                    data: {
+                        'type' : 'load_list',
+                        'load_list': list_element_id,
+                        csrfmiddlewaretoken: csrf_token,
+                    },
+                    traditional: true,
+                    datatype: 'jsonp',
+                    success: function(result) {
+                        swal({
+                            title: "Éxito",
+                            text: "Lista Cargada",
+                            type: "success",
+                            showConfirmButton: false,
+                        });
+
+                        html_list_detail = ""
+
+                        var shop_list = result['shop_list'];
+
+                        for (x=0;x<shop_list.length;x++){
+                            html_list_detail +=
+                            '<tr>' +
+                                '<td>' + shop_list[x].nombre + '</td>' +
+                                '<td>' + shop_list[x].cantidad + '</td>' +
+                                '<td>' + shop_list[x].medida + " " + shop_list[x].unidad +'</td>' +
+                                '<td>' + shop_list[x].costo + '$</td>' +
+                            '</tr>'
+                        }
+
+                        $("#TableShopListDetail tbody tr").remove();
+                        $("#TableShopListDetail tbody")
+                            .append($(
+                                html_list_detail
+                            ));
+
+                    },
+                    error: function(result, jqXHR, textStatus, errorThrown) {
+                        swal({
+                            title: "Lista no Cargada!",
+                            text: 'Contacte a soporte!\n ' + 'Errores: ' + textStatus + ', ' + jqXHR,
+                            type: "error",
+                            showConfirmButton: false
+                        });
+                        setTimeout(30000);
+                    },
+                });
+
+            });
+
+            $(".container_view_lists").hide();
+
+            $(".container_pred_list").hide();
+
+            $(".btn_pre_list").on("click",function(e){
+
+                if(status===0){
+                    $(".container_view_lists").hide(500);
+                    $(".container_pred_list").hide(500);
+                    $(".container_manual_list").show(500);
+                    $(".btn_pre_list").html('Lista Manual');
+                    status=1;
+                }else{
+                    $(".container_view_lists").hide(500);
+                    $(".container_pred_list").show(500);
+                    $(".container_manual_list").hide(500);
+                    $(".btn_pre_list").html('Predecir Lista');
+                    status=0;
+                }
+
+            });
 
             $(".btn_pres").on("click",function(e){
 
@@ -242,30 +373,6 @@
 
             });
 
-            $(".container_pred_list").hide();
-
-            $(".btn_manual_list").on("click",function(e){
-                $(".container_pred_list").slideToggle(500);
-                $(".container_manual_list").slideToggle(500);
-            });
-
-            var status = 0;
-            $(".btn_pre_list").on("click",function(e){
-
-                if(status===0){
-                    $(".container_pred_list").slideToggle(500);
-                    $(".container_manual_list").slideToggle(500);
-                    $(".btn_pre_list").html('Lista Manual');
-                    status=1;
-                }else{
-                    $(".container_pred_list").slideToggle(500);
-                    $(".container_manual_list").slideToggle(500);
-                    $(".btn_pre_list").html('Predecir Lista');
-                    status=0;
-                }
-
-            });
-
             $(".btn_add").on("click",function(e){
                 //Show modal
                 $("#NewPresentation").modal({show:true});
@@ -286,6 +393,7 @@
                     url: '{% url "products:shoplist" %}',
                     type: 'POST',
                     data: {
+                        'type' : 'shop_list',
                         'shop_list': JSONSale,
                         csrfmiddlewaretoken: csrf_token,
                     },
@@ -310,6 +418,8 @@
                     },
                 });
             });
+
+
 
         });
     </script>

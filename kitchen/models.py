@@ -85,8 +85,18 @@ class Warehouse(models.Model):
 
 class ShopList(models.Model):
 
+    DELIVERED = 'DE'
+    MISSING = 'MI'
+    WAITING = 'WA'
+
+    STATUS = (
+        (DELIVERED, 'Delivered'),
+        (MISSING, 'Missing'),
+        (WAITING, 'Waiting'),
+    )
+
     created_at = models.DateField(editable=False, auto_now_add=True)
-    is_delivered = models.BooleanField(default=False)
+    status = models.CharField(choices=STATUS, default=MISSING, max_length=15)
 
     def __str__(self):
         return '%s' % self.id
@@ -98,10 +108,22 @@ class ShopList(models.Model):
 
 
 class ShopListDetail(models.Model):
+    DELIVERED = 'DE'
+    MISSING = 'MI'
+    WAITING = 'WA'
+
+    STATUS = (
+        (DELIVERED, 'Delivered'),
+        (MISSING, 'Missing'),
+        (WAITING, 'Waiting'),
+    )
+
+    status = models.CharField(choices=STATUS, default=MISSING, max_length=15)
     shop_list = models.ForeignKey(ShopList, default=1, on_delete=models.CASCADE)
     supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
     presentation = models.ForeignKey(Presentation, default=1, on_delete=models.CASCADE)
     quantity = models.IntegerField()
+
 
     def __str__(self):
         return '%s %s' % (self.quantity, self.shop_list)

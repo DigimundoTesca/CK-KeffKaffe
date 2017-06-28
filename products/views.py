@@ -395,6 +395,10 @@ def shop_list(request):
 
     products_helper = ProductsHelper()
     supps = products_helper.get_all_supplies()
+    all_presentations = Presentation.objects.all()
+
+    shop_list = ShopList.objects.all()
+
     supply_list = []
 
     if request.method == 'POST':
@@ -404,7 +408,7 @@ def shop_list(request):
             presentation.save()
             return redirect('/warehouse/shoplist')
 
-        if request.POST['shop_list']:
+        if request.POST['type'] == 'shop_list':
             shop_l = json.loads(request.POST.get('shop_list'))
 
             new_shop_list = ShopList.objects.create()
@@ -415,11 +419,33 @@ def shop_list(request):
                 sel_pre = Presentation.objects.get(pk=item['pre_pk'])
                 ShopListDetail.objects.create(shop_list=new_shop_list, supply=sel_sup, presentation=sel_pre, quantity=item['Cantidad'])
 
+        if request.POST['type'] == 'load_list':
+            element = json.loads(request.POST.get('load_list'))
+            list_shoplistdetail = ShopListDetail.objects.filter(shop_list_id=element)
+
+            shop_list_array = []
+
+            for ele_shoplist in list_shoplistdetail:
+                list_object = {
+                    'nombre': ele_shoplist.supply.name,
+                    'cantidad': ele_shoplist.quantity,
+                    'medida': ele_shoplist.presentation.measurement_quantity,
+                    'unidad': ele_shoplist.presentation.measurement_unit,
+                    'costo': ele_shoplist.presentation.presentation_cost * ele_shoplist.quantity,
+                    'status': ele_shoplist.status
+                }
+
+                shop_list_array.append(list_object)
+
+            list_naive_array = {
+                'shop_list': shop_list_array
+            }
+            return JsonResponse(list_naive_array)
+
+
 
     else:
         form = PresentationForm()
-
-    all_presentations = Presentation.objects.all()
 
     for sup in supps:
         element_object = {
@@ -442,6 +468,7 @@ def shop_list(request):
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
     context = {
+        'shop_list': shop_list,
         'form': form,
         'required_supplies': products_helper.get_required_supplies(),
         'title': title,

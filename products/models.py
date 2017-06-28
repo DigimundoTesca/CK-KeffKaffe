@@ -166,7 +166,7 @@ class Presentation(models.Model):
     presentation_cost = models.FloatField(default=0)
 
     def __str__(self):
-        return str(self.measurement_quantity)
+        return '%s %s %s' % (self.supply, self.measurement_quantity, self.measurement_unit)
 
 
     class Meta:
