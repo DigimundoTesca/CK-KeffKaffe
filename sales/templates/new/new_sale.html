@@ -68,9 +68,11 @@
                           {% endif %}
                         {% endfor %}
                       </div>
+                      <!-- TODO: Implements functions
                       <div class="desc-prod-cont col-xs-12">
                         <button class="btn-desc btn btn-outline-info btn-block">Precio empleado</button>
                       </div>
+                      -->
                     {% endif %}
                   {% endif %}
                 {% endfor %}
@@ -100,9 +102,11 @@
                           {% endif %}
                         {% endfor %}
                       </div>
+                      <!-- TODO: Implements functions
                       <div class="desc-prod-cont col-xs-12">
                         <button class="btn-desc btn btn-outline-info btn-block">Precio empleado</button>
                       </div>
+                      -->
                     {% endif %}
                   {% endif %}
                 {% endfor %}
@@ -671,6 +675,10 @@
         addObjectToTicket();
       });
 
+      $('.btn-desc').click(function(event) {
+
+      });
+
       /**
        * Controls the actions to the btn-remove icon
        */
@@ -1175,6 +1183,7 @@
         resetTicketList();
         resetTicketObject();
       });
+
     });
   </script>
 
