@@ -7,12 +7,7 @@
   {{ page_title }}
 {% endblock %}
 
-{% block link %}
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">
-{% endblock link %}
-
 {% block content %}
-
   <!-- Container -->
   <div class="container-fluid container-sales">
     <div class="row">
@@ -68,11 +63,10 @@
                           {% endif %}
                         {% endfor %}
                       </div>
-                      <!-- TODO: Implements functions
                       <div class="desc-prod-cont col-xs-12">
                         <button class="btn-desc btn btn-outline-info btn-block">Precio empleado</button>
                       </div>
-                      -->
+
                     {% endif %}
                   {% endif %}
                 {% endfor %}
@@ -102,11 +96,9 @@
                           {% endif %}
                         {% endfor %}
                       </div>
-                      <!-- TODO: Implements functions
                       <div class="desc-prod-cont col-xs-12">
                         <button class="btn-desc btn btn-outline-info btn-block">Precio empleado</button>
                       </div>
-                      -->
                     {% endif %}
                   {% endif %}
                 {% endfor %}
