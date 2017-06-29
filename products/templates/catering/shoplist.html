@@ -1,7 +1,7 @@
 {% extends "base/base_nav_footer.html" %}
 {% load static %}
 {% block link %}
-    <link rel="stylesheet" href="{% static "css/shop_list.css" %}">
+    <link rel="stylesheet" href="{% static 'css/shop_list.css' %}">
 {% endblock link %}
 {% block content %}
 
@@ -9,7 +9,7 @@
         <div class="row">
             <div class="col-md-12">
                 <button class="btn_view_lists offset-md-2 col-md-3 ">
-                    Ver Listas
+                    Listas de compras
                 </button>
                 <button class="btn_pre_list offset-md-2 col-md-3 ">
                     Lista Manual
@@ -49,6 +49,7 @@
                         <th>Presentacion</th>
                         <th>Costo</th>
                         <th>Status</th>
+                        <th>button</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -56,9 +57,6 @@
                     </tbody>
                 </table>
             </div>
-            <button class="btn-supply-list offset-md-8 col-md-2 ">
-                Completar Lista
-            </button>
         </div>
     </div>
     <div class="container container_manual_list">
@@ -218,12 +216,17 @@
         </div>
     </div>
 
+
+
 {% endblock content %}
 {% block javascript %}
     <script type="text/javascript" charset="utf-8">
 
-        $(document).ready(function() {
+        function listen(){
 
+        }
+
+        $(document).ready(function() {
             function get_cookie(name) {
                 let cookie_value = null;
                 if (document.cookie && document.cookie !== '') {
@@ -238,11 +241,11 @@
                 }
                 return cookie_value;
             }
-
             var list_array = [];
             var status = 0;
-
             var shop_list;
+
+
 
             $(".btn-supply-list").on("click",function (e){
                 console.log(shop_list);
@@ -279,11 +282,8 @@
                             type: "success",
                             showConfirmButton: false
                         });
-
                         html_list_detail = "";
-
                         shop_list = result['shop_list'];
-
                         for (x=0;x<shop_list.length;x++){
                             html_list_detail +=
 
@@ -296,12 +296,16 @@
                             '</tr>'
                         }
 
-
                         $("#TableShopListDetail tbody tr").remove();
-                        $("#TableShopListDetail tbody ")
+                        var body = $("#TableShopListDetail").find("tbody")
                         .append($(
                             html_list_detail
                         ));
+
+                        body.on("click",".shoplistdetail_element",function(e){
+                            var name = $(this).parent().child()
+
+                        });
 
 
                     },
@@ -411,7 +415,6 @@
             });
 
             $("#btn_save_list").on("click",function (e) {
-
                 let csrf_token = get_cookie('csrftoken');
                 let JSONSale = JSON.stringify(list_array);
                 if(list_array.length>=1){
