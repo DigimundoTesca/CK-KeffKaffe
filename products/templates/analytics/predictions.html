@@ -1,6 +1,6 @@
 {% extends "base/base_nav_footer.html" %}
 
-{% block link %}    
+{% block link %}
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" />
 {% endblock link %}
 
@@ -32,10 +32,10 @@
 </script>
 
 <script type="text/javascript">
-  $(function() {   
-    /** 
+  $(function() {
+    /**
     * Gets the csrf cookie from cache
-    */ 
+    */
     function get_cookie(name) {
       let cookie_value = null;
       if (document.cookie && document.cookie !== '') {
@@ -76,7 +76,7 @@
       let csrf_token = get_cookie('csrftoken');
 
       $.ajax({
-        url: '{% url "products:products_test" %}',
+        url: '{% url "products:predictions" %}',
         type: 'POST',
         data: {
           'initial_date': initial_date,
