@@ -468,7 +468,90 @@ def shop_list(request):
     context = {
         'shop_list': shop_list,
         'form': form,
-        'required_supplies': products_helper.get_required_supplies(),
+        'title': title,
+        'supply_list': supply_list,
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
+
+@login_required(login_url='users:login')
+def new_shoplist(request):
+
+    products_helper = ProductsHelper()
+    supps = products_helper.get_all_supplies()
+    all_presentations = Presentation.objects.all()
+
+    shop_list = ShopList.objects.all()
+
+    supply_list = []
+
+    if request.method == 'POST':
+        form = PresentationForm(request.POST, request.FILES)
+        if form.is_valid():
+            presentation = form.save(commit=False)
+            presentation.save()
+            return redirect('/warehouse/shoplist')
+
+        if request.POST['type'] == 'shop_list':
+            shop_l = json.loads(request.POST.get('shop_list'))
+
+            new_shop_list = ShopList.objects.create()
+            new_shop_list.save()
+
+            for item in shop_l:
+                sel_sup = Supply.objects.get(pk=item['sup_pk'])
+                sel_pre = Presentation.objects.get(pk=item['pre_pk'])
+                ShopListDetail.objects.create(shop_list=new_shop_list, supply=sel_sup, presentation=sel_pre, quantity=item['Cantidad'])
+
+        if request.POST['type'] == 'load_list':
+            element = json.loads(request.POST.get('load_list'))
+            list_shoplistdetail = ShopListDetail.objects.filter(shop_list_id=element)
+
+            shop_list_array = []
+
+            for ele_shoplist in list_shoplistdetail:
+                list_object = {
+                    'nombre': ele_shoplist.supply.name,
+                    'cantidad': ele_shoplist.quantity,
+                    'medida': ele_shoplist.presentation.measurement_quantity,
+                    'unidad': ele_shoplist.presentation.measurement_unit,
+                    'costo': ele_shoplist.presentation.presentation_cost * ele_shoplist.quantity,
+                    'status': ele_shoplist.status
+                }
+
+                shop_list_array.append(list_object)
+
+            list_naive_array = {
+                'shop_list': shop_list_array
+            }
+            return JsonResponse(list_naive_array)
+
+    else:
+        form = PresentationForm()
+
+    for sup in supps:
+        element_object = {
+            'pk': sup.pk,
+            'name': sup.name,
+            'imagen': sup.image.url,
+            'unidad': sup.self_measurement_conversion,
+            'medida': sup.self_unit_conversion,
+            'costo': sup.presentation_cost,
+        }
+        supp_presentations = all_presentations.filter(supply=sup)
+        supp_pres = []
+
+        for supp_pre in supp_presentations:
+            supp_pres.append(supp_pre)
+
+        element_object['presentations'] = supp_pres
+        supply_list.append(element_object)
+
+    template = 'catering/new_shoplist.html'
+    title = 'Lista de Compras'
+    context = {
+        'shop_list': shop_list,
+        'form': form,
         'title': title,
         'supply_list': supply_list,
         'page_title': PAGE_TITLE
