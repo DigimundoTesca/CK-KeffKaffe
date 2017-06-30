@@ -5,18 +5,6 @@
 {% endblock link %}
 {% block content %}
 
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <button class="btn_view_lists offset-md-2 col-md-3 ">
-                    Listas de compras
-                </button>
-                <button class="btn_pre_list offset-md-2 col-md-3 ">
-                    Lista Manual
-                </button>
-            </div>
-        </div>
-    </div>
     <div class="container container_view_lists">
         <div class="col-md-12">
             <div class="list_display col-md-6">
@@ -49,7 +37,6 @@
                         <th>Presentacion</th>
                         <th>Costo</th>
                         <th>Status</th>
-                        <th>button</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -120,54 +107,6 @@
             </button>
         </div>
     </div>
-    <div class="container container_pred_list">
-        <div class ="pred_list">
-            <table class="table table-striped table-hover" align="right">
-                <thead class="thead-inverse">
-                <tr>
-                    <th>Nombre</th>
-                    <th>Requeridos</th>
-                    <th>Stock</th>
-                    <th>Por Comprar</th>
-                    <th>Proveedor</th>
-                    <th>Cantidad x Unidad</th>
-                    <th>Costo x Unidad</th>
-                    <th>Costo Total</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for required in required_supplies %}
-                    {% if required.measurement_quantity == 1  %}
-                        {% if required.stock <= 50 %}
-                            <tr class="table-danger">
-                                {% elif required.stock <= 25 %}
-                            <tr class="table-warning">
-                                {% elif required.stock <= 10 %}
-                            <tr class="table-success">
-                        {% endif %}
-                    {% else %}
-                    {% if required.stock <= 500 %}
-                        <tr class="table-danger">
-                            {% elif required.stock <= 1000 %}
-                        <tr class="table-warning">
-                            {% elif required.stock <= 2000 %}
-                        <tr class="table-success">
-                    {% endif %}
-                    {% endif %}
-                <td>{{ required.name }}</td>
-                <td>{{ required.quantity }} {{ required.measurement_unit }}</td>
-                <td>{{ required.stock }} {{ required.measurement_unit }}</td>
-                <td>{{ required.required }} {{ required.measurement_unit }}</td>
-                <td>{{ required.supplier }}</td>
-                <td>{{ required.supplier_quantity }} {{ required.supplier_unit }}</td>
-                <td>${{ required.cost }}</td>
-                <td>${{ required.full_cost }}</td>
-                    <tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
 
     <!-- The Modal -->
     <div class="modal fade" id="NewPresentation" role="dialog" >
@@ -203,28 +142,31 @@
     </div>
 
     <!-- Modal-for-Catering  -->
-    <div class="modal fade" id="AddToWarehouse" roles="dialog">
-        <div class="moda-dialog">
+    <div class="modal fade" id="AddToWarehouse" role="dialog" >
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-
+                    <h2 align="center">Agregar al Almacen</h2>
                 </div>
-                <div class="modal-body">
-
+                <div class="modal-body ">
+                    <p class="question_add"></p>
+                    <p><label>Cantidad:</label> <input class="picker" type="number" value="0" step="any"/></p>
                 </div>
             </div>
         </div>
     </div>
 
 
+    <div class="popout">
+        <div class="FAB" id="fab-add-supply">
+            <i class="material-icons">add</i>
+        </div>
+    </div>
+
 
 {% endblock content %}
 {% block javascript %}
     <script type="text/javascript" charset="utf-8">
-
-        function listen(){
-
-        }
 
         $(document).ready(function() {
             function get_cookie(name) {
@@ -246,17 +188,13 @@
             var shop_list;
 
 
-
-            $(".btn-supply-list").on("click",function (e){
-                console.log(shop_list);
+            {#Display creation list#}
+            $(".FAB").on("click",function (e) {
+                $(".container_manual_list").slideToggle(500);
+                $(".container_view_lists").slideToggle(500);
             });
 
-            $(".btn_view_lists").on("click",function (e) {
-                $(".container_pred_list").hide(500);
-                $(".container_manual_list").hide(500);
-                $(".container_view_lists").show(500);
-            });
-
+            {#Load and Show elements from ShopLists#}
             $(".list-element").on("click",function(e){
 
                $(".list-element").css('backgroundColor', '#ffffff');
@@ -287,12 +225,12 @@
                         for (x=0;x<shop_list.length;x++){
                             html_list_detail +=
 
-                            '<tr class="shoplistdetail_element">' +
-                                '<td>' + shop_list[x].nombre + '</td>' +
-                                '<td>' + shop_list[x].cantidad + '</td>' +
-                                '<td>' + shop_list[x].medida + " " + shop_list[x].unidad +'</td>' +
-                                '<td>' + shop_list[x].costo + ' $</td>' +
-                                '<td>' + shop_list[x].status + '</td>' +
+                            '<tr id="id-'+x+'" class="shoplistdetail_element">' +
+                                '<td class="sld_nombre">' + shop_list[x].nombre + '</td>' +
+                                '<td class="sld_cantidad">' + shop_list[x].cantidad + '</td>' +
+                                '<td class="sld_medida">' + shop_list[x].medida + " " + shop_list[x].unidad +'</td>' +
+                                '<td class="sld_costo">' + shop_list[x].costo + ' $</td>' +
+                                '<td class="sld_status">' + shop_list[x].status + '</td>' +
                             '</tr>'
                         }
 
@@ -303,7 +241,22 @@
                         ));
 
                         body.on("click",".shoplistdetail_element",function(e){
-                            var name = $(this).parent().child()
+                            var sld_ele_id = $(this).attr('id').substring(3);
+                            var name = shop_list[sld_ele_id].nombre;
+                            var cantidad = shop_list[sld_ele_id].cantidad;
+                            var medida = shop_list[sld_ele_id].medida;
+                            var unidad = shop_list[sld_ele_id].unidad;
+                            var costo = shop_list[sld_ele_id].costo;
+                            var status = shop_list[sld_ele_id].status;
+
+                            $("#AddToWarehouse").modal({show:true});
+
+                            $(".question_add").html("Agregar  "+name+" "+medida+" "+unidad);
+                            $(".picker").attr({
+                                "max" : cantidad,
+                                "min" : 1
+                            });
+
 
                         });
 
@@ -322,10 +275,10 @@
 
             });
 
-            $(".container_view_lists").hide();
+            {#Hide Creation of Manual List#}
+            $(".container_manual_list").hide();
 
-            $(".container_pred_list").hide();
-
+            {#Display form to Save ShopList#}
             $(".btn_pre_list").on("click",function(e){
 
                 if(status===0){
@@ -344,6 +297,7 @@
 
             });
 
+            {#Display form to Save ShopList#}
             $(".btn_pres").on("click",function(e){
 
                 var element = $(this);
@@ -399,9 +353,10 @@
                         .append($(
                             html_list
                         ));
-/**/
+
             });
 
+            {#Display form to Save ShopList#}
             $(".btn_add").on("click",function(e){
                 //Show modal
                 $("#NewPresentation").modal({show:true});
@@ -414,6 +369,7 @@
 
             });
 
+            {#Display form to Save ShopList#}
             $("#btn_save_list").on("click",function (e) {
                 let csrf_token = get_cookie('csrftoken');
                 let JSONSale = JSON.stringify(list_array);
