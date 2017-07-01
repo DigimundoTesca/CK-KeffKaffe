@@ -466,7 +466,7 @@ small {
   margin-bottom: 1rem;
   transition: all 0.3s ease;
 }
-.container-sales button.btn-desc {
+.container-sales button#btn-desc {
   overflow:hidden;
   white-space:nowrap;
   text-overflow: ellipsis;
@@ -496,8 +496,8 @@ small {
   height: 4rem;
 }
 .container-sales .group-sales .card-scroll-orders {
-  min-height: calc(100vh - 25rem);
-  max-height: calc(100vh - 25rem);
+  min-height: calc(100vh - 30rem);
+  max-height: calc(100vh - 30rem);
   padding: 0;
 }
 .container-sales .group-sales .card-scroll-orders ul.list-group {
