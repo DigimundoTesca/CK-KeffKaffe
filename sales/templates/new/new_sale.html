@@ -182,16 +182,27 @@
                 </div>
               </div>
             </div>
-            <div class="card card-scroll" id="ticket-description">
-              <h3>No olvides recordarle al cliente las promociones</h3>
+            <div class="card card-scroll pt-1 pb-1" id="ticket-description">
+              <h3 class="col-xs-12 text-xs-center">No olvides recordarle al cliente las promociones</h3>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <div class="container">
             <div class="row">
-              <button type="submit" id="btn-pago-tarjeta" class="btn btn-primary col-xs-4 push-xs-3 btn-printer">Pago con tarjeta</button>
-              <button type="submit" id="btn-pago-efectivo" class="btn btn-success col-xs-4 push-xs-4 btn-printer">Pago con efectivo</button>
+              <div class="col-xs-4">
+                <label class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input">
+                  <span class="custom-control-indicator"></span>
+                  <span class="custom-control-description">Precio empleado</span>
+                </label>
+              </div>
+              <div class="col-xs-4">
+                <button type="submit" id="btn-pago-tarjeta" class="btn btn-lg btn-block btn-primary btn-printer">Pago con tarjeta</button>
+              </div>
+              <div class="col-xs-4">
+                <button type="submit" id="btn-pago-efectivo" class="btn btn-lg btn-block btn-success btn-printer">Pago con efectivo</button>
+              </div>
             </div>
           </div>
         </div>

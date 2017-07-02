@@ -466,11 +466,6 @@ small {
   margin-bottom: 1rem;
   transition: all 0.3s ease;
 }
-.container-sales button#btn-desc {
-  overflow:hidden;
-  white-space:nowrap;
-  text-overflow: ellipsis;
-}
 .container-sales .group-sales button#btn-order:hover {
   background-color: #43afa0;
   color: #fefefe;
@@ -496,8 +491,8 @@ small {
   height: 4rem;
 }
 .container-sales .group-sales .card-scroll-orders {
-  min-height: calc(100vh - 30rem);
-  max-height: calc(100vh - 30rem);
+  min-height: calc(100vh - 25rem);
+  max-height: calc(100vh - 25rem);
   padding: 0;
 }
 .container-sales .group-sales .card-scroll-orders ul.list-group {
