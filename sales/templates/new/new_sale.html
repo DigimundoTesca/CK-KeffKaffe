@@ -25,7 +25,6 @@
             </p>
           </div>
         </div>
-        <button id="btn-desc" class="btn btn-primary btn-lg btn-block col-xs-12 mb-1 pt-1 pb-1">Precio de empleado</button>
         <div class="card col-sm-12 card-scroll-orders card-scroll card-outline-info">
           <div class="card-block products-block">
             <div class="row">
@@ -660,30 +659,6 @@
           addObjectToJSON(id, quantity, cost, type_object);
         }
         addObjectToTicket();
-      });
-
-      $('#btn-desc').click(function(event) {
-        let productsCostCont = $('.product-container');
-
-        if ( Ticket.employe_price ) {
-          Ticket.employe_price = false;
-          productsCostCont.each(function(index, item) {
-            let productId = item.id;
-            if(productId.indexOf('cartridge') !== -1) {
-              let productCost = parseFloat(item.getElementsByClassName('product-cost')[0].innerHTML) * 2;
-              item.getElementsByClassName('product-cost')[0].innerHTML = productCost.toFixed(2);
-            }
-          });
-        } else {
-          Ticket.employe_price = true;
-          productsCostCont.each(function(index, item) {
-            let productId = item.id;
-            if(productId.indexOf('cartridge') !== -1) {
-              let productCost = parseFloat(item.getElementsByClassName('product-cost')[0].innerHTML) / 2;
-              item.getElementsByClassName('product-cost')[0].innerHTML = productCost.toFixed(2);
-            }
-          });
-        }
       });
 
       /**
