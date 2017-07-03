@@ -67,7 +67,6 @@
         </div>
     </div>
 
-
     <div class="popout">
         <div class="FAB" id="fab-add-shoplist">
             <i class="material-icons">add</i>
@@ -93,12 +92,10 @@
                 }
                 return cookie_value;/**/
             }
-            var list_array = [];
-            var status = 0;
-            var shop_list;
 
+            var shop_list;
             //Display creation list
-            $('#fab-add-shoplist').click(function(event) {
+            $('.FAB').click(function(event) {
                 location.href = '/warehouse/new_shoplist/';
             });
 
@@ -182,9 +179,6 @@
                 });
 
             });
-
-
-
 
 
         });

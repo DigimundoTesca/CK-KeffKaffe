@@ -51,12 +51,6 @@
                     </tbody>
                 </table>
             </div>
-            <button id="btn_save_list" class="offset-md-2 col-md-2 btn btn-primary d-flex">
-                <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Guardar Lista</span>
-            </button>
-            <button id="btn-save-ticket-csv" class="offset-md-4 col-md-2 btn btn-primary d-flex">
-                <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
-            </button>
         </div>
     </div>
 
@@ -95,22 +89,41 @@
 
     <!--FloatingButton-->
     <div class="popout">
-        <div class="FAB" id="fab-add-supply">
+        <div class="FAB" id="fab-save-shoplist">
             <i class="material-icons">add</i>
         </div>
     </div>
+
 
 {% endblock content %}
 {% block javascript %}
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function() {
+
+            function get_cookie(name) {
+                let cookie_value = null;
+                if (document.cookie && document.cookie !== '') {
+                    let cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        let cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookie_value;/**/
+            }
+
+            var list_array = [];
+            var status = 0;
             //Add presentation to ShopList
-            $(".btn_pres").on("click",function(e){
+            $(".pres_btn").on("click",function(e){
 
                 var element = $(this);
-                var element_sup_pk = element.parent().parent().parent().parent().attr('id').substring(16);
-                var element_name = element.parent().parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
-                var element_quantity = element.parent().children('.info_pres').attr('id');
+                var element_sup_pk = element.parent().parent().parent().attr('id').substring(16);
+                var element_name = element.parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
+                var element_quantity = element.children('.info_pres').attr('id');
                 var element_wh = element_quantity.split(',');
                 var element_prese_pk = element_wh[0];
                 var element_unit = element_wh[1];
@@ -177,12 +190,12 @@
             });
 
             //Display form to Save ShopList
-            $("#btn_save_list").on("click",function (e) {
+            $(".FAB").on("click",function (e) {
                 let csrf_token = get_cookie('csrftoken');
                 let JSONSale = JSON.stringify(list_array);
                 if(list_array.length>=1){
                     $.ajax({
-                        url: '{% url "products:shoplist" %}',
+                        url: '{% url "products:new_shoplist" %}',
                         type: 'POST',
                         data: {
                             'type' : 'shop_list',
@@ -198,7 +211,6 @@
                                 type: "success",
                                 showConfirmButton: false,
                             });
-                            location.reload(true);
                         },
                         error: function(result, jqXHR, textStatus, errorThrown) {
                             swal({
