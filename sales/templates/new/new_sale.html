@@ -15,7 +15,7 @@
         <div class="card col-sm-12 card-outline-info">
           <div class="info-sale">
             <span class="text-total left">Total: </span>
-            <p class="text-xs-center">
+            <p class="text-xs-center" id="total-cart">
               <span class="text-price align-top" id="s-total-price">$ </span>
               <span id="total-price">
               <span class="text-price align-top" id="int-total-price">0</span>
@@ -27,7 +27,7 @@
         </div>
         <div class="col-xs-12 card card-outline-info promo-check-container">
           <label class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input">
+            <input id="checkbox-employee" type="checkbox" class="custom-control-input">
             <span class="custom-control-indicator"></span>
             <span class="custom-control-description">Precio de empleado</span>
           </label>
@@ -244,7 +244,7 @@
         'extra_ingredients_cartridges': [],
         'packages': [],
         'payment_type': 'cash',
-        'employe_price': false,
+        'employeePrice': false,
       };
 
       let PackageProduct = {
@@ -318,10 +318,22 @@
 
       /**
        * Returns the product type initials
+       * @param  {string} large_type_id id attribute of the selected product
        */
       function get_type_product(large_type_id){
         large_type_id = large_type_id.substring(3,7);
         return large_type_id;
+      }
+
+      /**
+       * Changes the total ticket with the employee promo status of the ticket
+       */
+      function setsTicketEmployeePromo() {
+        if (Ticket.employeePrice) {
+          $('#total-cart').addClass('text-info');
+        } else {
+          $('#total-cart').removeClass('text-info');
+        }
       }
 
       /**
@@ -1153,7 +1165,7 @@
       /**
        * Cancels  the sale and resets the ticket object
        */
-      $(this).on('click', '#btn-orders-reset', function(event) {
+      $('#btn-orders-reset').on('click', function(event) {
         function resetTicketObject() {
           Ticket.cartridges.length = 0;
           Ticket.packages.length = 0;
@@ -1179,6 +1191,17 @@
         resetTicketObject();
       });
 
+      /**
+       * Changes the employee promo status from the ticket object
+       */
+      $('#checkbox-employee').on('change', function(event) {
+        if ( Ticket.employeePrice ) {
+          Ticket.employeePrice = false;
+        } else {
+          Ticket.employeePrice = true;
+        }
+        setsTicketEmployeePromo();
+      });
     });
   </script>
 
