@@ -408,6 +408,13 @@ small {
 .container-sales {
   margin: 0 0.5rem;
 }
+.container-sales .promo-check-container {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.container-sales .promo-check-container label {
+  margin: 0.2rem 0;
+}
 .container-sales-reports .sales-graphics {
   margin-bottom: 1rem;
 }
@@ -747,7 +754,6 @@ small {
 }
 .modal#modal-package .modal-content .card-scroll,
 .modal#modal-order .modal-content .card-scroll{
-  display: flex;
   height: 310px;
 }
 .modal#modal-package .modal-content .modal-header  {
