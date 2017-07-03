@@ -329,10 +329,22 @@
        * Changes the total ticket with the employee promo status of the ticket
        */
       function setsTicketEmployeePromo() {
+        console.log(Ticket);
+        let totalCart = 0,
+          totalCartridgesCart = 0,
+          discountRate = 0,
+          totalCartridgesCartDiscount = 0;
+
         if (Ticket.employeePrice) {
-          $('#total-cart').addClass('text-info');
-        } else {
-          $('#total-cart').removeClass('text-info');
+          for (var i = 0; i < Ticket.cartridges.length; i++) {
+            totalCart += parseFloat(Ticket.cartridges[i].price);
+            totalCartridgesCart += parseFloat(Ticket.cartridges[i].price);
+          }
+          for (var i = 0; i < Ticket.packages.length; i++) {
+            totalCart += parseFloat(Ticket.packages[i].price);
+          }
+          totalCartridgesCartDiscount = totalCartridgesCart / 2;
+          discountRate = totalCartridgesCartDiscount * 100 / totalCart;
         }
       }
 
@@ -1197,8 +1209,10 @@
       $('#checkbox-employee').on('change', function(event) {
         if ( Ticket.employeePrice ) {
           Ticket.employeePrice = false;
+          $('#total-cart').removeClass('text-info');
         } else {
           Ticket.employeePrice = true;
+          $('#total-cart').addClass('text-info');
         }
         setsTicketEmployeePromo();
       });
