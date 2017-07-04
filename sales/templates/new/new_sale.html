@@ -26,13 +26,7 @@
             </p>
           </div>
         </div>
-        <div class="col-xs-12 card card-outline-info promo-check-container">
-          <label class="custom-control custom-checkbox">
-            <input id="checkbox-employee" type="checkbox" class="custom-control-input">
-            <span class="custom-control-indicator"></span>
-            <span class="custom-control-description">Precio de empleado</span>
-          </label>
-        </div>
+        <button type="button" class="btn btn-lg col-xs-12 btn-primary mb-1" id="btn-employee-promo">Promoción de empleado</button>
         <div class="card col-sm-12 card-scroll-orders card-scroll card-outline-info">
           <div class="card-block products-block">
             <div class="row">
@@ -237,8 +231,8 @@
       </div>
     </div>
   </div>
-
 {% endblock content %}
+
 {% block javascript %}
   <script type="text/javascript" charset="utf-8">
     $(document).ready(function() {
@@ -247,7 +241,8 @@
         'extra_ingredients_cartridges': [],
         'packages': [],
         'payment_type': 'cash',
-        'employeePrice': false,
+        'employeePriceStatus': false,
+        'employeePrice': 0,
       };
 
       let PackageProduct = {
@@ -329,25 +324,69 @@
       }
 
       /**
+       * Calculates the total of the cartridges in the ticket object
+       * @return {number} total cartridges ticket
+       */
+      function getTotalCartridges() {
+        let totalCartridges = 0;
+
+        for (var i = 0; i < Ticket.cartridges.length; i++) {
+          totalCartridges += parseFloat(Ticket.cartridges[i].price);
+        }
+
+        return totalCartridges;
+      }
+
+      /**
+       * Calculates the total of the packages in the ticket object
+       * @return {number} total packages ticket
+       */
+      function getTotalPackages() {
+        let totalPackages = 0;
+
+        for (var i = 0; i < Ticket.packages.length; i++) {
+          totalPackages += parseFloat(Ticket.packages[i].price);
+        }
+
+        return totalPackages;
+      }
+
+
+      /**
+      * Obtains the total price of the ticket object
+      * @return {number} total ticket objetct
+      */
+      function getTotalTicket() {
+        let totalCart = 0;
+
+        totalCart += getTotalCartridges();
+        totalCart += getTotalPackages();
+
+        return totalCart;
+      }
+
+      /**
        * Changes the total ticket with the employee promo status of the ticket
        */
       function setsTicketEmployeePromo() {
-        console.log(Ticket);
-        let totalCart = 0,
-          totalCartridgesCart = 0,
-          discountRate = 0,
-          totalCartridgesCartDiscount = 0;
+        let totalCart = getTotalTicket(),
+            totalCartridgesCart = getTotalCartridges(),
+            totalPackagesCart = getTotalPackages(),
+            discountRate = 0,
+            totalCartridgesCartDiscount = 0,
+            totalTicket = 0;
 
-        if (Ticket.employeePrice) {
-          for (var i = 0; i < Ticket.cartridges.length; i++) {
-            totalCart += parseFloat(Ticket.cartridges[i].price);
-            totalCartridgesCart += parseFloat(Ticket.cartridges[i].price);
-          }
-          for (var i = 0; i < Ticket.packages.length; i++) {
-            totalCart += parseFloat(Ticket.packages[i].price);
-          }
-          totalCartridgesCartDiscount = totalCartridgesCart / 2;
+        if (Ticket.employeePriceStatus) {
+          totalCartridgesCartDiscount = totalCartridgesCart / 2
+          totalTicket = totalPackagesCart + totalCartridgesCartDiscount;
           discountRate = totalCartridgesCartDiscount * 100 / totalCart;
+
+          $('#int-total-price').text(totalTicket.toFixed(2).split('.')[0])
+          $('#dec-total-price').text(totalTicket.toFixed(2).split('.')[1])
+
+        } else {
+          $('#int-total-price').text(totalCart.toFixed(2).split('.')[0])
+          $('#dec-total-price').text(totalCart.toFixed(2).split('.')[1])
         }
       }
 
@@ -1008,7 +1047,7 @@
        * Shows the modal to do the sale
        */
       $(this).on('click', '#btn-order', function(event) {
-        if (Ticket.employeePrice) {
+        if (Ticket.employeePriceStatus) {
           $('#promo-employee-callout').removeClass('hidden');
         } else {
           $('#promo-employee-callout').addClass('hidden');
@@ -1213,14 +1252,19 @@
 
       /**
        * Changes the employee promo status from the ticket object
+       * First changes the styles and later calls the setsTicketEmployeePromo() function
        */
-      $('#checkbox-employee').on('change', function(event) {
-        if ( Ticket.employeePrice ) {
-          Ticket.employeePrice = false;
+      $('#btn-employee-promo').on('click', function(event) {
+        if ( Ticket.employeePriceStatus ) {
+          Ticket.employeePriceStatus = false;
           $('#total-cart').removeClass('text-info');
+          $('#btn-employee-promo').addClass('btn-primary');
+          $('#btn-employee-promo').removeClass('btn-info');
         } else {
-          Ticket.employeePrice = true;
+          Ticket.employeePriceStatus = true;
           $('#total-cart').addClass('text-info');
+          $('#btn-employee-promo').removeClass('btn-primary');
+          $('#btn-employee-promo').addClass('btn-info');
         }
         setsTicketEmployeePromo();
       });

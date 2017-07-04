@@ -468,6 +468,9 @@ small {
 .container-sales-reports .sales-details table.table-sales-details span.sales-actions:hover > i {
   opacity: 0.8;
 }
+.container-sales #btn-employee-promo {
+  height: 4rem;
+}
 .container-sales .group-sales button#btn-orders-reset{
   height: 4rem;
   margin-bottom: 1rem;
@@ -506,8 +509,8 @@ small {
   height: 4rem;
 }
 .container-sales .group-sales .card-scroll-orders {
-  min-height: calc(100vh - 25rem);
-  max-height: calc(100vh - 25rem);
+  min-height: calc(100vh - 30rem);
+  max-height: calc(100vh - 30rem);
   padding: 0;
 }
 .container-sales .group-sales .card-scroll-orders ul.list-group {
