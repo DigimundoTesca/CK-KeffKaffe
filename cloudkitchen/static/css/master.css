@@ -243,6 +243,11 @@ small {
 .br {
   height: 2em;
 }
+.btn {
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow: ellipsis;
+}
 .btn-extra-ing {
   width: 100%;
   text-overflow:ellipsis;
