@@ -23,6 +23,8 @@
       <canvas id="nutChar"></canvas>
     </div>
     <div class='container-fluid col-xl-8 label-container' id="label-box" style="margin-top: 1cm;">
+      <span>
+      </span>
     </div>
   </div>
   <div class="col-xs-12 col-md-8">
@@ -74,6 +76,7 @@
     let all_categories = JSON.parse('{{ all_categories | safe }}');
     let nutChar, quantity_bar;
     let itsEmpty;
+    let labelName = [];
 
     let neutralColor = [
       '#FFFFF',
@@ -177,6 +180,10 @@
       return labelList;
     }
 
+    function deleteLabels(){
+      console.log('asdljasdlkljksd');
+    }
+
     quantity_bar = new Chart(bar_ctx, {
       type: 'line',
       data: {
@@ -259,22 +266,15 @@
           let food = result['food_sold'];
 
           if (short_element == 'dri'){
+            $(".label-container").children('span').remove();
             drinks_data = fillDrinksNutChar();
             labels = getLabelDrinkNutChar();
             for(i = 0; i < drinksAux.length; i++){
+              deleteLabels();
               nutChar.data.labels[i] = labels[i]['name'];
               quantity_bar.data.labels[i] = labels[i]['name'];
-              let hola = $('.label-container').attr('id');
-              console.log(hola);
-              if (labels[i]['name'] = labels[i]['name']){
-                $('#label-box').append('<span class="label-name">' +
-               ' ' + labels[i]['name'] + ': ' + labels[i]['quantity']
-                + '</span>' + '<br>');
-                break;
-              }
-              else {
-                break
-              }
+              $('#label-box').append('<span class="label-name">' +
+               ' ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] + '</span>');
             }
               nutChar.data.datasets[0].data = drinks_data;
               quantity_bar.data.datasets[0].data = drinks_data;
@@ -282,22 +282,15 @@
               quantity_bar.update();
           }
           else if(short_element == 'foo'){
+            $(".label-container").children('span').remove();
             labels = getLabelFoodNutChar();
-            let id = $(this).parents('.label-container').attr('id');
-            id = toString(id);
             food_data = fillFoodNutChar();
-            for(i = 0; i < drinksAux.length; i++){
+            for(i = 0; i < foodAux.length; i++){
               nutChar.data.labels[i] = labels[i]['name'];
-              if (labels[i]['name'] == labels[i]['name']){
-                break;
-              }
-              else {
-                $('#label-box').append('<span class="label-name" id=label-' + labels[i]['id'] + '>' +
-               ' ' + labels[i]['name'] + ': ' + labels[i]['quantity'] +
+              $('#label-box').append('<span class="label-name">' +
+               ' ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] +
                 '</span>' + '<br>');
-              }
             }
-              console.log(id);
               nutChar.data.datasets[0].data = food_data;
               nutChar.update();
           }
