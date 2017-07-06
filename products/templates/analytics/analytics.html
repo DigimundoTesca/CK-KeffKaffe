@@ -15,6 +15,12 @@
       <option value="drinks_sold" id="drinksValue">Bebidas</option>
       <option value="food_sold" id="food_value">Platillos</option>
     </select>
+
+    esa es la idea general, ahora materializala en tu cerebro men
+    <select class="date-week">
+      <option>
+      </option>
+    </select>
   </div>
 </div>
 <div class="row container-fluid">
@@ -78,9 +84,7 @@
     let itsEmpty;
     let labelName = [];
 
-    let neutralColor = [
-      '#FFFFF',
-    ]
+    let neutralColor = ['#FFFFF',]
     let colorList = [
       '#EF5350',
       '#E91E63',
@@ -98,9 +102,12 @@
       '#EEFF41',
       '#827717',
     ];
+
     /**
-    * Gets the csrf cookie from cache
-    */
+     * Gets the csrf cookie from cache
+     *
+     * @param {String} name Cookie name
+     */
     function getCookie(name) {
       let cookie_value = null;
       if (document.cookie && document.cookie !== '') {
@@ -116,20 +123,16 @@
       return cookie_value;
     }
 
-    function get_random_list(size){
-      let aux_list = [];
-      for (let i = 0; i < size; i++) {
-        aux_list[i] = parseInt(Math.random() * 10);
-      }
-      return aux_list;
-    }
-
+    /**
+     * This function fills the doughnut chart with the drinks sold information
+     * @return {String[]} productsList Returns the drinks sold list
+     */
     function fillDrinksNutChar(){
-      drinksAux = category_sold['drinks_sold'];
+      let drinksAux = category_sold['drinks_sold'];
       let foodsAux = category_sold['food_sold'];
       let drinksValue = $('#drinksValue').val();
-      productsList = [];
-
+      let productsList = [];
+      
       for(let i = 0; i < drinksAux.length; i++){
         drinksQuant = drinksAux[i]['quantity'];
         productsList[i] = drinksQuant;
@@ -137,11 +140,15 @@
       return productsList;
     }
 
+    /**
+     * This function fills the chart with the sold food information
+     *
+     * @return {String[]} productsList Returns the sold food list
+     */
     function fillFoodNutChar(){
-
-      foodAux = category_sold['food_sold'];
+      let foodAux = category_sold['food_sold'];
       let drinksValue = $('#drinksValue').val();
-      productsList = [];
+      let productsList = [];
 
       for(let i = 0; i < foodAux.length; i++){
         food_quant = foodAux[i]['quantity'];
@@ -150,11 +157,20 @@
       return productsList;
     }
 
+    /**
+     * This function abreviates the kind of food what we are gonna being
+       *  manipulating
+     * @param  {string} kindOfFood This is the kind of food before being
+       *  modificated.
+     * @return {string} kindOfFood Returns the kind of food abbreviation
+     */
     function getTypeProduct(kindOfFood){
-      kindOfFood = kindOfFood.substring(0,3);
-      return kindOfFood;
+       return kindOfFood.substring(0,3);
     }
 
+    /**
+     * This function fills the doughnut chart when it's empty
+     */
     function getNeutralColor(){
       itsEmpty = true;
       // if(nutChar.data.datasets[0].data == 1){
@@ -163,25 +179,34 @@
 
     }
 
+    /**
+     * This function obtains the label's name of sold food for use it in
+     * the doughnut chart
+     *
+     * @return {String[]} labelList Returns the list with all the label's name
+     */
     function getLabelFoodNutChar(){
       let foodAux = category_sold['food_sold'];
-      labelList = []
+      let labelList = []
       for(i = 0; i < foodAux.length; i++){
         labelList[i] = foodAux[i];
       }
       return labelList;
     }
 
+    /**
+     * This function obtains the label's name of sold drinks for use it in
+     * the doughnut chart
+     *
+     * @return {String[]} labelList Returns the list with all the label's name
+     */
     function getLabelDrinkNutChar(){
-      labelList = []
+      let drinksAux = category_sold['drinks_sold'];
+      let labelList = []
       for(i = 0; i < drinksAux.length; i++){
         labelList[i] = drinksAux[i];
       }
       return labelList;
-    }
-
-    function deleteLabels(){
-      console.log('asdljasdlkljksd');
     }
 
     quantity_bar = new Chart(bar_ctx, {
@@ -238,7 +263,6 @@
       }
     });
 
-
     $(this).on('change', '.custom-select', function(event) {
       let drinks = $('#drinks').val();
       let food = $('#foods').val();
@@ -264,17 +288,18 @@
         success: function(result, status, XHR) {
           let drinks = result['drinks_sold'];
           let food = result['food_sold'];
-
           if (short_element == 'dri'){
+
+            let drinksAux = category_sold['drinks_sold'];
             $(".label-container").children('span').remove();
             drinks_data = fillDrinksNutChar();
             labels = getLabelDrinkNutChar();
             for(i = 0; i < drinksAux.length; i++){
-              deleteLabels();
               nutChar.data.labels[i] = labels[i]['name'];
               quantity_bar.data.labels[i] = labels[i]['name'];
               $('#label-box').append('<span class="label-name">' +
-               ' ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] + '</span>');
+               '    ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] + '   '
+               + '</span>');
             }
               nutChar.data.datasets[0].data = drinks_data;
               quantity_bar.data.datasets[0].data = drinks_data;
@@ -283,13 +308,15 @@
           }
           else if(short_element == 'foo'){
             $(".label-container").children('span').remove();
-            labels = getLabelFoodNutChar();
-            food_data = fillFoodNutChar();
+            let foodAux = category_sold['food_sold'];
+            let labels = getLabelFoodNutChar();
+            let food_data = fillFoodNutChar();
+
             for(i = 0; i < foodAux.length; i++){
               nutChar.data.labels[i] = labels[i]['name'];
-              $('#label-box').append('<span class="label-name">' +
-               ' ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] +
-                '</span>' + '<br>');
+              $('#label-box').append('<span class="label-name">'
+              +'    ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] +
+                '</span>');
             }
               nutChar.data.datasets[0].data = food_data;
               nutChar.update();
