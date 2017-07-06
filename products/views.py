@@ -393,31 +393,9 @@ def warehouse_movements(request):
 @login_required(login_url='users:login')
 def shop_list(request):
 
-    products_helper = ProductsHelper()
-    supps = products_helper.get_all_supplies()
-    all_presentations = Presentation.objects.all()
-
     shop_list = ShopList.objects.all()
 
-    supply_list = []
-
     if request.method == 'POST':
-        form = PresentationForm(request.POST, request.FILES)
-        if form.is_valid():
-            presentation = form.save(commit=False)
-            presentation.save()
-            return redirect('/warehouse/shoplist')
-
-        if request.POST['type'] == 'shop_list':
-            shop_l = json.loads(request.POST.get('shop_list'))
-
-            new_shop_list = ShopList.objects.create()
-            new_shop_list.save()
-
-            for item in shop_l:
-                sel_sup = Supply.objects.get(pk=item['sup_pk'])
-                sel_pre = Presentation.objects.get(pk=item['pre_pk'])
-                ShopListDetail.objects.create(shop_list=new_shop_list, supply=sel_sup, presentation=sel_pre, quantity=item['Cantidad'])
 
         if request.POST['type'] == 'load_list':
             element = json.loads(request.POST.get('load_list'))
@@ -442,6 +420,48 @@ def shop_list(request):
             }
             return JsonResponse(list_naive_array)
 
+    template = 'catering/shoplist.html'
+    title = 'Lista de Compras'
+    context = {
+        'shop_list': shop_list,
+        'title': title,
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
+
+@login_required(login_url='users:login')
+def new_shoplist(request):
+
+    products_helper = ProductsHelper()
+    supps = products_helper.get_all_supplies()
+    all_presentations = Presentation.objects.all()
+
+    shop_list = ShopList.objects.all()
+
+    supply_list = []
+
+    if request.method == 'POST':
+        form = PresentationForm(request.POST, request.FILES)
+        if form.is_valid():
+            presentation = form.save(commit=False)
+            presentation.save()
+            return redirect('/warehouse/new_shoplist')
+
+        if request.POST['type'] == 'shop_list':
+            shop_l = json.loads(request.POST.get('shop_list'))
+
+            new_shop_list = ShopList.objects.create()
+            new_shop_list.save()
+
+            for item in shop_l:
+                sel_sup = Supply.objects.get(pk=item['sup_pk'])
+                sel_pre = Presentation.objects.get(pk=item['pre_pk'])
+                ShopListDetail.objects.create(shop_list=new_shop_list, supply=sel_sup, presentation=sel_pre, quantity=item['Cantidad'])
+
+            return redirect('/warehouse/shoplist')
+
+
+
     else:
         form = PresentationForm()
 
@@ -463,12 +483,11 @@ def shop_list(request):
         element_object['presentations'] = supp_pres
         supply_list.append(element_object)
 
-    template = 'catering/shoplist.html'
+    template = 'catering/new_shoplist.html'
     title = 'Lista de Compras'
     context = {
         'shop_list': shop_list,
         'form': form,
-        'required_supplies': products_helper.get_required_supplies(),
         'title': title,
         'supply_list': supply_list,
         'page_title': PAGE_TITLE
