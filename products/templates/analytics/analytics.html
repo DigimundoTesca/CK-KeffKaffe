@@ -132,7 +132,7 @@
       let foodsAux = category_sold['food_sold'];
       let drinksValue = $('#drinksValue').val();
       let productsList = [];
-      
+
       for(let i = 0; i < drinksAux.length; i++){
         drinksQuant = drinksAux[i]['quantity'];
         productsList[i] = drinksQuant;
@@ -292,9 +292,9 @@
 
             let drinksAux = category_sold['drinks_sold'];
             $(".label-container").children('span').remove();
-            drinks_data = fillDrinksNutChar();
-            labels = getLabelDrinkNutChar();
-            for(i = 0; i < drinksAux.length; i++){
+            let drinks_data = fillDrinksNutChar();
+            let labels = getLabelDrinkNutChar();
+            for(let i = 0; i < drinksAux.length; i++){
               nutChar.data.labels[i] = labels[i]['name'];
               quantity_bar.data.labels[i] = labels[i]['name'];
               $('#label-box').append('<span class="label-name">' +
