@@ -15,8 +15,6 @@
       <option value="drinks_sold" id="drinksValue">Bebidas</option>
       <option value="food_sold" id="food_value">Platillos</option>
     </select>
-
-    esa es la idea general, ahora materializala en tu cerebro men
     <select class="date-week">
       <option>
       </option>
@@ -134,7 +132,7 @@
       let productsList = [];
 
       for(let i = 0; i < drinksAux.length; i++){
-        drinksQuant = drinksAux[i]['quantity'];
+        let drinksQuant = drinksAux[i]['quantity'];
         productsList[i] = drinksQuant;
       }
       return productsList;
@@ -151,7 +149,7 @@
       let productsList = [];
 
       for(let i = 0; i < foodAux.length; i++){
-        food_quant = foodAux[i]['quantity'];
+        let food_quant = foodAux[i]['quantity'];
         productsList[i] = food_quant;
       }
       return productsList;
@@ -172,7 +170,7 @@
      * This function fills the doughnut chart when it's empty
      */
     function getNeutralColor(){
-      itsEmpty = true;
+      let itsEmpty = true;
       // if(nutChar.data.datasets[0].data == 1){
         // nutChar.data.datasets[1].backgroundColor = emptyColor;
       // }
