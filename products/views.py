@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
-from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm, PresentationForm
+from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm, PresentationForm, WarehouseForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe, Presentation
 from kitchen.models import Warehouse, ShopList, ShopListDetail
 from django.views.generic import UpdateView
@@ -397,6 +397,12 @@ def shop_list(request):
 
     if request.method == 'POST':
 
+        form = WarehouseForm(request.POST, request.FILES)
+        if form.is_valid():
+            warehouse = form.save(commit=False)
+            warehouse.save()
+            return redirect('/warehouse/new_shoplist')
+
         if request.POST['type'] == 'load_list':
             element = json.loads(request.POST.get('load_list'))
             list_shoplistdetail = ShopListDetail.objects.filter(shop_list_id=element)
@@ -419,10 +425,13 @@ def shop_list(request):
                 'shop_list': shop_list_array
             }
             return JsonResponse(list_naive_array)
+    else:
+        form = WarehouseForm()
 
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
     context = {
+        'form': form,
         'shop_list': shop_list,
         'title': title,
         'page_title': PAGE_TITLE
@@ -459,8 +468,6 @@ def new_shoplist(request):
                 ShopListDetail.objects.create(shop_list=new_shop_list, supply=sel_sup, presentation=sel_pre, quantity=item['Cantidad'])
 
             return redirect('/warehouse/shoplist')
-
-
 
     else:
         form = PresentationForm()
