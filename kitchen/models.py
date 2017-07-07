@@ -20,7 +20,7 @@ class ProcessedProduct(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     prepared_at = models.DateTimeField(editable=True, null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS, default=ASSEMBLED)
-    ticket = models.OneToOneField(Ticket, on_delete=models.CASCADE)
+    ticket = models.OneToOneField(Ticket, on_delete=models.CASCADE,null=True, blank=True)
 
     def __str__(self):
         return '%s' % self.created_at
@@ -57,7 +57,7 @@ class Warehouse(models.Model):
         (SOLD, 'Sold'),
     )
 
-    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+    presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE, null=True)
     cost = models.FloatField(default=0)
     status = models.CharField(choices=STATUS, default=PROVIDER, max_length=15)
     created_at = models.DateField(editable=False, auto_now_add=True)
@@ -65,17 +65,8 @@ class Warehouse(models.Model):
     quantity = models.FloatField(default=0)
 
     def __str__(self):
-        return '%s' % self.supply.name
+        return '%s' % self.presentation.supply.name
 
-    def required_quantity(self):
-        required = math.ceil(self.quantity / self.supply.measurement_quantity) * self.supply.measurement_quantity
-        if required >= 1000:
-            required /= 1000
-        return required
-
-    def get_unit(self):
-        return self.supply.unit_conversion(
-            math.ceil(self.quantity / self.supply.measurement_quantity) * self.supply.measurement_quantity)
 
     class Meta:
         ordering = ('id',)
@@ -120,8 +111,7 @@ class ShopListDetail(models.Model):
 
     status = models.CharField(choices=STATUS, default=MISSING, max_length=15)
     shop_list = models.ForeignKey(ShopList, default=1, on_delete=models.CASCADE)
-    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
-    presentation = models.ForeignKey(Presentation, default=1, on_delete=models.CASCADE)
+    presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE)
     quantity = models.IntegerField()
 
 

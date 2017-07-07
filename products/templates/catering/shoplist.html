@@ -55,14 +55,14 @@
                     <h2 align="center">Agregar al Almacen</h2>
                 </div>
                 <div class="modal-body">
-                    {{ form.as_p }}
-                    <p class="question_add"></p>
-                    <p><label>Cantidad:</label> <input class="picker" type="number" value="0" step="any"/></p>
-                </div>
-                <div>
-                    <button id="btn_add_warehouse" class="offset-md-2 col-md-2 btn btn-primary d-flex">
-                        <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Guardar Lista</span>
-                    </button>
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button class="btn btn_add_warehouse waves-light accent right large" type="submit">
+                            Submit <i class="material-icons right">send</i>
+                        </button>
+                    </form>
+
                 </div>
             </div>
         </div>

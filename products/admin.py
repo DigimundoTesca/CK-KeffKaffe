@@ -45,7 +45,7 @@ class AdminCartridge(admin.ModelAdmin):
 
 @admin.register(Presentation)
 class AdminPresentation(admin.ModelAdmin):
-    list_display = ('supply', 'measurement_quantity', 'measurement_unit')
+    list_display = ('id','supply', 'measurement_quantity', 'measurement_unit')
     ordering = ['supply']
 
 

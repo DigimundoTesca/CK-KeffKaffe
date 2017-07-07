@@ -397,7 +397,7 @@ def shop_list(request):
 
     if request.method == 'POST':
 
-        form = WarehouseForm(request.POST, request.FILES)
+        form = WarehouseForm(request.POST)
         if form.is_valid():
             warehouse = form.save(commit=False)
             warehouse.save()
@@ -411,7 +411,8 @@ def shop_list(request):
 
             for ele_shoplist in list_shoplistdetail:
                 list_object = {
-                    'nombre': ele_shoplist.supply.name,
+                    'id': ele_shoplist.presentation.id,
+                    'nombre': ele_shoplist.presentation.supply.name,
                     'cantidad': ele_shoplist.quantity,
                     'medida': ele_shoplist.presentation.measurement_quantity,
                     'unidad': ele_shoplist.presentation.measurement_unit,
@@ -463,9 +464,8 @@ def new_shoplist(request):
             new_shop_list.save()
 
             for item in shop_l:
-                sel_sup = Supply.objects.get(pk=item['sup_pk'])
                 sel_pre = Presentation.objects.get(pk=item['pre_pk'])
-                ShopListDetail.objects.create(shop_list=new_shop_list, supply=sel_sup, presentation=sel_pre, quantity=item['Cantidad'])
+                ShopListDetail.objects.create(shop_list=new_shop_list, presentation=sel_pre, quantity=item['Cantidad'])
 
             return redirect('/warehouse/shoplist')
 
