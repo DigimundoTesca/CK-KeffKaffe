@@ -113,6 +113,7 @@ class ShopListDetail(models.Model):
     shop_list = models.ForeignKey(ShopList, default=1, on_delete=models.CASCADE)
     presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE)
     quantity = models.IntegerField()
+    deliver_day = models.DateField(editable=False, auto_now_add=True)
 
     def __str__(self):
         return '%s %s' % (self.presentation, self.quantity)

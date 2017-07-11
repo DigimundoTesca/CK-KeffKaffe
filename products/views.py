@@ -395,12 +395,6 @@ def shop_list(request):
 
     if request.method == 'POST':
 
-        form = ShopListDetailForm(request.POST)
-        if form.is_valid():
-            warehouse = form.save(commit=False)
-            warehouse.save()
-            return redirect('/warehouse/new_shoplist')
-
         if request.POST['type'] == 'load_list':
             element = json.loads(request.POST.get('load_list'))
             list_shoplistdetail = ShopListDetail.objects.filter(shop_list_id=element)
@@ -428,7 +422,11 @@ def shop_list(request):
         if request.POST['type'] == 'load_list_detail':
             element = json.loads(request.POST.get('load_list_detail'))
             list_shoplistdetail = ShopListDetail.objects.get(id=element)
-            formnuevo = ShopListDetailForm(instance=list_shoplistdetail)
+            list_shoplistdetail.status = "DE"
+            list_shoplistdetail.save()
+
+            itemstock = Warehouse.objects.get_or_create(presentation=list_shoplistdetail.presentation, quantity=list_shoplistdetail.quantity)
+
 
     else:
         form = ShopListDetailForm()
@@ -436,7 +434,6 @@ def shop_list(request):
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
     context = {
-        'form': form,
         'shop_list': shop_list,
         'title': title,
         'page_title': PAGE_TITLE
