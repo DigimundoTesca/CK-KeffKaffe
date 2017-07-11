@@ -17,6 +17,7 @@
     </select>
     <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha inicial">
     <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha Final">
+    <button type="data" name="button">Enviar</button>
   </div>
 </div>
 <div class="row container-fluid">
@@ -258,6 +259,9 @@
           animateScale: true,
         }
       }
+    });
+
+    $(this).on('click', 'button', function(event){
     });
 
     $(this).on('change', '.custom-select', function(event) {
