@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
-from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm, PresentationForm, WarehouseForm
+from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm, PresentationForm, ShopListDetailForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe, Presentation
 from kitchen.models import Warehouse, ShopList, ShopListDetail
 from django.views.generic import UpdateView
@@ -69,8 +69,7 @@ def supplies(request):
 
 class CreateSupply(CreateView):
     model = Supply
-    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'presentation_unit', 'presentation_cost',
-              'measurement_quantity', 'measurement_unit', 'optimal_duration', 'optimal_duration_unit', 'location',
+    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'optimal_duration', 'optimal_duration_unit', 'location',
               'image']
     template_name = 'supplies/new_supply.html'
 
@@ -98,8 +97,7 @@ def supply_detail(request, pk):
 
 class UpdateSupply(UpdateView):
     model = Supply
-    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'presentation_unit', 'presentation_cost',
-              'measurement_quantity', 'measurement_unit', 'optimal_duration', 'optimal_duration_unit', 'location',
+    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'optimal_duration', 'optimal_duration_unit', 'location',
               'image']
     template_name = 'supplies/new_supply.html'
 
@@ -397,7 +395,7 @@ def shop_list(request):
 
     if request.method == 'POST':
 
-        form = WarehouseForm(request.POST)
+        form = ShopListDetailForm(request.POST)
         if form.is_valid():
             warehouse = form.save(commit=False)
             warehouse.save()
@@ -411,7 +409,7 @@ def shop_list(request):
 
             for ele_shoplist in list_shoplistdetail:
                 list_object = {
-                    'id': ele_shoplist.presentation.id,
+                    'id': ele_shoplist.id,
                     'nombre': ele_shoplist.presentation.supply.name,
                     'cantidad': ele_shoplist.quantity,
                     'medida': ele_shoplist.presentation.measurement_quantity,
@@ -426,8 +424,14 @@ def shop_list(request):
                 'shop_list': shop_list_array
             }
             return JsonResponse(list_naive_array)
+
+        if request.POST['type'] == 'load_list_detail':
+            element = json.loads(request.POST.get('load_list_detail'))
+            list_shoplistdetail = ShopListDetail.objects.get(id=element)
+            formnuevo = ShopListDetailForm(instance=list_shoplistdetail)
+
     else:
-        form = WarehouseForm()
+        form = ShopListDetailForm()
 
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
@@ -477,9 +481,6 @@ def new_shoplist(request):
             'pk': sup.pk,
             'name': sup.name,
             'imagen': sup.image.url,
-            'unidad': sup.self_measurement_conversion,
-            'medida': sup.self_unit_conversion,
-            'costo': sup.presentation_cost,
         }
         supp_presentations = all_presentations.filter(supply=sup)
         supp_pres = []

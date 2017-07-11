@@ -114,9 +114,8 @@ class ShopListDetail(models.Model):
     presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE)
     quantity = models.IntegerField()
 
-
     def __str__(self):
-        return '%s %s' % (self.quantity, self.shop_list)
+        return '%s %s' % (self.presentation, self.quantity)
 
     class Meta:
         ordering = ('id',)

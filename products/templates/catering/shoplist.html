@@ -20,7 +20,7 @@
                     {% for element in shop_list %}
                         <tr class="list-element" id="element-{{ element.id }}">
                             <td>{{ element.id }}</td>
-                            <td>{{ element.created_at }}</td>
+                            <td>{{ element.created_at }}</td><span></span>
                             <td>{{ element.status }}</td>
                         </tr>
                     {% endfor %}
@@ -43,27 +43,7 @@
 
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal-for-Catering  -->
-    <div class="modal fade" id="AddToWarehouse" role="dialog" >
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 align="center">Agregar al Almacen</h2>
-                </div>
-                <div class="modal-body">
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <button class="btn btn_add_warehouse waves-light accent right large" type="submit">
-                            Submit <i class="material-icons right">send</i>
-                        </button>
-                    </form>
-
-                </div>
             </div>
         </div>
     </div>
@@ -131,7 +111,7 @@
                         for (x=0;x<shop_list.length;x++){
                             html_list_detail +=
 
-                            '<tr id="id-'+x+'" class="shoplistdetail_element">' +
+                            '<tr id="id-'+shop_list[x].id+'" class="shoplistdetail_element">' +
                                 '<td class="sld_nombre">' + shop_list[x].nombre + '</td>' +
                                 '<td class="sld_cantidad">' + shop_list[x].cantidad + '</td>' +
                                 '<td class="sld_medida">' + shop_list[x].medida + " " + shop_list[x].unidad +'</td>' +
@@ -148,20 +128,24 @@
 
                         body.on("click",".shoplistdetail_element",function(e){
                             var sld_ele_id = $(this).attr('id').substring(3);
-                            var name = shop_list[sld_ele_id].nombre;
-                            var cantidad = shop_list[sld_ele_id].cantidad;
-                            var medida = shop_list[sld_ele_id].medida;
-                            var unidad = shop_list[sld_ele_id].unidad;
-                            var costo = shop_list[sld_ele_id].costo;
-                            var status = shop_list[sld_ele_id].status;
 
-                            $("#AddToWarehouse").modal({show:true});
+                            $.ajax({
+                                url: '{% url "products:shoplist" %}',
+                                type: 'POST',
+                                data: {
+                                    'type' : 'load_list_detail',
+                                    'load_list_detail': sld_ele_id,
+                                    csrfmiddlewaretoken: csrf_token,
+                                },
+                                datatype: 'jsonp',
+                                success: function(result) {
+                                    
 
-                            $(".question_add").html("Agregar  "+name+" "+medida+" "+unidad);
-                            $(".picker").attr({
-                                "max" : cantidad,
-                                "min" : 1
+                                }
                             });
+
+
+
 
                         });
 
