@@ -289,12 +289,28 @@
         success: function(result, status, XHR) {
           let drinks = result['drinks_sold'];
           let food = result['food_sold'];
+          let totalSales;
           if (short_element == 'dri'){
 
             let drinksAux = category_sold['drinks_sold'];
-            $(".label-container").children('span').remove();
+            $(".label-container").children('span').remove(                                                                                                                                      );
             let drinks_data = fillDrinksNutChar();
             let labels = getLabelDrinkNutChar();
+            let percentageList = [];
+            totalSales  = drinks_data.reduce(function(drinks_data, b){
+              return drinks_data + b;
+            }, 0);
+            for (let i = 0; i < drinksAux.length; i++) {
+              labelPercentage = (drinks_data[i]*100)/totalSales;
+              percentageList[i] = labelPercentage;
+              labelPercentage = labelPercentage.toFixed(2);
+              percentageList[i] = labelPercentage
+            }
+            for (var i = 0; i < drinksAux.length; i++) {
+              let symbol = "%";
+              toString(percentageList[i]);
+              percentageList = percentageList[i] + symbol;
+            }
             for(let i = 0; i < drinksAux.length; i++){
               nutChar.data.labels[i] = labels[i]['name'];
               quantity_bar.data.labels[i] = labels[i]['name'];
@@ -302,7 +318,7 @@
                '    ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] + '   '
                + '</span>');
             }
-              nutChar.data.datasets[0].data = drinks_data;
+              nutChar.data.datasets[0].data = percentageList;
               quantity_bar.data.datasets[0].data = drinks_data;
               nutChar.update();
               quantity_bar.update();
@@ -312,14 +328,25 @@
             let foodAux = category_sold['food_sold'];
             let labels = getLabelFoodNutChar();
             let food_data = fillFoodNutChar();
+            let labelPercentage;
+            let totalSales;
+            let percentageList = [];
 
+            totalSales  = food_data.reduce(function(food_data, b){
+              return food_data + b;
+            }, 0);
+            for (var i = 0; i < foodAux.length; i++) {
+              labelPercentage = (food_data[i]*100)/totalSales;
+              labelPercentage = labelPercentage.toFixed(2);
+              percentageList[i] = labelPercentage;
+            }
             for(i = 0; i < foodAux.length; i++){
               nutChar.data.labels[i] = labels[i]['name'];
               $('#label-box').append('<span class="label-name">'
               +'    ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] +
                 '</span>');
             }
-              nutChar.data.datasets[0].data = food_data;
+              nutChar.data.datasets[0].data = percentageList;
               nutChar.update();
           }
 
