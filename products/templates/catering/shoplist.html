@@ -121,10 +121,10 @@
                                 '<td class="sld_costo">' + shop_list[x].costo + ' $</td>';
 
                             if(shop_list[x].status==="MI"){
-                                html_list_detail += '<td class="sld_missing material-icons"> <button class="button"type="button"> eject </button></td>' +
+                                html_list_detail += '<td class="sld_missing material-icons"> <button class="mi_button" > eject </button></td>' +
                                     '</tr>' ;
                             }else{
-                                html_list_detail += '<td class="sld_delivered material-icons"> <button type="button"> done </button></td>' +
+                                html_list_detail += '<td class="sld_delivered material-icons"> <button class="de_button" > done </button></td>' +
                                     '</tr>' ;
                             }
                         }
@@ -167,11 +167,32 @@
                                             'Éxito!',
                                             'Agregado al almacen',
                                             'success'
-                                        )
+                                        );
+                                        location.replace('{% url "products:shoplist" %}');
                                     }
                                 });
                             });
 
+                        });
+
+                        body.on("click",".sld_delivered",function(e){
+                            var sld_ele_id = $(this).parent().attr('id').substring(3);
+                            $.ajax({
+                                    url: '{% url "products:shoplist" %}',
+                                    type: 'POST',
+                                    data: {
+                                        'type' : 'load_date',
+                                        'detail_list_id': sld_ele_id,
+                                        csrfmiddlewaretoken: csrf_token,
+                                    },
+                                    datatype: "html",
+                                    success: function(result) {
+                                        var datetime = result.split(" ");
+                                        var date = datetime[0];
+                                        var time = datetime[1].split(".")[0];
+                                        swal("Fecha de Entrega: "+ date + " a las " + time)
+                                    }
+                                });
                         });
 
 

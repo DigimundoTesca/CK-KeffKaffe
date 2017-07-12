@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 import json
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -423,13 +423,18 @@ def shop_list(request):
             element = json.loads(request.POST.get('load_list_detail'))
             list_shoplistdetail = ShopListDetail.objects.get(id=element)
             list_shoplistdetail.status = "DE"
+            list_shoplistdetail.deliver_day = datetime.now()
             list_shoplistdetail.save()
 
             itemstock = Warehouse.objects.get_or_create(presentation=list_shoplistdetail.presentation, quantity=list_shoplistdetail.quantity)
 
+        if request.POST['type'] == 'load_date':
+            element = json.loads(request.POST.get('detail_list_id'))
+            list_shoplistdetail = ShopListDetail.objects.get(id=element)
+            date = list_shoplistdetail.deliver_day
 
-    else:
-        form = ShopListDetailForm()
+            return HttpResponse(date)
+
 
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
