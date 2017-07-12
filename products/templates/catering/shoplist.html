@@ -86,13 +86,13 @@
             //Load and Show elements from ShopLists
             $(".list-element").on("click",function(e){
 
-               $(".list-element").css('backgroundColor', '#ffffff');
-               $(this).css('backgroundColor', '#abafff');
-               let csrf_token = get_cookie('csrftoken');
-               var element = $(this);
-               list_element_id = element.attr("id").substring(8);
+                $(".list-element").css('backgroundColor', '#ffffff');
+                $(this).css('backgroundColor', '#abafff');
+                let csrf_token = get_cookie('csrftoken');
+                var element = $(this);
+                list_element_id = element.attr("id").substring(8);
 
-               $.ajax({
+                $.ajax({
                     url: '{% url "products:shoplist" %}',
                     type: 'POST',
                     data: {
@@ -114,7 +114,7 @@
                         for (x=0;x<shop_list.length;x++){
                             html_list_detail +=
 
-                            '<tr id="id-'+shop_list[x].id+'" class="shoplistdetail_element">' +
+                                '<tr id="id-'+shop_list[x].id+'" class="shoplistdetail_element">' +
                                 '<td class="sld_nombre">' + shop_list[x].nombre + '</td>' +
                                 '<td class="sld_cantidad">' + shop_list[x].cantidad + '</td>' +
                                 '<td class="sld_medida">' + shop_list[x].medida + " " + shop_list[x].unidad +'</td>' +
@@ -131,9 +131,9 @@
 
                         $("#TableShopListDetail tbody tr").remove();
                         var body = $("#TableShopListDetail").find("tbody")
-                        .append($(
-                            html_list_detail
-                        ));
+                            .append($(
+                                html_list_detail
+                            ));
 
                         body.on("click",".sld_missing",function(e){
                             var sld_ele_id = $(this).parent().attr('id').substring(3);
@@ -178,20 +178,20 @@
                         body.on("click",".sld_delivered",function(e){
                             var sld_ele_id = $(this).parent().attr('id').substring(3);
                             $.ajax({
-                                    url: '{% url "products:shoplist" %}',
-                                    type: 'POST',
-                                    data: {
-                                        'type' : 'load_date',
-                                        'detail_list_id': sld_ele_id,
-                                        csrfmiddlewaretoken: csrf_token,
-                                    },
-                                    datatype: "html",
-                                    success: function(result) {
-                                        var date = result.substring(0,11);
-                                        var time = result.substring(12,19);
-                                        swal("Fecha de Entrega: "+ date + " a las " + time)
-                                    }
-                                });
+                                url: '{% url "products:shoplist" %}',
+                                type: 'POST',
+                                data: {
+                                    'type' : 'load_date',
+                                    'detail_list_id': sld_ele_id,
+                                    csrfmiddlewaretoken: csrf_token,
+                                },
+                                datatype: "html",
+                                success: function(result) {
+                                    var date = result.substring(0,11);
+                                    var time = result.substring(12,19);
+                                    swal("Fecha de Entrega: "+ date + " a las " + time)
+                                }
+                            });
                         });
 
 

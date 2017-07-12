@@ -293,15 +293,15 @@ def catering(request):
     if request.method == 'POST':
         buy_objects_list = []
         for required in required_supplies:
-            diner_object = {    
-                'Nombre': required['name'], 
+            diner_object = {
+                'Nombre': required['name'],
                 'Requeridos': required['quantity'],
                 'Stock': required['stock'],
                 'Por Comprar': required['required'],
                 'Comprar en': str(required['supplier']),
                 'Cantidad x Unidad' : required['measurement_quantity'],
                 'Costo x Unidad': required['cost'],
-                'Costo Total': required['full_cost'],                    
+                'Costo Total': required['full_cost'],
             }
             buy_objects_list.append(diner_object)
         return JsonResponse({'buy_list': buy_objects_list})
@@ -331,6 +331,29 @@ def warehouse(request):
 
     products_helper = ProductsHelper()
     warehouse_list = products_helper.get_all_elements_in_warehouse()
+
+    if request.method == 'POST':
+        
+        if request.POST['type'] == 'save_to_assembly':
+
+            quantity = json.loads(request.POST.get('quantity_available'))
+            warehouse_id = json.loads(request.POST.get('warehouse_id'))
+
+            # Retirar del almacen
+            selected_warehouse = Warehouse.objects.get(id=warehouse_id)
+            selected_warehouse.quantity -= quantity
+            selected_warehouse.save()
+
+            # Agregar al almacen
+            try:
+                itemstock = Warehouse.objects.get(supply=selected_warehouse.supply, status="AS")
+                itemstock.quantity += quantity
+                itemstock.save()
+            except Warehouse.DoesNotExist:
+                itemstock = Warehouse(supply=selected_warehouse.supply, status="AS",
+                                      quantity=quantity,
+                                      measurement_unit=selected_warehouse.measurement_unit)
+                itemstock.save()
 
     template = 'catering/warehouse.html'
     title = 'Movimientos de Almacen'

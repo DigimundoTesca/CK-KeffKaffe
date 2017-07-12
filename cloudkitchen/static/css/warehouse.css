@@ -1,4 +1,4 @@
-.card-element {
+.card-element{
     text-align: center;
     direction: ltr;
     transition: 0.3s;
@@ -45,7 +45,7 @@
 
 .titles{
     margin: auto;
-    padding: 15px;
+    padding: 10px;
     padding-left: 15%;
     padding-right: 15%;
     text-align: center;
