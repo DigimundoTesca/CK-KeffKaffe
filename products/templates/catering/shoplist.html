@@ -187,9 +187,8 @@
                                     },
                                     datatype: "html",
                                     success: function(result) {
-                                        var datetime = result.split(" ");
-                                        var date = datetime[0];
-                                        var time = datetime[1].split(".")[0];
+                                        var date = result.substring(0,11);
+                                        var time = result.substring(12,19);
                                         swal("Fecha de Entrega: "+ date + " a las " + time)
                                     }
                                 });

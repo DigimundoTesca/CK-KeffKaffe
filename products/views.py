@@ -328,9 +328,14 @@ def catering(request):
 # -------------------------------------- Warehouse ---------------------------------------------
 @login_required(login_url='users:login')
 def warehouse(request):
+
+    products_helper = ProductsHelper()
+    warehouse_list = products_helper.get_all_elements_in_warehouse()
+
     template = 'catering/warehouse.html'
     title = 'Movimientos de Almacen'
     context = {
+        'warehouse_list': warehouse_list,
         'title': title,
         'page_title': PAGE_TITLE
     }
@@ -397,11 +402,11 @@ def shop_list(request):
 
         if request.POST['type'] == 'load_list':
             element = json.loads(request.POST.get('load_list'))
-            list_shoplistdetail = ShopListDetail.objects.filter(shop_list_id=element)
+            list_sl = ShopListDetail.objects.filter(shop_list_id=element)
 
             shop_list_array = []
 
-            for ele_shoplist in list_shoplistdetail:
+            for ele_shoplist in list_sl:
                 list_object = {
                     'id': ele_shoplist.id,
                     'nombre': ele_shoplist.presentation.supply.name,
@@ -421,17 +426,25 @@ def shop_list(request):
 
         if request.POST['type'] == 'load_list_detail':
             element = json.loads(request.POST.get('load_list_detail'))
-            list_shoplistdetail = ShopListDetail.objects.get(id=element)
-            list_shoplistdetail.status = "DE"
-            list_shoplistdetail.deliver_day = datetime.now()
-            list_shoplistdetail.save()
+            list_sl = ShopListDetail.objects.get(id=element)
+            list_sl.status = "DE"
+            list_sl.deliver_day = datetime.now()
+            list_sl.save()
 
-            itemstock = Warehouse.objects.get_or_create(presentation=list_shoplistdetail.presentation, quantity=list_shoplistdetail.quantity)
+            try:
+                itemstock = Warehouse.objects.get(supply=list_sl.presentation.supply, status="ST")
+                itemstock.quantity += list_sl.quantity * list_sl.presentation.measurement_quantity
+                itemstock.save()
+            except Warehouse.DoesNotExist:
+                itemstock = Warehouse(supply=list_sl.presentation.supply, status="ST",
+                                      quantity=list_sl.quantity * list_sl.presentation.measurement_quantity,
+                                      measurement_unit=list_sl.presentation.measurement_unit)
+                itemstock.save()
 
         if request.POST['type'] == 'load_date':
             element = json.loads(request.POST.get('detail_list_id'))
-            list_shoplistdetail = ShopListDetail.objects.get(id=element)
-            date = list_shoplistdetail.deliver_day
+            list_sl = ShopListDetail.objects.get(id=element)
+            date = list_sl.deliver_day
 
             return HttpResponse(date)
 

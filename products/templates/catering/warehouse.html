@@ -1,0 +1,69 @@
+{% extends "base/base_nav_footer.html" %}
+{% load static %}
+{% block link %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/warehouse.css' %}">
+{% endblock link %}
+{% block content %}
+
+    <div class="container container_warehouse col-md-12">
+
+        <div class="warehouse_display col-md-6">
+            <div class="row type_warehouse">
+                <p class="titles">Almacen</p>
+            </div>
+            {% for warehouse in warehouse_list %}
+                {% if warehouse.status == "ST" %}
+                    <div class="card card-element col-md-2">
+                        <div class="row info_div">
+                            <p>{{ warehouse.supply.name }}</p>
+                        </div>
+                        <div class="row image_div">
+                            <img class="image" src="{{ warehouse.supply.image.url }}">
+                        </div>
+                        <div id="{{ warehouse.quantity }}" class="row info_quantity">
+                            <p>{{ warehouse.get_quantity_stock }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="warehouse_display col-md-6">
+            <div class="row type_assembly">
+                <p class="titles">Ensamblaje</p>
+            </div>
+            {% for warehouse in warehouse_list %}
+                {% if warehouse.status == "AS" %}
+                    <div class="card-element col-md-2">
+                        <div class="row info_div">
+                            <p>{{ warehouse.supply.name }}</p>
+                        </div>
+                        <div class="row image_div">
+                            <img class="image" src="{{ warehouse.supply.image.url }}">
+                        </div>
+                        <div class="row info_div">
+                            <p>{{ warehouse.get_quantity_stock }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+
+    </div>
+
+
+{% endblock content %}
+{% block javascript %}
+
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+            $(".card-element").on("click",function () {
+                var quantity_available = $(this).children(".info_quantity").;
+                console.log(quantity_available)
+
+            })
+
+        });
+    </script>
+
+{% endblock javascript %}
