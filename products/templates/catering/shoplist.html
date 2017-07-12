@@ -1,7 +1,7 @@
 {% extends "base/base_nav_footer.html" %}
 {% load static %}
 {% block link %}
-    <link rel="stylesheet" href="{% static 'css/shoplist.css' %}">
+    <link rel="stylesheet" type='text/css' href="{% static 'css/shoplist.css' %}">
 {% endblock link %}
 {% block content %}
 
@@ -120,11 +120,11 @@
                                 '<td class="sld_medida">' + shop_list[x].medida + " " + shop_list[x].unidad +'</td>' +
                                 '<td class="sld_costo">' + shop_list[x].costo + ' $</td>';
 
-                            if(shop_list[x].status=="MI"){
-                                html_list_detail += '<td><button class="sld_missing material-icons" type="button"> eject </button></td>' +
+                            if(shop_list[x].status==="MI"){
+                                html_list_detail += '<td class="sld_missing material-icons"> <button class="button"type="button"> eject </button></td>' +
                                     '</tr>' ;
                             }else{
-                                html_list_detail += '<td class="sld_missing material-icons"><button class=" "type="button"> done </button></td>' +
+                                html_list_detail += '<td class="sld_delivered material-icons"> <button type="button"> done </button></td>' +
                                     '</tr>' ;
                             }
                         }

@@ -114,3 +114,9 @@
 .FAB{
     background-color: green;
 }
+
+/*Botones de compra*/
+
+button .button{
+    background: yellowgreen;
+}
