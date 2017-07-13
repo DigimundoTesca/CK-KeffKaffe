@@ -1,46 +1,50 @@
-.provider_unit {
-    opacity: 0;
+
+.btn_pre_list, .btn_view_lists, .btn-supply-list {
+    height:40px;
+    width:50px;
+    background-color: #0275d8;
+    color: white;
+    border: none;
+    font-size: 25px;    
+    border-radius: 50px;
+}
+
+.container_view_lists {
+    margin:10px;
+}
+
+.container_view_lists .card_list {
+    min-height: calc(110vh - 16rem);
+    max-height: calc(110vh - 16rem);
+    overflow-y: scroll;
+}
+
+.container_view_lists .list_display {
+    min-height: calc(110vh - 16rem);
+    max-height: calc(110vh - 16rem);
+    overflow-y: scroll;
 }
 
 .container_manual_list .a .block_card{
-    min-height: calc(105vh - 16rem);
-    max-height: calc(105vh - 16rem);
+    min-height: calc(110vh - 16rem);
+    max-height: calc(110vh - 16rem);
     overflow-y: scroll;
     direction: rtl;
 }
 
 .container_manual_list .a .block_list{
-    min-height: calc(105vh - 16rem);
-    max-height: calc(105vh - 16rem);
+    min-height: calc(110vh - 16rem);
+    max-height: calc(110vh - 16rem);
     overflow-y: scroll;
-}
-
-.container_view_lists .a .list_display{
-    min-height: calc(105vh - 16rem);
-    max-height: calc(105vh - 16rem);
-    overflow-y: scroll;
-    direction: rtl;
-}
-
-.container_view_lists .a .block_list{
-    min-height: calc(105vh - 16rem);
-    max-height: calc(105vh - 16rem);
-    overflow-y: scroll;
-}
-
-.table-hover{
-    direction: ltr;
 }
 
 .ele_image{
     border-radius: 50%;
     max-width:100%;
-    max-height:100px;
+    max-height:100%;
 }
 
 .card_element {
-    text-align: center;
-    direction: ltr;
     transition: 0.3s;
     width: 40%;
     padding: 16px;
@@ -61,7 +65,6 @@
 
 .card_element:hover .add_btn{
     transition: 0.3s;
-    top: -10px;
     left: 0;
     opacity:1;
 
@@ -69,7 +72,6 @@
 
 .card_element:hover .pres_btn{
     transition: 0.3s;
-    top: -10px;
     left: 0;
     opacity:1;
 
@@ -110,3 +112,13 @@
     background-color: rgb(0,0,0);
     background-color: rgba(0,0,0,0.4);
 }
+
+
+
+
+
+
+
+
+
+
