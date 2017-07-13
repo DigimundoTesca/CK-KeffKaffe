@@ -65,22 +65,8 @@
                 <div class="modal-body ">
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <p><label for="id_supply">Numero de Insumo:</label> <input type="text" name="supply" id="id_supply" readonly="readonly"/></p>
-                        <p><label for="id_measurement_quantity">Capacidad:</label> <input type="number" name="measurement_quantity" value="0" step="any" min="0" required id="id_measurement_quantity" /></p>
-                        <p><label for="id_measurement_unit">Unidad:</label> <select name="measurement_unit" id="id_measurement_unit">
-                            <option value="GR">gramo</option>
-                            <option value="MI">mililitro</option>
-                            <option value="PZ">pieza</option>
-                        </select></p>
-                        <p><label for="id_presentation_unit">Presentacion:</label> <select name="presentation_unit" id="id_presentation_unit">
-                            <option value="PA" selected>Paquete</option>
-                            <option value="BO">Caja</option>
-                            <option value="PZ">Pieza</option>
-                        </select></p>
-                        <p><label for="id_presentation_cost">Costo:</label> <input type="number" name="presentation_cost" value="0" step="any" min="0" required id="id_presentation_cost" /></p>
-                        <button class="btn wvaes-effect waves-light accent right large" type="submit">
-                            Submit <i class="material-icons right">send</i>
-                        </button>
+                        {{ form.as_p }}
+                        <button type="submit"> Guardar </button>
                     </form>
                 </div>
             </div>

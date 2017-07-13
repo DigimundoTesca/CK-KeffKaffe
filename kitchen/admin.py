@@ -14,7 +14,7 @@ class AdminProcessedCartridge(admin.ModelAdmin):
 
 @admin.register(Warehouse)
 class AdminWarehouse(admin.ModelAdmin):
-    list_display = ('id', 'supply', 'status', 'quantity', 'cost')
+    list_display = ('id', 'supply', 'status', 'quantity')
     list_display_links = ('id', 'supply')
 
 class ShopListDetailInline(admin.TabularInline):

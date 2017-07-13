@@ -1,7 +1,7 @@
 {% extends "base/base_nav_footer.html" %}
 {% load static %}
 {% block link %}
-    <link rel="stylesheet" href="{% static 'css/shoplist.css' %}">
+    <link rel="stylesheet" type='text/css' href="{% static 'css/shoplist.css' %}">
 {% endblock link %}
 {% block content %}
 
@@ -20,7 +20,7 @@
                     {% for element in shop_list %}
                         <tr class="list-element" id="element-{{ element.id }}">
                             <td>{{ element.id }}</td>
-                            <td>{{ element.created_at }}</td>
+                            <td>{{ element.created_at }}</td><span></span>
                             <td>{{ element.status }}</td>
                         </tr>
                     {% endfor %}
@@ -47,34 +47,14 @@
         </div>
     </div>
 
-    
-
-    <!-- Modal-for-Catering  -->
-    <div class="modal fade" id="AddToWarehouse" role="dialog" >
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 align="center">Agregar al Almacen</h2>
-                </div>
-                <div class="modal-body">
-                    {{ form.as_p }}
-                    <p class="question_add"></p>
-                    <p><label>Cantidad:</label> <input class="picker" type="number" value="0" step="any"/></p>
-                </div>
-                <div>
-                    <button id="btn_add_warehouse" class="offset-md-2 col-md-2 btn btn-primary d-flex">
-                        <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Guardar Lista</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="popout">
         <div class="FAB" id="fab-add-shoplist">
             <i class="material-icons">add</i>
         </div>
     </div>
+
+
+
 
 
 {% endblock content %}
@@ -105,13 +85,13 @@
             //Load and Show elements from ShopLists
             $(".list-element").on("click",function(e){
 
-               $(".list-element").css('backgroundColor', '#ffffff');
-               $(this).css('backgroundColor', '#abafff');
-               let csrf_token = get_cookie('csrftoken');
-               var element = $(this);
-               list_element_id = element.attr("id").substring(8);
+                $(".list-element").css('backgroundColor', '#ffffff');
+                $(this).css('backgroundColor', '#abafff');
+                let csrf_token = get_cookie('csrftoken');
+                var element = $(this);
+                list_element_id = element.attr("id").substring(8);
 
-               $.ajax({
+                $.ajax({
                     url: '{% url "products:shoplist" %}',
                     type: 'POST',
                     data: {
@@ -133,38 +113,84 @@
                         for (x=0;x<shop_list.length;x++){
                             html_list_detail +=
 
-                            '<tr id="id-'+x+'" class="shoplistdetail_element">' +
+                                '<tr id="id-'+shop_list[x].id+'" class="shoplistdetail_element">' +
                                 '<td class="sld_nombre">' + shop_list[x].nombre + '</td>' +
                                 '<td class="sld_cantidad">' + shop_list[x].cantidad + '</td>' +
                                 '<td class="sld_medida">' + shop_list[x].medida + " " + shop_list[x].unidad +'</td>' +
-                                '<td class="sld_costo">' + shop_list[x].costo + ' $</td>' +
-                                '<td class="sld_status">' + shop_list[x].status + '</td>' +
-                            '</tr>'
+                                '<td class="sld_costo">' + shop_list[x].costo + ' $</td>';
+
+                            if(shop_list[x].status==="MI"){
+                                html_list_detail += '<td class="sld_missing material-icons"> <button class="mi_button" > eject </button></td>' +
+                                    '</tr>' ;
+                            }else{
+                                html_list_detail += '<td class="sld_delivered material-icons"> <button class="de_button" > done </button></td>' +
+                                    '</tr>' ;
+                            }
                         }
 
                         $("#TableShopListDetail tbody tr").remove();
                         var body = $("#TableShopListDetail").find("tbody")
-                        .append($(
-                            html_list_detail
-                        ));
+                            .append($(
+                                html_list_detail
+                            ));
 
-                        body.on("click",".shoplistdetail_element",function(e){
-                            var sld_ele_id = $(this).attr('id').substring(3);
-                            var name = shop_list[sld_ele_id].nombre;
-                            var cantidad = shop_list[sld_ele_id].cantidad;
-                            var medida = shop_list[sld_ele_id].medida;
-                            var unidad = shop_list[sld_ele_id].unidad;
-                            var costo = shop_list[sld_ele_id].costo;
-                            var status = shop_list[sld_ele_id].status;
+                        body.on("click",".sld_missing",function(e){
+                            var sld_ele_id = $(this).parent().attr('id').substring(3);
+                            var nombre = $(this).parent().children(".sld_nombre").html();
+                            var presentacion = $(this).parent().children(".sld_medida").html();
+                            var cantidad = $(this).parent().children(".sld_cantidad").html();
 
-                            $("#AddToWarehouse").modal({show:true});
+                            var message = "Agregar "+ cantidad + " unidades de " + presentacion + " de " + nombre;
 
-                            $(".question_add").html("Agregar  "+name+" "+medida+" "+unidad);
-                            $(".picker").attr({
-                                "max" : cantidad,
-                                "min" : 1
+                            swal({
+                                title: 'Estas Seguro?',
+                                text: message,
+                                type: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33',
+                                confirmButtonText: 'Si, estoy Seguro!!'
+                            }).then(function () {
+                                $.ajax({
+                                    url: '{% url "products:shoplist" %}',
+                                    type: 'POST',
+                                    data: {
+                                        'type' : 'load_list_detail',
+                                        'load_list_detail': sld_ele_id,
+                                        csrfmiddlewaretoken: csrf_token,
+                                    },
+                                    datatype: 'jsonp',
+
+                                    success: function(result) {
+                                        swal(
+                                            'Éxito!',
+                                            'Agregado al almacen',
+                                            'success'
+                                        );
+                                        location.replace('{% url "products:shoplist" %}');
+                                    }
+                                });
                             });
 
+                        });
+
+                        body.on("click",".sld_delivered",function(e){
+                            var sld_ele_id = $(this).parent().attr('id').substring(3);
+                            $.ajax({
+                                url: '{% url "products:shoplist" %}',
+                                type: 'POST',
+                                data: {
+                                    'type' : 'load_date',
+                                    'detail_list_id': sld_ele_id,
+                                    csrfmiddlewaretoken: csrf_token,
+                                },
+                                datatype: "html",
+                                success: function(result) {
+                                    var date = result.substring(0,11);
+                                    var time = result.substring(12,19);
+                                    swal("Fecha de Entrega: "+ date + " a las " + time)
+                                }
+                            });
                         });
 
 

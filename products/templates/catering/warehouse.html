@@ -1,0 +1,137 @@
+{% extends "base/base_nav_footer.html" %}
+{% load static %}
+{% block link %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/warehouse.css' %}">
+{% endblock link %}
+{% block content %}
+
+    <div class="container container_warehouse col-md-12">
+
+        <div class="warehouse_display col-md-6">
+            <div class="row type_warehouse">
+                <p class="titles">Almacen</p>
+            </div>
+            {% for warehouse in warehouse_list %}
+                {% if warehouse.status == "ST" %}
+                    {% if warehouse.quantity > 0 %}
+                        <div class="card card-element add-btn col-md-2" id="warehouse_btn">
+                            <div id="{{ warehouse.id }},{{ warehouse.supply.name }}" class="row info_div">
+                                <p>{{ warehouse.supply.name }}</p>
+                            </div>
+                            <div class="row image_div">
+                                <img class="image" src="{{ warehouse.supply.image.url }}">
+                            </div>
+                            <div id="{{ warehouse.quantity }}" class="row info_quantity">
+                                <p>{{ warehouse.get_quantity_stock }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="warehouse_display col-md-6">
+            <div class="row type_warehouse">
+                <p class="titles">Ensamblaje</p>
+            </div>
+            {% for warehouse in warehouse_list %}
+                {% if warehouse.status == "AS" %}
+                    {% if warehouse.quantity > 0 %}
+                        <div class="card card-element col-md-2">
+                            <div id="{{ warehouse.id }}" class="row info_div">
+                                <p>{{ warehouse.supply.name }}</p>
+                            </div>
+                            <div class="row image_div">
+                                <img class="image" src="{{ warehouse.supply.image.url }}">
+                            </div>
+                            <div id="{{ warehouse.quantity }}" class="row info_quantity">
+                                <p>{{ warehouse.get_quantity_stock }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
+
+    </div>
+
+
+{% endblock content %}
+{% block javascript %}
+
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+
+            function get_cookie(name) {
+                let cookie_value = null;
+                if (document.cookie && document.cookie !== '') {
+                    let cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        let cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookie_value;/**/
+            }
+
+            $(".add-btn").on("click",function () {
+                let csrf_token = get_cookie('csrftoken');
+                var quantity_available = $(this).children(".info_quantity").attr('id');
+                var data_in = $(this).children(".info_div").attr('id').split(",");
+                var warehouse_id = data_in[0];
+                var warehouse_name = data_in[1];
+                console.log(data_in);
+
+                var step = 1000;
+
+                if(quantity_available<100){
+                    step = 1;
+                }
+                if(quantity_available<1000){
+                    step = 100;
+                }
+
+                swal({
+                    title: '¿Cuantos ' +warehouse_name+ ' desea mover? ',
+                    input: 'range',
+                    inputAttributes: {
+                        min: step,
+                        max: quantity_available,
+                        step: step
+                    },
+                    inputValue: step,
+                    showCancelButton: true,
+                    confirmButtonText: 'Submit',
+                    showLoaderOnConfirm: true,
+                    preConfirm: function (number) {
+                        return new Promise(function (resolve, reject) {
+                            $.ajax({
+                                url: '{% url "products:warehouse" %}',
+                                type: 'POST',
+                                data: {
+                                    'type' : 'save_to_assembly',
+                                    'quantity_available': number,
+                                    'warehouse_id': warehouse_id,
+                                    csrfmiddlewaretoken: csrf_token,
+                                },
+                                datatype: "html",
+                                success: function(result) {
+                                    swal("Agregado " + number + " de " + warehouse_name + " al almacen");
+                                    setTimeout(null, 5000);
+                                    location.reload()
+                                }
+                            });
+                        })
+                    },
+                    allowOutsideClick: false
+                })
+
+
+            })
+
+        });
+    </script>
+
+{% endblock javascript %}
