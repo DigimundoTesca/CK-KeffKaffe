@@ -59,7 +59,7 @@ class Supply(models.Model):
     # presentation unit
     PACKAGE = 'PA'
     BOX = 'BO'
-    PIECE = 'PI'
+    PIECE = 'PZ'
     PRESENTATION_UNIT = (
         (PACKAGE, 'Paquete'),
         (BOX, 'Caja'),
@@ -69,7 +69,7 @@ class Supply(models.Model):
     # metrics
     GRAM = 'GR'
     MILLILITER = 'MI'
-    PIECE = 'PI'
+    PIECE = 'PZ'
 
     METRICS = (
         (GRAM, 'gramo'),
@@ -84,10 +84,6 @@ class Supply(models.Model):
         validators=[MaxValueValidator(9999999999999)], blank=True, null=True)
     supplier = models.ForeignKey(Supplier, default=1, on_delete=models.CASCADE)
     storage_required = models.CharField(choices=STORAGE_REQUIREMENTS, default=DRY_ENVIRONMENT, max_length=2)
-    presentation_unit = models.CharField(max_length=10, choices=PRESENTATION_UNIT, default=PACKAGE)
-    presentation_cost = models.FloatField(default=0)
-    measurement_quantity = models.FloatField(default=0)
-    measurement_unit = models.CharField(max_length=10, choices=METRICS, default=PACKAGE)
     optimal_duration = models.IntegerField(default=0)
     optimal_duration_unit = models.CharField(choices=OPTIMAL_DURATION, max_length=2, default=DAYS)
     location = models.ForeignKey(SupplyLocation, default=1, on_delete=models.CASCADE)
@@ -104,6 +100,43 @@ class Supply(models.Model):
         verbose_name_plural = 'Insumos'
 
 
+class Presentation(models.Model):
+
+    PACKAGE = 'PA'
+    BOX = 'BO'
+    PIECE = 'PZ'
+    PRESENTATION_UNIT = (
+        (PACKAGE, 'Paquete'),
+        (BOX, 'Caja'),
+        (PIECE, 'Pieza')
+    )
+
+    GRAM = 'GR'
+    MILLILITER = 'MI'
+    PIECE = 'PZ'
+
+    METRICS = (
+        (GRAM, 'gramo'),
+        (MILLILITER, 'mililitro'),
+        (PIECE, 'pieza'),
+    )
+
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+    measurement_quantity = models.FloatField(default=0)
+    measurement_unit = models.CharField(max_length=10, choices=METRICS, default=PACKAGE)
+    presentation_unit = models.CharField(max_length=10, choices=PRESENTATION_UNIT, default=PACKAGE)
+    presentation_cost = models.FloatField(default=0)
+
+    def __str__(self):
+        return '%s %s %s' % (self.supply, self.measurement_quantity, self.measurement_unit)
+
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Presentacion'
+        verbose_name_plural = 'Presentaciones'
+
+
 class Cartridge(models.Model):
     # Categories
     FOOD_DISHES = 'FD'
@@ -114,22 +147,12 @@ class Cartridge(models.Model):
         (COMPLEMENTS, 'Complementos'),
     )
 
-    # Kinf of food
-    BREAKFAST = 'BF'
-    FOOD = 'FO'
-    
-    KIND_OF_FOOD = (
-        (BREAKFAST, 'Desayunos'),
-        (FOOD, 'Comidas'),
-    )
-
     name = models.CharField(max_length=128, default='')
     price = models.DecimalField(decimal_places=2, default=0, max_digits=12)
     category = models.CharField(choices=CATEGORIES, default=FOOD_DISHES, max_length=2)
     created_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(blank=False, upload_to='cartridges')
     is_active = models.BooleanField(default=True)
-    kind_of_food = models.CharField(choices=KIND_OF_FOOD, default=BREAKFAST, max_length=2)
 
     def __str__(self):
         return self.name
@@ -182,21 +205,11 @@ class ExtraIngredient(models.Model):
 
 
 class PackageCartridge(models.Model):
-    # Kind of food
-    BREAKFAST = 'BF'
-    FOOD = 'FO'
-    
-    KIND_OF_FOOD = (
-        (BREAKFAST, 'Desayunos'),
-        (FOOD, 'Comidas'),
-    )
-
     name = models.CharField(max_length=90)
     price = models.DecimalField(default=0, max_digits=12, decimal_places=2)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(blank=False, upload_to='cartridges', default='')
-    kind_of_food = models.CharField(choices=KIND_OF_FOOD, default=BREAKFAST, max_length=2)
     
     def __str__(self):
         return self.name
@@ -206,8 +219,7 @@ class PackageCartridge(models.Model):
         options = []
 
         for recipe in recipes:
-            options.append(("<option value=%s selected>%s</option>" %
-                                (recipe, recipe.cartridge)))
+            options.append(("<option value=%s selected>%s</option>" % (recipe, recipe.cartridge)))
         tag = """<select multiple disabled>%s</select>""" % str(options)
         return tag
 
@@ -231,7 +243,3 @@ class PackageCartridgeRecipe(models.Model):
         ordering = ('id',)
         verbose_name = 'Receta del Paquete'
         verbose_name_plural = 'Recetas de Paquetes'
-
-
-
-

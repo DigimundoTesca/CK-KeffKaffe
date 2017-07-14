@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -12,7 +13,9 @@ from django.db.models import Max, Min
 from branchoffices.models import CashRegister
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, SalesHelper
-from products.models import Cartridge, PackageCartridge, PackageCartridgeRecipe, ExtraIngredient
+from kitchen.models import Warehouse
+from products.models import Cartridge, PackageCartridge, PackageCartridgeRecipe, ExtraIngredient, CartridgeRecipe, \
+    Supply
 from sales.models import Ticket, TicketDetail, TicketExtraIngredient
 from users.models import User as UserProfile
 
@@ -134,6 +137,23 @@ def sales(request):
             }
             return JsonResponse(data)
 
+    active_tickets = [x for x in sales_helper.get_tickets_today_list() if x['is_active'] == True]
+    all_tickets = sales_helper.get_tickets_today_list()
+
+    if request.user.is_superuser:
+        user_tickets = all_tickets
+    else:
+        user_tickets = active_tickets
+
+
+    total_cost = 0
+    all_tickets_cost = 0
+    for ticket in active_tickets:
+        total_cost += ticket["ticket_parent"].total()
+
+    for ticket in all_tickets:
+        all_tickets_cost += ticket["ticket_parent"].total()
+
     # Any other request method:
     template = 'sales/sales_analytics.html'
     title = 'Registro de Ventas'
@@ -146,9 +166,11 @@ def sales(request):
         'today_name': helper.get_name_day(datetime.now()),
         'today_number': helper.get_number_day(datetime.now()),
         'week_number': helper.get_week_number(datetime.now()),
-        'tickets': sales_helper.get_tickets_today_list(),
+        'total_cost' : total_cost,
+        'all_tickets_cost': all_tickets_cost,
+        'tickets': user_tickets,
+        'user' : request.user,
         'dates_range': sales_helper.get_dates_range_json(),
-
     }
     return render(request, template, context)
 
@@ -158,8 +180,18 @@ def delete_sale(request):
     if request.method == 'POST':
         ticket_id = request.POST['ticket_id']
         ticket = Ticket.objects.get(id=ticket_id)
-        ticket.delete()
-        return JsonResponse({'result': 'excelente!'})
+        if request.POST['action'] == 'activate-ticket':
+            ticket.is_active = True
+            ticket.save()
+            return JsonResponse({'result': 'excelente!'})
+        if request.POST['action'] == 'deactivate-ticket':
+            ticket.is_active = False
+            ticket.save()
+            return JsonResponse({'result': 'excelente!'})
+        if request.POST['action'] == 'delete-ticket':
+            ticket.delete()
+            return JsonResponse({'result': 'excelente!'})
+
 
 
 @login_required(login_url='users:login')
@@ -172,10 +204,11 @@ def new_sale(request):
             user_profile_object = get_object_or_404(UserProfile, username=username)
             cash_register = CashRegister.objects.first()
             ticket_detail_json_object = json.loads(request.POST.get('ticket'))
+            ticket_detail_json_object
             payment_type = ticket_detail_json_object['payment_type']
             order_number = 1
-            """ 
-            Gets the tickets in the week and returns n + 1 
+            """
+            Gets the tickets in the week and returns n + 1
             where n is the Ticket.order_number biggest for the current week
             TODO:
             1. Get tickets in the current week range
@@ -212,6 +245,16 @@ def new_sale(request):
                 )
                 new_ticket_detail_object.save()
 
+                cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=cartridge_object)
+
+                for element in cartridge_recipe:
+                    try:
+                        stock = Warehouse.objects.get(supply=element.supply, status="AS")
+                        stock.quantity -= element.quantity
+
+                    except ObjectDoesNotExist:
+                        print("No hay stock en Assembly")
+
             for ticket_detail in ticket_detail_json_object['extra_ingredients_cartridges']:
                 cartridge_object = get_object_or_404(Cartridge, id=ticket_detail['cartridge_id'])
                 quantity = ticket_detail['quantity']
@@ -223,6 +266,16 @@ def new_sale(request):
                     price=price
                 )
                 new_ticket_detail_object.save()
+
+                cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=cartridge_object)
+
+                for element in cartridge_recipe:
+                    try:
+                        stock = Warehouse.objects.get(supply=element.supply, status="AS")
+                        stock.quantity -= element.quantity
+
+                    except ObjectDoesNotExist:
+                        print("No hay stock en Assembly")
 
                 for ingredient in ticket_detail['extra_ingredients']:
                     extra_ingredient_object = ExtraIngredient.objects.get(id=ingredient['id'])
@@ -252,6 +305,7 @@ def new_sale(request):
                 'status': 'ready',
                 'ticket_id': new_ticket_object.id,
                 'ticket_order': new_ticket_object.order_number,
+                'ticket_payment': new_ticket_object.payment_type,
             }
             return JsonResponse(json_response)
 
