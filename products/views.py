@@ -1,22 +1,21 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
+import json
+from datetime import timedelta, date, datetime
 
-from datetime import timedelta, datetime, date
-
-from decimal import Decimal
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
+
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
 from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
-from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm
-from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe
-from kitchen.models import Warehouse, WarehouseDetails
+from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm, PresentationForm, ShopListDetailForm
+from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe, Presentation
+from kitchen.models import Warehouse, ShopList, ShopListDetail
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
-
 
 
 # -------------------------------------  Suppliers -------------------------------------
@@ -70,8 +69,7 @@ def supplies(request):
 
 class CreateSupply(CreateView):
     model = Supply
-    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'presentation_unit', 'presentation_cost',
-              'measurement_quantity', 'measurement_unit', 'optimal_duration', 'optimal_duration_unit', 'location',
+    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'optimal_duration', 'optimal_duration_unit', 'location',
               'image']
     template_name = 'supplies/new_supply.html'
 
@@ -99,8 +97,7 @@ def supply_detail(request, pk):
 
 class UpdateSupply(UpdateView):
     model = Supply
-    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'presentation_unit', 'presentation_cost',
-              'measurement_quantity', 'measurement_unit', 'optimal_duration', 'optimal_duration_unit', 'location',
+    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'optimal_duration', 'optimal_duration_unit', 'location',
               'image']
     template_name = 'supplies/new_supply.html'
 
@@ -280,22 +277,7 @@ class DeleteCartridge(DeleteView):
         return redirect('supplies:cartridges')
 
 
-# -------------------------------------  Catering -------------------------------------
-class AddStock(CreateView):
-    model = WarehouseDetails
-    fields = ['warehouse','status','quantity']
-    template_name = 'catering/add_stock.html'
-
-    def __init__(self, **kwargs):
-        super(AddStock).__init__(**kwargs)
-        self.object = None
-
-    def form_valid(self, form):
-        print(form)
-        self.object = form.save()
-        return redirect('products:warehouse/catering')
-
-
+# -------------------------------------  Catering -----~--------------------------------
 @login_required(login_url='users:login')
 def catering(request):
     """"
@@ -305,25 +287,23 @@ def catering(request):
 
     products_helper = ProductsHelper()
     required_supplies = products_helper.get_required_supplies()
+
     estimated_total_cost = 0
 
     if request.method == 'POST':
         buy_objects_list = []
-
         for required in required_supplies:
-            diner_object = {    
-                'Nombre': required['name'], 
-                'Provedor': "proveedor",
-                'Cantidad': required['name'],
-                'Medida': required["measurement"],
-                'Presentacion': required['measurement_quantity'],
-                'Stock'
-                'Requerdio': required['required'],
-                'Costo': required['full_cost']                     
-            }            
-
+            diner_object = {
+                'Nombre': required['name'],
+                'Requeridos': required['quantity'],
+                'Stock': required['stock'],
+                'Por Comprar': required['required'],
+                'Comprar en': str(required['supplier']),
+                'Cantidad x Unidad' : required['measurement_quantity'],
+                'Costo x Unidad': required['cost'],
+                'Costo Total': required['full_cost'],
+            }
             buy_objects_list.append(diner_object)
-
         return JsonResponse({'buy_list': buy_objects_list})
 
     for required in required_supplies:
@@ -337,6 +317,7 @@ def catering(request):
         'required_supplies': required_supplies,
         'estimated_total_cost': estimated_total_cost,
         'page_title': PAGE_TITLE,
+        'supply_list': products_helper.get_all_supplies(),
         'always_popular_cartridge': products_helper.get_always_popular_cartridge(),
         'today_popular_cartridge': products_helper.get_today_popular_cartridge(),
     }
@@ -347,9 +328,37 @@ def catering(request):
 # -------------------------------------- Warehouse ---------------------------------------------
 @login_required(login_url='users:login')
 def warehouse(request):
+
+    products_helper = ProductsHelper()
+    warehouse_list = products_helper.get_all_elements_in_warehouse()
+
+    if request.method == 'POST':
+        
+        if request.POST['type'] == 'save_to_assembly':
+
+            quantity = json.loads(request.POST.get('quantity_available'))
+            warehouse_id = json.loads(request.POST.get('warehouse_id'))
+
+            # Retirar del almacen
+            selected_warehouse = Warehouse.objects.get(id=warehouse_id)
+            selected_warehouse.quantity -= quantity
+            selected_warehouse.save()
+
+            # Agregar al almacen
+            try:
+                itemstock = Warehouse.objects.get(supply=selected_warehouse.supply, status="AS")
+                itemstock.quantity += quantity
+                itemstock.save()
+            except Warehouse.DoesNotExist:
+                itemstock = Warehouse(supply=selected_warehouse.supply, status="AS",
+                                      quantity=quantity,
+                                      measurement_unit=selected_warehouse.measurement_unit)
+                itemstock.save()
+
     template = 'catering/warehouse.html'
     title = 'Movimientos de Almacen'
     context = {
+        'warehouse_list': warehouse_list,
         'title': title,
         'page_title': PAGE_TITLE
     }
@@ -360,77 +369,179 @@ def warehouse(request):
 def warehouse_movements(request):
     products_helper = ProductsHelper()
     predictions = products_helper.get_required_supplies()
-    supplies_on_stock = products_helper.get_all_warehouse_details()
-    all_supplies = products_helper.get_all_supplies()
+    supplies_list = products_helper.get_all_supplies()
 
     if request.method == 'POST':
         number = request.POST['cantidad']
-        mod_wh = WarehouseDetails.objects.get(pk=request.POST['element_pk'])
+        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
         mod_wh.quantity -= float(number)
         mod_wh.save()
 
-        created_detail = WarehouseDetails.objects.create(warehouse=mod_wh.warehouse, quantity=number)
-
         if request.POST['type'] == 'Stock':
-            created_detail.status = "ST"
+            try:
+                on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
+                on_stock.quantity += float(number)
+                on_stock.save()
+            except Warehouse.DoesNotExist:
+                Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="ST")
         else:
-            created_detail.status = "AS"
+            try:
+                on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="AS")
+                on_stock.quantity += float(number)
+                on_stock.save()
+            except Warehouse.DoesNotExist:
+                Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
 
-        start_date = str(created_detail.created_at)
-        dt = datetime.strptime(start_date, "%Y-%m-%d")
-        modified_date = dt + timedelta(days=created_detail.warehouse.supply.optimal_duration)
-        created_detail.expiry_date = modified_date
-        created_detail.save()
+    for supply in supplies_list:
+        try:
+            Warehouse.objects.get(supply=supply, status="PR")
+        except Warehouse.DoesNotExist:
+
+            Warehouse.objects.create(supply=supply, cost=supply.presentation_cost, status="PR")
 
     for prediction in predictions:
         if prediction['required'] > 0:
             try:
-                sup_on_stock = Warehouse.objects.get(supply=prediction['supply'])
-                try:
-                    detail = WarehouseDetails.objects.get(warehouse=sup_on_stock, status="PR")
-                    detail.quantity = prediction['required']
-                except WarehouseDetails.DoesNotExist:
-                    WarehouseDetails.objects.create(
-                        warehouse=sup_on_stock, status="PR", quantity=prediction['required'])
+                Warehouse.objects.get(supply=prediction['supply'], status="PR")
             except Warehouse.DoesNotExist:
-                Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'])
+                Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'],
+                                         quantity=prediction['required'], status="PR")
 
     template = 'catering/catering_movements.html'
     title = 'Movimientos de Almacen'
     context = {
-        'supps': all_supplies,
-        'supply_list': supplies_on_stock,
+        'supply_list': products_helper.get_all_elements_in_warehouse(),
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title
+    }
+    return render(request, template, context)
+
+@login_required(login_url='users:login')
+def shop_list(request):
+
+    shop_list = ShopList.objects.all()
+
+    if request.method == 'POST':
+
+        if request.POST['type'] == 'load_list':
+            element = json.loads(request.POST.get('load_list'))
+            list_sl = ShopListDetail.objects.filter(shop_list_id=element)
+
+            shop_list_array = []
+
+            for ele_shoplist in list_sl:
+                list_object = {
+                    'id': ele_shoplist.id,
+                    'nombre': ele_shoplist.presentation.supply.name,
+                    'cantidad': ele_shoplist.quantity,
+                    'medida': ele_shoplist.presentation.measurement_quantity,
+                    'unidad': ele_shoplist.presentation.measurement_unit,
+                    'costo': ele_shoplist.presentation.presentation_cost * ele_shoplist.quantity,
+                    'status': ele_shoplist.status
+                }
+
+                shop_list_array.append(list_object)
+
+            list_naive_array = {
+                'shop_list': shop_list_array
+            }
+            return JsonResponse(list_naive_array)
+
+        if request.POST['type'] == 'load_list_detail':
+            element = json.loads(request.POST.get('load_list_detail'))
+            list_sl = ShopListDetail.objects.get(id=element)
+            list_sl.status = "DE"
+            list_sl.deliver_day = datetime.now()
+            list_sl.save()
+
+            try:
+                itemstock = Warehouse.objects.get(supply=list_sl.presentation.supply, status="ST")
+                itemstock.quantity += list_sl.quantity * list_sl.presentation.measurement_quantity
+                itemstock.save()
+            except Warehouse.DoesNotExist:
+                itemstock = Warehouse(supply=list_sl.presentation.supply, status="ST",
+                                      quantity=list_sl.quantity * list_sl.presentation.measurement_quantity,
+                                      measurement_unit=list_sl.presentation.measurement_unit)
+                itemstock.save()
+
+        if request.POST['type'] == 'load_date':
+            element = json.loads(request.POST.get('detail_list_id'))
+            list_sl = ShopListDetail.objects.get(id=element)
+            date = list_sl.deliver_day
+
+            return HttpResponse(date)
+
+
+    template = 'catering/shoplist.html'
+    title = 'Lista de Compras'
+    context = {
+        'shop_list': shop_list,
         'title': title,
         'page_title': PAGE_TITLE
     }
     return render(request, template, context)
 
+@login_required(login_url='users:login')
+def new_shoplist(request):
+
+    products_helper = ProductsHelper()
+    supps = products_helper.get_all_supplies()
+    all_presentations = Presentation.objects.all()
+
+    shop_list = ShopList.objects.all()
+
+    supply_list = []
+
+    if request.method == 'POST':
+        form = PresentationForm(request.POST, request.FILES)
+        if form.is_valid():
+            presentation = form.save(commit=False)
+            presentation.save()
+            return redirect('/warehouse/new_shoplist')
+
+        if request.POST['type'] == 'shop_list':
+            shop_l = json.loads(request.POST.get('shop_list'))
+
+            new_shop_list = ShopList.objects.create()
+            new_shop_list.save()
+
+            for item in shop_l:
+                sel_pre = Presentation.objects.get(pk=item['pre_pk'])
+                ShopListDetail.objects.create(shop_list=new_shop_list, presentation=sel_pre, quantity=item['Cantidad'])
+
+            return redirect('/warehouse/shoplist')
+
+    else:
+        form = PresentationForm()
+
+    for sup in supps:
+        element_object = {
+            'pk': sup.pk,
+            'name': sup.name,
+            'imagen': sup.image.url,
+        }
+        supp_presentations = all_presentations.filter(supply=sup)
+        supp_pres = []
+
+        for supp_pre in supp_presentations:
+            supp_pres.append(supp_pre)
+
+        element_object['presentations'] = supp_pres
+        supply_list.append(element_object)
+
+    template = 'catering/new_shoplist.html'
+    title = 'Lista de Compras'
+    context = {
+        'shop_list': shop_list,
+        'form': form,
+        'title': title,
+        'supply_list': supply_list,
+        'page_title': PAGE_TITLE
+    }
+    return render(request, template, context)
 
 @login_required(login_url='users:login')
 def products_analytics(request):
-    def get_daily_period():
-        helper = Helper()
-        sales_helper = SalesHelper()
-
-        initial_date = helper.naive_to_datetime(date.today())
-        final_date = helper.naive_to_datetime(initial_date + timedelta(days=1))
-        filtered_tickets = sales_helper.get_all_tickets().filter(created_at__range=[initial_date, final_date])
-        tickets_details = sales_helper.get_all_tickets_details()
-        tickets_list = []
-        period_list = []
-        for ticket in filtered_tickets:
-            ticket_object = {
-                'total': Decimal(0.00),
-            }
-            for ticket_details in tickets_details:
-                if ticket_details.ticket == ticket:
-                    ticket_object['total'] += ticket_details.price
-            tickets_list.append(Decimal(ticket_object['total']))
-
-        for _ in tickets_list:
-            if ticket.created_at == ticket.created_at:
-                print('No corresponde a la hora')
-
     def get_period(initial_dt, final_dt):
         helper = Helper()
         sales_helper = SalesHelper()
@@ -438,9 +549,8 @@ def products_analytics(request):
         initial_dt = helper.naive_to_datetime(date(int(initial_dt[2]), int(initial_dt[1]), int(initial_dt[0])))
         final_dt = final_dt.split('-')
         final_dt = helper.naive_to_datetime(date(int(final_dt[2]), int(final_dt[1]), int(final_dt[0])))
-
-        filtered_tickets_details = sales_helper.get_all_tickets_details().filter(ticket__created_at__range=
-                                                                                 [initial_dt, final_dt])
+        filtered_tickets_details = sales_helper.get_all_tickets_details().\
+            filter(ticket__created_at__range=[initial_dt, final_dt])
         all_cartridge_recipes = CartridgeRecipe.objects.select_related('cartridge').all()
         supplies_list = []
         date_dict = {}
@@ -464,28 +574,68 @@ def products_analytics(request):
                 'recipe': filtered_cartridge_recipes_list
             }
             supplies_list.append(cartridge_object)
-            
-    if request.method == 'POST':
-        initial_date = request.POST['initial_date']
-        final_date = request.POST['final_date']
-        # get_daily_period()
-        get_period(initial_date, final_date)
-        return JsonResponse({'resultado': 'algo xd'})
+
+        if request.method == 'POST':
+            initial_date = request.POST['initial_date']
+            final_date = request.POST['final_date']
+            get_period(initial_date, final_date)
+            return JsonResponse({'resultado': 'algo xd'})
+
+    def get_products_sold():
+        sales_helper = SalesHelper()
+        products_helper = ProductsHelper()
+        initial_date = date.today()
+        final_date = initial_date + timedelta(days=1)
+        cartridges_list = []
+        filtered_ticket_details = sales_helper.get_tickets_details(initial_date, final_date)
+        all_cartridges = products_helper.get_all_cartridges()
+
+        for cartridge_item in all_cartridges:
+            cartridge_object = {
+                'id': cartridge_item.id,
+                'name': cartridge_item.name,
+                'frequency': 0,
+            }
+            cartridges_list.append(cartridge_object)
+
+        for ticket_detail_item in filtered_ticket_details:
+            if ticket_detail_item.cartridge:
+                for cartridge_item in cartridges_list:
+                    if cartridge_item['id'] == ticket_detail_item.cartridge.id:
+                        cartridge_item['frequency'] += ticket_detail_item.quantity
+                        break
+
+        return cartridges_list
 
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
-    list_x = [1, 2, 3, 4, 5, 6]
-    list_y = [10, 20, 30, 40, 50, 60]
 
-    latest_squares = LeastSquares(list_x, list_y)
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
-        'least_squares': latest_squares,
     }
 
     return render(request, template, context)
 
 
+@login_required(login_url='users:login')
+def products_predictions(request):
+    template = 'analytics/predictions.html'
+    title = 'Predicciones'
+
+    context = {
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title
+    }
+    return render(request, template, context)
+
+
 def test(request):
-    return HttpResponse('Write yours test here')
+    if request.method == 'POST':
+        initial_date = 'Fecha inicial ' + request.POST['initial_date']
+        final_date = 'Fecha Final ' + request.POST['final_date']
+
+        result_date = initial_date + '/' + final_date
+
+        return JsonResponse({'resultado': result_date})
+    return HttpResponse('No soy un metodo POST')

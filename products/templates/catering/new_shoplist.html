@@ -1,0 +1,224 @@
+{% extends "base/base_nav_footer.html" %}
+{% load static %}
+{% block link %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/shoplist.css' %}">
+{% endblock link %}
+{% block content %}
+
+    <!--Container of List-->
+    <div class="container container_manual_list">
+        <div class="a col-md-12">
+            <div class="block_card col-md-6">
+                {% for supplies in supply_list %}
+                    <div class="card card_element col-sm-12 col-md-12 col-lg-12" id="supplies.supply-{{ supplies.pk }}">
+                        <div class="card_image col-sm-4 col-md-4 col-lg-4">
+                            <img class="ele_image" src="{{ supplies.imagen }}" id="supplies.pr.supply-img-{{ supplies.pk }}" >
+                        </div>
+                        <div class="card_ele_info col-sm-8 col-md-8 col-lg-8">
+                            <div class="block_info">
+                                <span class="product_name" id ="supply_name-{{ supplies.name }}" ><b>{{ supplies.name }}</b></span><br>
+                                <small class="provider_unit" id="supplies.quantity-{{ supplies.unidad }},{{ supplies.medida }},{{ supplies.costo }}" > Unidad: {{ supplies.unidad }} {{ supplies.medida }} </small>                        <br>
+                            </div>
+                            <div class="block_btn">
+                                {% for presentations in supplies.presentations %}
+                                    <div class="pres_btn col-sm-4 col-md-4 col-lg-4">
+                                        <small class="btn_pres material-icons">lens</small><br>
+                                        <small class="info_pres" id="{{ presentations.pk }},{{ presentations.measurement_quantity }},{{ presentations.measurement_unit }},{{ presentations.presentation_cost }}"> {{ presentations.measurement_quantity }} {{ presentations.measurement_unit }}</small>
+                                    </div>
+                                {% endfor %}
+                                {% if supplies.presentations|length <= 2  %}
+                                    <div class="add_btn col-sm-4 col-md-4 col-lg-4">
+                                        <span class="btn_add material-icons">add</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="card_list block_list col-md-6">
+                <table class="table" id="TableID">
+                    <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Cantidad</th>
+                        <th>Presentacion</th>
+                        <th>Costo</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal -->
+    <div class="modal fade" id="NewPresentation" role="dialog" >
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 align="center">Agregar Presentacion</h1>
+                    <h4 id="title_pres" align="center"></h4>
+                </div>
+                <div class="modal-body ">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit"> Guardar </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--FloatingButton-->
+    <div class="popout">
+        <div class="FAB" id="fab-save-shoplist">
+            <i class="material-icons">save</i>
+        </div>
+    </div>
+
+
+{% endblock content %}
+{% block javascript %}
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+
+            function get_cookie(name) {
+                let cookie_value = null;
+                if (document.cookie && document.cookie !== '') {
+                    let cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        let cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookie_value;/**/
+            }
+
+            var list_array = [];
+            var status = 0;
+            //Add presentation to ShopList
+            $(".pres_btn").on("click",function(e){
+
+                var element = $(this);
+                var element_sup_pk = element.parent().parent().parent().attr('id').substring(16);
+                var element_name = element.parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
+                var element_quantity = element.children('.info_pres').attr('id');
+                var element_wh = element_quantity.split(',');
+                var element_prese_pk = element_wh[0];
+                var element_unit = element_wh[1];
+                var element_measurement = element_wh[2];
+                var element_cost = element_wh[3];
+
+                var string = {
+                    'Nombre': element_name,
+                    'Cantidad': "1",
+                    'Medida': element_unit,
+                    'Unidad': element_measurement,
+                    'Costo': element_cost,
+                    'sup_pk': element_sup_pk,
+                    'pre_pk': element_prese_pk,
+                };
+
+                var html_list = "";
+
+                if (list_array.length===0){
+                    list_array.push(string);
+                }else{
+                    var igual = false;
+                    for (i = 0; i < list_array.length; i++){
+                       if (list_array[i].Nombre===element_name && list_array[i].Medida===element_unit){
+                           list_array[i].Cantidad = parseInt(list_array[i].Cantidad) + 1;
+                           list_array[i].Costo = parseInt(list_array[i].Costo) + parseInt(element_cost);
+                           igual = true;
+                       }
+                    }
+                    if(!igual){
+                        list_array.push(string);
+                    }
+                }
+
+                for (i = 0; i < list_array.length; i++) {
+                    html_list +=
+                        '<tr>' +
+                            '<th>' + list_array[i].Nombre + '</th>' +
+                            '<th>' + list_array[i].Cantidad + '</th>' +
+                            '<th>' + list_array[i].Medida + " " +list_array[i].Unidad + '</th>' +
+                            '<th>' + list_array[i].Costo + '$</th>' +
+                        '</tr>'
+                }
+
+                $("#TableID tbody tr").remove();
+                $("#TableID tbody")
+                        .append($(
+                            html_list
+                        ));
+
+            });
+
+            //Show modal for new presentation
+            $(".btn_add").on("click",function(e){
+                //Show modal
+                $("#NewPresentation").modal({show:true});
+                //Set Title
+                var element_name = $(this).parent().parent().parent().children('.block_info').children('.product_name').attr('id').substring(12);
+                $("#title_pres").html(element_name);
+
+                var element_pk = $(this).parent().parent().parent().parent().attr('id').substring(16);
+                $("#id_supply").val(element_pk);
+
+            });
+
+            //Display form to Save ShopList
+            $(".FAB").on("click",function (e) {
+                let csrf_token = get_cookie('csrftoken');
+                let JSONSale = JSON.stringify(list_array);
+                if(list_array.length>=1){
+                    $.ajax({
+                        url: '{% url "products:new_shoplist" %}',
+                        type: 'POST',
+                        data: {
+                            'type' : 'shop_list',
+                            'shop_list': JSONSale,
+                            csrfmiddlewaretoken: csrf_token,
+                        },
+                        traditional: true,
+                        datatype: 'jsonp',
+                        success: function(result) {
+                            swal({
+                                title: "Éxito",
+                                text: "Lista Guardada",
+                                type: "success",
+                                showConfirmButton: false,
+                            });
+                            location.replace('{% url "products:shoplist" %}');
+                        },
+                        error: function(result, jqXHR, textStatus, errorThrown) {
+                            swal({
+                                title: "Lista no Guardada!",
+                                text: 'Contacte a soporte!\n ' + 'Errores: ' + textStatus + ', ' + jqXHR,
+                                type: "error",
+                                showConfirmButton: false
+                            });
+                            setTimeout(rel, 30000);
+                        },
+                    });
+                }else{
+                    swal({
+                        title: "La lista esta vacia!",
+                        text: 'Agregue elementos a la lista!',
+                        type: "warning",
+                        showConfirmButton: false
+                    });
+                    setTimeout(rel, 30000);
+                }
+            });
+        });
+    </script>
+{% endblock javascript %}

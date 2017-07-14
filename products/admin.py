@@ -4,7 +4,7 @@ from django.contrib import admin
 
 from products.models import PackageCartridge, PackageCartridgeRecipe, \
     CartridgeRecipe, Supply, SupplyLocation, SuppliesCategory, Cartridge, \
-    ExtraIngredient
+    ExtraIngredient, Presentation
 
 
 @admin.register(SuppliesCategory)
@@ -19,8 +19,7 @@ class AdminSupplyLocation(admin.ModelAdmin):
 
 @admin.register(Supply)
 class AdminSupply(admin.ModelAdmin):
-    list_display = ('id', 'name', 'category', 'supplier', 'presentation_unit', 'presentation_cost', 'measurement_unit',
-                    'measurement_quantity',)
+    list_display = ('id', 'name', 'category', 'supplier')
     list_display_links = ('id', 'name')
     ordering = ['name']
 
@@ -37,11 +36,16 @@ class ExtraIngredientInline(admin.TabularInline):
 
 @admin.register(Cartridge)
 class AdminCartridge(admin.ModelAdmin):
-    list_display = ('id', 'name', 'price', 'category', 'kind_of_food', 'is_active','created_at', 'get_image', 'image')
+    list_display = ('id', 'name', 'price', 'category', 'is_active','created_at', 'get_image', 'image')
     list_display_links = ('id', 'name')
-    list_editable = ('price', 'image', 'category', 'is_active', 'kind_of_food')
+    list_editable = ('price', 'image', 'category', 'is_active',)
     inlines = [CartridgeRecipeInline, ExtraIngredientInline]
     ordering = ['name']
+
+@admin.register(Presentation)
+class AdminPresentation(admin.ModelAdmin):
+    list_display = ('id','supply', 'measurement_quantity', 'measurement_unit')
+    ordering = ['supply']
 
 
 class PackageCartridgeRecipeInline(admin.TabularInline):
@@ -56,8 +60,8 @@ class PackageCartridgeRecipeInline(admin.TabularInline):
 
 @admin.register(PackageCartridge)
 class AdminPackageCartridge(admin.ModelAdmin):
-    list_display = ('id', 'name', 'price', 'kind_of_food', 'is_active', 'package_recipe')
+    list_display = ('id', 'name', 'price', 'is_active', 'package_recipe')
     list_display_links = ('id', 'name')
-    list_editable = ('price', 'is_active', 'kind_of_food')
+    list_editable = ('price', 'is_active',)
     inlines = [PackageCartridgeRecipeInline]
     ordering = ['name']

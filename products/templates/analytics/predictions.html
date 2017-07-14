@@ -1,14 +1,11 @@
-{% extends 'base/base_nav_footer.html' %}
+{% extends "base/base_nav_footer.html" %}
 
-{% load static %}
-
-{% block link %}    
-  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css"/>
-  <link rel="stylesheet" href="{% static "css/styles27052017.css" %}">
+{% block link %}
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" />
 {% endblock link %}
 
 {% block content %}
-<div class="container"/>
+<div class="container-fluid">
   <div class="form-inline">
     <label class="sr-only" for="initial-date">Fecha inicial</label>
     <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="initial-date" placeholder="Primer Fecha">
@@ -18,49 +15,15 @@
       <input type="text" class="form-control" id="final-date" placeholder="Última Fecha">
     </div>
 
-    <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" onclick="" id="create-predictions">Generar</button>
+    <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" id="create-predictions">Generar</button>
   </div>
-  <div>
-    <table id="analytics-prro" class="table table-kitchen table-straped table-hover" align="right">
-      <thead class="thead-inverse">
-        <tr>
-          <th>Producto</th>
-          <th>Cantidad</th>
-        </tr>
-      </thead>  
-        <tbody>
-            {% for cartridge in today_sold_product %}
-            <tr>
-              <td>
-                <span>
-                  {{ cartridge.name }}
-                </span>
-              </td>
-              <td>
-                <span class="badge badge-success">
-                  {{ cartridge.frequency }}
-                </span>
-              </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+  <div class="result-info">
+    <h3>Aquí irá la información</h3>
+    <p id="1"></p>
+    <p id="2"></p>
   </div>
 </div>
-<!-- <style type="text/css">
-  /*---------- Tables ------------ */
-tr:nth-child(even){
- background-color:  rgba(131,78,0,0.5);
-}
-tr:hover{
- background-color:  rgba(131,78,0,1) !important;
-}
-
-table{
-  border-collapse: collapse;
-  width: 100%
-}*/
-</style> -->
 
 {% endblock content %}
 
@@ -69,10 +32,10 @@ table{
 </script>
 
 <script type="text/javascript">
-  $(function() {   
-    /** 
+  $(function() {
+    /**
     * Gets the csrf cookie from cache
-    */ 
+    */
     function get_cookie(name) {
       let cookie_value = null;
       if (document.cookie && document.cookie !== '') {
@@ -111,9 +74,9 @@ table{
       final_date = aux_final[1] + '-' + aux_final[0] + '-' + aux_final[2];
 
       let csrf_token = get_cookie('csrftoken');
-      console.log(initial_date)
+
       $.ajax({
-        url: '{% url "products:analytics" %}',
+        url: '{% url "products:predictions" %}',
         type: 'POST',
         data: {
           'initial_date': initial_date,
@@ -123,15 +86,12 @@ table{
         traditional: true,
         datatype: 'jsonp',
         success: function(result) {
-          swal({
-            title: "Éxito",
-            text: "Datos obtenidos",
-            type: "success",
-            showConfirmButton: true,
-          });
-
-         console.log(result);
-
+          final_dates = result['resultado'];
+          final_dates = final_dates.split('/')
+          let f_initial = final_dates[0];
+          let f_final = final_dates[1];
+          $('#1').text(f_initial)
+          $('#2').text(f_final)
         },
         error: function(result, jqXHR, textStatus, errorThrown) {
           swal({
@@ -139,7 +99,6 @@ table{
             text: 'Contacte a soporte!\n ' + 'Errores: ' + textStatus + ', ' + jqXHR,
             type: "error",
             showConfirmButton: false,
-
           });
         },
       });
