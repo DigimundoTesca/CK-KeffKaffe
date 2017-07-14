@@ -7,20 +7,16 @@
   {{ page_title }}
 {% endblock %}
 
-{% block link %}
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.css">
-{% endblock link %}
-
 {% block content %}
-
   <!-- Container -->
   <div class="container-fluid container-sales">
     <div class="row">
       <div class="col-xs-12 col-lg-3 group-sales">
         <div class="card col-sm-12 card-outline-info">
           <div class="info-sale">
+            <!-- TODO: Changes the total tiket when the employee promo is activated -->
             <span class="text-total left">Total: </span>
-            <p class="text-xs-center">
+            <p class="text-xs-center" id="total-cart">
               <span class="text-price align-top" id="s-total-price">$ </span>
               <span id="total-price">
               <span class="text-price align-top" id="int-total-price">0</span>
@@ -30,6 +26,7 @@
             </p>
           </div>
         </div>
+        <button type="button" class="btn btn-lg col-xs-12 btn-primary mb-1" id="btn-employee-promo">Promoción de empleado</button>
         <div class="card col-sm-12 card-scroll-orders card-scroll card-outline-info">
           <div class="card-block products-block">
             <div class="row">
@@ -47,7 +44,7 @@
         <div class="row">
           <div class="col-xs-12 col-md-4 col-lg-4">
             <div class="card card-block card-product-title card-outline-info">
-              <h3>Bebidas</h3>
+              <h3 class="text-xs-center">Bebidas</h3>
             </div>
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-complements">
               <div class="card-block products-block">
@@ -76,29 +73,29 @@
           </div>
           <div class="col-xs-12 col-md-4 col-lg-4">
             <div class="card card-block card-product-title card-outline-info">
-              <h3>Platillos</h3>
+              <h3 class="text-xs-center">Platillos</h3>
             </div>
             <div class="card col-xs-12 card-scroll card-outline-info" id="group-dishes">
               <div class="card-block products-block">
                 {% for cartridge in cartridges %}
-                {% if cartridge.is_active %}
-                  {% if cartridge.category == 'FD' %}
-                    <div class="card-block product-container" id="cartridge-{{ cartridge.pk }}">
-                      <h6 class="product-name">{{ cartridge.name }}</h6>
-                      <img src="{{ cartridge.image.url }}" id="cartridge-img-{{ cartridge.pk }}" class="product-img" alt="Nombre de la bebida">
-                      <div class="text-xs-right content-price">
-                        <span class="font-weight-bold">$ </span><span class="product-cost font-weight-bold">{{ cartridge.price }}</span>
+                  {% if cartridge.is_active %}
+                    {% if cartridge.category == 'FD' %}
+                      <div class="card-block product-container" id="cartridge-{{ cartridge.pk }}">
+                        <h6 class="product-name">{{ cartridge.name }}</h6>
+                        <img src="{{ cartridge.image.url }}" id="cartridge-img-{{ cartridge.pk }}" class="product-img" alt="Nombre de la bebida">
+                        <div class="text-xs-right content-price">
+                          <span class="font-weight-bold">$ </span><span class="product-cost font-weight-bold">{{ cartridge.price }}</span>
+                        </div>
+                        {% for extra in extra_ingredients_products_list %}
+                          {% if extra.name == cartridge.name %}
+                            <div class="extra-ingredients-cont">
+                              <button id="btn-extra-ing-{{ cartridge.id }}" class="btn btn-outline-primary btn-extra-ing" data-toggle="modal" data-target="#extra-ingredient-modal">Ingrediente Extra</button>
+                            </div>
+                          {% endif %}
+                        {% endfor %}
                       </div>
-                      {% for extra in extra_ingredients_products_list %}
-                        {% if extra.name == cartridge.name %}
-                          <div class="extra-ingredients-cont">
-                            <button id="btn-extra-ing-{{ cartridge.id }}" class="btn btn-outline-primary btn-extra-ing" data-toggle="modal" data-target="#extra-ingredient-modal">Ingrediente Extra</button>
-                          </div>
-                        {% endif %}
-                      {% endfor %}
-                    </div>
+                    {% endif %}
                   {% endif %}
-                {% endif %}
                 {% endfor %}
               </div>
             </div>
@@ -108,7 +105,7 @@
               <div class=" col-xs-12">
                 <button type="button" id="btn-order" class="btn col-xs-12 btn-lg" data-toggle="modal" data-target="#modal-order">Realizar venta</button>
                 <div class="card col-xs-12 card-block card-package-title card-outline-info">
-                  <h3>Paquetes</h3>
+                  <h3 class="text-xs-center">Paquetes</h3>
                 </div>
                 <div class="card col-xs-12 card-scroll packages-block card-outline-info" id="group-dishes">
                   <div class="card-block">
@@ -177,8 +174,9 @@
                 </div>
                 <div class="ticket-contact">
                   <p class="text-xs-center">
-                    Contacto:<br>
-                    customerservice@keffkaffe.com  <br>
+                    <span class="mb-1">Contacto:</span>
+                    <span class="mb-1">(55) 2737-5337</span>
+                    <span class="mb-1">customerservice@keffkaffe.com</span>
                   </p>
                   <p class="text-xs-center mt-1">
                     <strong>¡GRACIAS POR SONREIR! <span class="smile">☺</span></strong> <br>
@@ -186,16 +184,25 @@
                 </div>
               </div>
             </div>
-            <div class="card card-scroll" id="ticket-description">
-              <h3>No olvides recordarle al cliente las promociones</h3>
+            <div class="card card-scroll pt-1 pb-1 row" id="ticket-description">
+              <h3 class="col-xs-12 text-xs-center">No olvides recordarle al cliente las promociones</h3>
+              <div class="col-xs-12">
+                <blockquote id="promo-employee-callout" class="blockquote bd-callout bd-callout-info hidde">
+                  <p class="mb-0">Descuento de empleado aplicado</p>
+                </blockquote>
+              </div>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <div class="container">
             <div class="row">
-              <button type="submit" id="btn-pago-tarjeta" class="btn btn-primary col-xs-4 push-xs-3 btn-printer">Pago con tarjeta</button>
-              <button type="submit" id="btn-pago-efectivo" class="btn btn-success col-xs-4 push-xs-4 btn-printer">Pago con efectivo</button>
+              <div class="col-xs-4 offset-xs-4">
+                <button type="submit" id="btn-pago-tarjeta" class="btn btn-lg btn-block btn-primary btn-printer">Pago con tarjeta</button>
+              </div>
+              <div class="col-xs-4">
+                <button type="submit" id="btn-pago-efectivo" class="btn btn-lg btn-block btn-success btn-printer">Pago con efectivo</button>
+              </div>
             </div>
           </div>
         </div>
@@ -224,17 +231,18 @@
       </div>
     </div>
   </div>
-
 {% endblock content %}
+
 {% block javascript %}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.3.8/sweetalert2.min.js"></script>
   <script type="text/javascript" charset="utf-8">
     $(document).ready(function() {
-      let Ticket = {
+        let Ticket = {
         'cartridges': [],
         'extra_ingredients_cartridges': [],
         'packages': [],
-        'payment_type': 'cash', 
+        'payment_type': 'cash',
+        'employeePriceStatus': false,
+        'employeePrice': 0,
       };
 
       let PackageProduct = {
@@ -252,9 +260,9 @@
         'ingredients': [],
       };
 
-      /** 
+      /**
        * Gets the csrf cookie from cache
-       */ 
+       */
       function get_cookie(name) {
         let cookie_value = null;
         if (document.cookie && document.cookie !== '') {
@@ -270,7 +278,7 @@
         return cookie_value;
       }
 
-      /** 
+      /**
        * Converts an integer to a number with decimals
        */
       function set_number_format(amount, decimals) {
@@ -288,7 +296,7 @@
         return amount;
       }
 
-      /** 
+      /**
        * Sums the total in the list and sends them to the grand total
        */
       function set_total_ticket(){
@@ -306,16 +314,84 @@
           );
       }
 
-      /** 
-       * Returns the product type initials 
+      /**
+       * Returns the product type initials
+       * @param  {string} large_type_id id attribute of the selected product
        */
       function get_type_product(large_type_id){
         large_type_id = large_type_id.substring(3,7);
         return large_type_id;
       }
 
-      /** 
-       * Displays the modal of the extra ingredients 
+      /**
+       * Calculates the total of the cartridges in the ticket object
+       * @return {number} total cartridges ticket
+       */
+      function getTotalCartridges() {
+        let totalCartridges = 0;
+
+        for (var i = 0; i < Ticket.cartridges.length; i++) {
+          totalCartridges += parseFloat(Ticket.cartridges[i].price);
+        }
+
+        return totalCartridges;
+      }
+
+      /**
+       * Calculates the total of the packages in the ticket object
+       * @return {number} total packages ticket
+       */
+      function getTotalPackages() {
+        let totalPackages = 0;
+
+        for (var i = 0; i < Ticket.packages.length; i++) {
+          totalPackages += parseFloat(Ticket.packages[i].price);
+        }
+
+        return totalPackages;
+      }
+
+
+      /**
+      * Obtains the total price of the ticket object
+      * @return {number} total ticket objetct
+      */
+      function getTotalTicket() {
+        let totalCart = 0;
+
+        totalCart += getTotalCartridges();
+        totalCart += getTotalPackages();
+
+        return totalCart;
+      }
+
+      /**
+       * Changes the total ticket with the employee promo status of the ticket
+       */
+      function setsTicketEmployeePromo() {
+        let totalCart = getTotalTicket(),
+            totalCartridgesCart = getTotalCartridges(),
+            totalPackagesCart = getTotalPackages(),
+            discountRate = 0,
+            totalCartridgesCartDiscount = 0,
+            totalTicket = 0;
+
+        if (Ticket.employeePriceStatus) {
+          totalCartridgesCartDiscount = totalCartridgesCart / 2
+          totalTicket = totalPackagesCart + totalCartridgesCartDiscount;
+          discountRate = totalCartridgesCartDiscount * 100 / totalCart;
+
+          $('#int-total-price').text(totalTicket.toFixed(2).split('.')[0])
+          $('#dec-total-price').text(totalTicket.toFixed(2).split('.')[1])
+
+        } else {
+          $('#int-total-price').text(totalCart.toFixed(2).split('.')[0])
+          $('#dec-total-price').text(totalCart.toFixed(2).split('.')[1])
+        }
+      }
+
+      /**
+       * Displays the modal of the extra ingredients
        * for each product that has them
        */
       $(this).on('click', '.btn-extra-ing', function(event) {
@@ -366,7 +442,7 @@
         }
       });
 
-      /** 
+      /**
        * Manipulates the extra ingredients list in ExtraIngredientObject
        */
       $(this).on('click', '.extra-ingredient-li', function(event) {
@@ -414,7 +490,7 @@
         }
       });
 
-      /** 
+      /**
        * Adds the product with the extra ingredients to the list
        */
       $(this).on('click', '#btn-add-extra-ingredient', function(event) {
@@ -551,8 +627,8 @@
        $("#extra-ingredient-modal").modal('hide');
       });
 
-      /** 
-       * Adds a product to ticket list 
+      /**
+       * Adds a product to ticket list
        */
       $(this).on('click', '.product-img', function(event) {
         let element = $(this);
@@ -634,7 +710,7 @@
               cost = cost.toFixed(2);
             } else {
               cost += '.00';
-            } 
+            }
 
             if (base_cost % 2 != 0) {
               base_cost = base_cost.toFixed(2);
@@ -652,7 +728,7 @@
               "<span class='font-weight-bold s-li'>$ </span>" +
               "<span class='total-li font-weight-bold'>" + cost + "</span> " +
               "</li>");
-            
+
             $nuevo_li.appendTo('#sales-list').fadeTo('slow', 1);
           }
 
@@ -664,7 +740,7 @@
         addObjectToTicket();
       });
 
-      /** 
+      /**
        * Controls the actions to the btn-remove icon
        */
       $(this).on('click', '.remove-icon-li', function(event) {
@@ -695,7 +771,7 @@
             }
             count += 1;
           });
-         
+
           Ticket.packages.forEach(function(package_object){
             if (package_object.id == id_package){
               Ticket.packages.splice(count, 1);
@@ -726,7 +802,7 @@
 
         try {
           let short_type_id = get_type_product(large_type_id);
-          
+
           if(short_type_id == 'cart'){
             Ticket.cartridges.forEach(function(cartridge_object, index) {
 
@@ -734,7 +810,7 @@
 
                 let price_JSON = parseFloat(Ticket.cartridges[index].price);
 
-                // Modifies the ticket JSON               
+                // Modifies the ticket JSON
                 Ticket.cartridges[index].quantity -= 1;
                 Ticket.cartridges[index].price = set_number_format(price_JSON - base_cost_product, 2);
 
@@ -752,7 +828,7 @@
                 if (package_object.id == id_package) {
                   let price_JSON = parseFloat(Ticket.packages[index].price);
 
-                  // Modifies the ticket JSON               
+                  // Modifies the ticket JSON
                   Ticket.packages[index].quantity -= 1;
                   Ticket.packages[index].price = set_number_format(price_JSON - base_cost_product, 2);
 
@@ -800,8 +876,8 @@
          */
         set_total_ticket();
       });
-      
-      /** 
+
+      /**
        * Controls the actions to the btn-add icon
        */
       $(this).on('click', '.add-icon-li', function(event) {
@@ -810,7 +886,7 @@
         let base_cost_product = parseFloat(element.siblings('span.base-cost-li').text());
         let total_product_container = element.siblings('span.total-li');
         let id_cartridge = element.parent().attr('id').substring(13);
-        let id_package = element.parent().attr('id').substring(11); 
+        let id_package = element.parent().attr('id').substring(11);
         let large_type_id = element.parent().attr('id').toString()
 
         function set_total_li(new_total) {
@@ -834,7 +910,7 @@
         }
         try {
           let short_type_id = get_type_product(large_type_id);
-          
+
           if(short_type_id == 'cart'){
             Ticket.cartridges.forEach(function(cartridge_object, index) {
 
@@ -842,7 +918,7 @@
 
                 let price_JSON = parseFloat(Ticket.cartridges[index].price);
 
-                // Modifies the ticket JSON               
+                // Modifies the ticket JSON
                 Ticket.cartridges[index].quantity += 1;
                 Ticket.cartridges[index].price = set_number_format(price_JSON + base_cost_product, 2);
 
@@ -861,7 +937,7 @@
 
                   let price_JSON = parseFloat(Ticket.packages[index].price);
 
-                  // Modifies the ticket JSON               
+                  // Modifies the ticket JSON
                   Ticket.packages[index].quantity += 1;
                   Ticket.packages[index].price = set_number_format(price_JSON + base_cost_product, 2);
 
@@ -879,14 +955,14 @@
             throw error;
           }
         }
-        
+
         /** Modifies the total for Ticket DOM */
-         
+
         set_total_ticket();
       });
 
-      /** 
-       * Adds the package to modal 
+      /**
+       * Adds the package to modal
        */
       $(this).on('click', '#btn-add-package', function(event) {
         let element = $(this);
@@ -967,10 +1043,15 @@
         addProductToTicket();
       });
 
-      /** 
-       * Shows the modal to do the sale 
+      /**
+       * Shows the modal to do the sale
        */
       $(this).on('click', '#btn-order', function(event) {
+        if (Ticket.employeePriceStatus) {
+          $('#promo-employee-callout').removeClass('hidden');
+        } else {
+          $('#promo-employee-callout').addClass('hidden');
+        }
         function getActualTime() {
           let datetime = new Date();
           let hours = datetime.getHours();
@@ -1060,8 +1141,8 @@
         setButtonStatus(size_tickets);
       });
 
-      /** 
-       * Sends the new sale and prints the ticket 
+      /**
+       * Sends the new sale and prints the ticket
        */
       $(this).on('click', '.btn-printer', function(event) {
         let payment_type = $(this).attr('id');
@@ -1140,10 +1221,10 @@
         }
       });
 
-      /** 
-       * Cancels  the sale and resets the ticket object 
+      /**
+       * Cancels  the sale and resets the ticket object
        */
-      $(this).on('click', '#btn-orders-reset', function(event) {
+      $('#btn-orders-reset').on('click', function(event) {
         function resetTicketObject() {
           Ticket.cartridges.length = 0;
           Ticket.packages.length = 0;
@@ -1167,6 +1248,25 @@
         }
         resetTicketList();
         resetTicketObject();
+      });
+
+      /**
+       * Changes the employee promo status from the ticket object
+       * First changes the styles and later calls the setsTicketEmployeePromo() function
+       */
+      $('#btn-employee-promo').on('click', function(event) {
+        if ( Ticket.employeePriceStatus ) {
+          Ticket.employeePriceStatus = false;
+          $('#total-cart').removeClass('text-info');
+          $('#btn-employee-promo').addClass('btn-primary');
+          $('#btn-employee-promo').removeClass('btn-info');
+        } else {
+          Ticket.employeePriceStatus = true;
+          $('#total-cart').addClass('text-info');
+          $('#btn-employee-promo').removeClass('btn-primary');
+          $('#btn-employee-promo').addClass('btn-info');
+        }
+        setsTicketEmployeePromo();
       });
     });
   </script>

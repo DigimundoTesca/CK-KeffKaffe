@@ -631,4 +631,11 @@ def products_predictions(request):
 
 
 def test(request):
-    return HttpResponse('Hola!!!')
+    if request.method == 'POST':
+        initial_date = 'Fecha inicial ' + request.POST['initial_date']
+        final_date = 'Fecha Final ' + request.POST['final_date']
+
+        result_date = initial_date + '/' + final_date
+
+        return JsonResponse({'resultado': result_date})
+    return HttpResponse('No soy un metodo POST')

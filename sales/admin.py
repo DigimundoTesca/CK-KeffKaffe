@@ -1,8 +1,13 @@
 from django.contrib import admin
 from django.db.models import Sum
 
-from sales.models import TicketDetail, Ticket, TicketExtraIngredient
+from sales.models import TicketDetail, Ticket, TicketExtraIngredient, TicketPromo
 from actions import export_as_excel
+
+
+@admin.register(TicketPromo)
+class TicketPromoAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description', 'discount')
 
 
 class TicketDetailInline(admin.TabularInline):
@@ -37,4 +42,3 @@ class TicketDetailAdmin(admin.ModelAdmin):
     search_fields = ('ticket__created_at',)
     actions = (export_as_excel,)
     inlines = [TicketExtraIngredientInline, ]
-

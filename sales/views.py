@@ -206,8 +206,8 @@ def new_sale(request):
             ticket_detail_json_object
             payment_type = ticket_detail_json_object['payment_type']
             order_number = 1
-            """ 
-            Gets the tickets in the week and returns n + 1 
+            """
+            Gets the tickets in the week and returns n + 1
             where n is the Ticket.order_number biggest for the current week
             TODO:
             1. Get tickets in the current week range
@@ -299,21 +299,6 @@ def new_sale(request):
                     price=price
                 )
                 new_ticket_detail_object.save()
-
-                package_recipe = PackageCartridgeRecipe.objects.filter(package_cartridge=package_object)
-
-                for element_p in package_recipe:
-
-                    cartridge_recipe = CartridgeRecipe.objects.filter(cartridge=element_p)
-
-                    for element in cartridge_recipe:
-                        try:
-                            stock = Warehouse.objects.get(supply=element.supply, status="AS")
-                            stock.quantity -= element.quantity
-
-                        except ObjectDoesNotExist:
-                            print("No hay stock en Assembly")
-
 
             json_response = {
                 'status': 'ready',
