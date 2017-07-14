@@ -262,6 +262,13 @@
     });
 
     $(this).on('click', 'button', function(event){
+      $.ajax({
+        url: "{% url 'products:analytics' %}",
+        type: 'POST',
+        data: {
+          csrfmiddlewaretoken: getCookie('csrftoken'),
+        },
+      });
     });
 
     $(this).on('change', '.custom-select', function(event) {
@@ -279,7 +286,7 @@
         },
         beforeSend: function(){
           swal({
-            title: "Obteniendo registros",
+            title: "Obteniendo registros"
             text: "Espere mientras obtenemos toda la información",
           });
           swal.enableLoading();
