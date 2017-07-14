@@ -6,6 +6,14 @@ from branchoffices.models import CashRegister
 from products.models import Cartridge, PackageCartridge, ExtraIngredient
 from users.models import User as UserProfile
 
+class TicketPromo(models.Model):
+    name = models.CharField(max_length=24, default='')
+    description = models.TextField()
+    discount = models.FloatField()
+
+    def __str__(self):
+        return '%s' % self.name
+
 
 class Ticket(models.Model):
     # Payment Type
@@ -27,6 +35,7 @@ class Ticket(models.Model):
     order_number = models.IntegerField(
         null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    promo = models.ManyToManyField(TicketPromo)
 
     def __str__(self):
         return '%s' % self.id
@@ -92,7 +101,7 @@ class TicketDetail(models.Model):
         return tag
 
     extra_ingredients.allow_tags = True
-    
+
     class Meta:
         ordering = ('id',)
         verbose_name = 'Ticket Details'
