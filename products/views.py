@@ -1,8 +1,11 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 import json
+import random
+import json
 from datetime import timedelta, date, datetime
-
+from datetime import timedelta, datetime, date
+from decimal import Decimal
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
@@ -16,7 +19,6 @@ from kitchen.models import Warehouse, ShopList, ShopListDetail
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
-
 
 # -------------------------------------  Suppliers -------------------------------------
 @login_required(login_url='users:login')
@@ -277,53 +279,6 @@ class DeleteCartridge(DeleteView):
         return redirect('supplies:cartridges')
 
 
-# -------------------------------------  Catering -----~--------------------------------
-@login_required(login_url='users:login')
-def catering(request):
-    """"
-    TODO: Media para predicción. 
-    TODO: Ordenar por prioridad.
-    """
-
-    products_helper = ProductsHelper()
-    required_supplies = products_helper.get_required_supplies()
-
-    estimated_total_cost = 0
-
-    if request.method == 'POST':
-        buy_objects_list = []
-        for required in required_supplies:
-            diner_object = {
-                'Nombre': required['name'],
-                'Requeridos': required['quantity'],
-                'Stock': required['stock'],
-                'Por Comprar': required['required'],
-                'Comprar en': str(required['supplier']),
-                'Cantidad x Unidad' : required['measurement_quantity'],
-                'Costo x Unidad': required['cost'],
-                'Costo Total': required['full_cost'],
-            }
-            buy_objects_list.append(diner_object)
-        return JsonResponse({'buy_list': buy_objects_list})
-
-    for required in required_supplies:
-        estimated_total_cost += required["full_cost"]
-
-    template = 'catering/catering.html'
-    title = 'Abastecimiento'
-
-    context = {
-        'title': title,
-        'required_supplies': required_supplies,
-        'estimated_total_cost': estimated_total_cost,
-        'page_title': PAGE_TITLE,
-        'supply_list': products_helper.get_all_supplies(),
-        'always_popular_cartridge': products_helper.get_always_popular_cartridge(),
-        'today_popular_cartridge': products_helper.get_today_popular_cartridge(),
-    }
-
-    return render(request, template, context)
-
 
 # -------------------------------------- Warehouse ---------------------------------------------
 @login_required(login_url='users:login')
@@ -364,57 +319,6 @@ def warehouse(request):
     }
     return render(request, template, context)
 
-
-@login_required(login_url='users:login')
-def warehouse_movements(request):
-    products_helper = ProductsHelper()
-    predictions = products_helper.get_required_supplies()
-    supplies_list = products_helper.get_all_supplies()
-
-    if request.method == 'POST':
-        number = request.POST['cantidad']
-        mod_wh = Warehouse.objects.get(pk=request.POST['element_pk'])
-        mod_wh.quantity -= float(number)
-        mod_wh.save()
-
-        if request.POST['type'] == 'Stock':
-            try:
-                on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="ST")
-                on_stock.quantity += float(number)
-                on_stock.save()
-            except Warehouse.DoesNotExist:
-                Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="ST")
-        else:
-            try:
-                on_stock = Warehouse.objects.get(supply=mod_wh.supply, status="AS")
-                on_stock.quantity += float(number)
-                on_stock.save()
-            except Warehouse.DoesNotExist:
-                Warehouse.objects.create(supply=mod_wh.supply, quantity=number, cost=mod_wh.cost, status="AS")
-
-    for supply in supplies_list:
-        try:
-            Warehouse.objects.get(supply=supply, status="PR")
-        except Warehouse.DoesNotExist:
-
-            Warehouse.objects.create(supply=supply, cost=supply.presentation_cost, status="PR")
-
-    for prediction in predictions:
-        if prediction['required'] > 0:
-            try:
-                Warehouse.objects.get(supply=prediction['supply'], status="PR")
-            except Warehouse.DoesNotExist:
-                Warehouse.objects.create(supply=prediction['supply'], cost=prediction['cost'],
-                                         quantity=prediction['required'], status="PR")
-
-    template = 'catering/catering_movements.html'
-    title = 'Movimientos de Almacen'
-    context = {
-        'supply_list': products_helper.get_all_elements_in_warehouse(),
-        'title': PAGE_TITLE + ' | ' + title,
-        'page_title': title
-    }
-    return render(request, template, context)
 
 @login_required(login_url='users:login')
 def shop_list(request):
@@ -542,6 +446,8 @@ def new_shoplist(request):
 
 @login_required(login_url='users:login')
 def products_analytics(request):
+    products_helper = ProductsHelper()
+
     def get_period(initial_dt, final_dt):
         helper = Helper()
         sales_helper = SalesHelper()
@@ -595,6 +501,7 @@ def products_analytics(request):
                 'id': cartridge_item.id,
                 'name': cartridge_item.name,
                 'frequency': 0,
+                'category': cartridge_item.category,
             }
             cartridges_list.append(cartridge_object)
 
@@ -607,12 +514,45 @@ def products_analytics(request):
 
         return cartridges_list
 
+    def get_sold_category():
+        drinks_sold = []
+        food_sold = []
+        for element in get_products_sold():
+            category_object = {
+                'id': element['id'],
+                'name': element['name'],
+                'category': element['category'],
+                'quantity': element['frequency']
+            }
+            if element['frequency'] > 0:
+                if element['category'] == 'CO':
+
+                    drinks_sold.append(category_object)
+                else:
+                    food_sold.append(category_object)
+        return {'drinks_sold': drinks_sold, 'food_sold': food_sold}
+
+    if request.method == 'POST':
+        if request.POST['type'] == 'category':
+            sold_categories = get_sold_category()
+            return JsonResponse(sold_categories)
+        else:
+            return JsonResponse('Hola')
+
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
 
+    categories_sold = get_sold_category()
+    sold_product = get_products_sold()
+    print(categories_sold)
+    all_categories = products_helper.get_all_cartridges_categories()
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
+        'today_sold_product_json': json.dumps(sold_product),
+        'today_sold_product': sold_product,
+        'category_sold': json.dumps(categories_sold),
+        'all_categories': json.dumps(all_categories),
     }
 
     return render(request, template, context)
