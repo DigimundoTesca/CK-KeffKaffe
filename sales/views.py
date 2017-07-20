@@ -251,9 +251,10 @@ def new_sale(request):
                     try:
                         stock = Warehouse.objects.get(supply=element.supply, status="AS")
                         stock.quantity -= element.quantity
+                        stock.save()
 
                     except ObjectDoesNotExist:
-                        print("No hay stock en Assembly")
+                        #No hay Stock, deberia no permitirse el cambio
 
             for ticket_detail in ticket_detail_json_object['extra_ingredients_cartridges']:
                 cartridge_object = get_object_or_404(Cartridge, id=ticket_detail['cartridge_id'])
@@ -275,7 +276,7 @@ def new_sale(request):
                         stock.quantity -= element.quantity
 
                     except ObjectDoesNotExist:
-                        print("No hay stock en Assembly")
+                        #No hay Stock, deberia no permitirse el cambio
 
                 for ingredient in ticket_detail['extra_ingredients']:
                     extra_ingredient_object = ExtraIngredient.objects.get(id=ingredient['id'])

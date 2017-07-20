@@ -1,3 +1,4 @@
+
 {% extends "base/base_nav_footer.html" %}
 {% load static %}
 {% block link %}
@@ -14,7 +15,7 @@
             {% for warehouse in warehouse_list %}
                 {% if warehouse.status == "ST" %}
                     {% if warehouse.quantity > 0 %}
-                        <div class="card card-element add-btn col-md-3" id="warehouse_btn">
+                        <div class="card card-element add-btn col-md-2" id="warehouse_btn">
                             <div id="{{ warehouse.id }},{{ warehouse.supply.name }}" class="row info_div">
                                 <p>{{ warehouse.supply.name }}</p>
                             </div>
