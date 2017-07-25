@@ -539,7 +539,7 @@ def products_analytics(request):
         else:
             return JsonResponse('Hola')
 
-    template = 'analytics/analytics.html'
+    template = 'analytics/analytics_r.html'
     title = 'Products - Analytics'
 
     categories_sold = get_sold_category()
@@ -557,6 +557,17 @@ def products_analytics(request):
 
     return render(request, template, context)
 
+@login_required(login_url='users:login')
+def products_analytics(request):
+
+    template = 'analytics/predictions.html'
+    title = 'Analytics'
+
+    context = {
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title
+    }
+    return render(request, template, context)
 
 @login_required(login_url='users:login')
 def products_predictions(request):

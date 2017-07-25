@@ -254,6 +254,7 @@ def new_sale(request):
                         stock.save()
 
                     except ObjectDoesNotExist:
+                        print("No Stock")
                         #No hay Stock, deberia no permitirse el cambio
 
             for ticket_detail in ticket_detail_json_object['extra_ingredients_cartridges']:
@@ -276,7 +277,7 @@ def new_sale(request):
                         stock.quantity -= element.quantity
 
                     except ObjectDoesNotExist:
-                        #No hay Stock, deberia no permitirse el cambio
+                        print("No Stock")
 
                 for ingredient in ticket_detail['extra_ingredients']:
                     extra_ingredient_object = ExtraIngredient.objects.get(id=ingredient['id'])

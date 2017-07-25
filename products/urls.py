@@ -42,6 +42,7 @@ urlpatterns = [
     url(r'^products/analytics/$', views.products_analytics, name='analytics'),
     url(r'^products/predictions/$', views.products_predictions, name='predictions'),
 
+
     # Warehouse
     url(r'^warehouse/$', views.warehouse, name='warehouse'),        
     url(r'^warehouse/shoplist/$', views.shop_list, name='shoplist'),
