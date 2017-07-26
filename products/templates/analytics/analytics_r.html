@@ -7,15 +7,132 @@
 {% endblock link %}
 
 {% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-2">
+            <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha inicial">
+        </div>
+        <div class="col-md-2">
+            <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha Final">
+        </div>
+    </div>
+    <div class="col-xs-12 col-lg-6">
+        <div class="canvas-holder">
+            <canvas id="canvas-cartridges-sales"></canvas>
+        </div>
+    </div>
+    <div class="col-xs-12 col-lg-6">
+        <div class="canvas-holder">
+            <canvas id="canvas-cartridges-day"></canvas>
+        </div>
+    </div>
 
+
+</div>
 
 {% endblock content %}
 
 {% block javascript %}
-<script type="text/javascript">
-  $(function() {
+<script src="{% static 'js/Chart.bundle.min.js' %}" defer></script>
+<script src="{% static 'js/papaparse.min.js' %}" defer></script>
+<script src="{% static 'js/blob.js' %}" defer></script>
+<script src="{% static 'js/fileSaver.min.js' %}" defer></script>
+<script type="text/javascript" charset="utf-8" defer>
 
-  }
+    $(function() {
+
+        function get_diferrent_categories(){
+
+        }
+
+        function get_all_cartridges_sales(){
+
+        }
+
+        function get_sales_by_cartridge(){
+
+        }
+
+
+        var ctx = document.getElementById("canvas-cartridges-sales").getContext('2d');
+        chart_pie = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+                datasets: [{
+                    label: '# of Votes',
+                    data: [12, 19, 3, 5, 2, 3],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        });
+
+        var ctx = document.getElementById("canvas-cartridges-day").getContext('2d');
+        chart_points = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+                datasets: [{
+                    label: '# of Votes',
+                    data: [12, 19, 3, 5, 2, 3],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        });
+
+
+    });
+
 
 </script>
 {% endblock javascript %}

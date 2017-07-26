@@ -444,8 +444,9 @@ def new_shoplist(request):
     }
     return render(request, template, context)
 
+
 @login_required(login_url='users:login')
-def products_analytics(request):
+def products_analytics_b(request):
     products_helper = ProductsHelper()
 
     def get_period(initial_dt, final_dt):
@@ -539,7 +540,7 @@ def products_analytics(request):
         else:
             return JsonResponse('Hola')
 
-    template = 'analytics/analytics_r.html'
+    template = 'analytics/analytics.html'
     title = 'Products - Analytics'
 
     categories_sold = get_sold_category()
@@ -560,13 +561,14 @@ def products_analytics(request):
 @login_required(login_url='users:login')
 def products_analytics(request):
 
-    template = 'analytics/predictions.html'
+    template = 'analytics/analytics_r.html'
     title = 'Analytics'
 
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title
     }
+
     return render(request, template, context)
 
 @login_required(login_url='users:login')
