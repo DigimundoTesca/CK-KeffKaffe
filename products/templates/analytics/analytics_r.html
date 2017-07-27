@@ -9,19 +9,19 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="col-md-2">
-            <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha inicial">
+        <div class="col-md-3">
+            <input type="date" class="form-control" id="initial-date" placeholder="Fecha Inicial">		
         </div>
-        <div class="col-md-2">
-            <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha Final">
-        </div>
+        <div class="col-md-3">
+            <input type="date" class="form-control" id="final-date" placeholder="Fecha Final">		
+        </div>        
     </div>
-    <div class="col-xs-12 col-lg-6">
+    <div class="col-md-6">
         <div class="canvas-holder">
             <canvas id="canvas-cartridges-sales"></canvas>
         </div>
     </div>
-    <div class="col-xs-12 col-lg-6">
+    <div class="col-md-6">
         <div class="canvas-holder">
             <canvas id="canvas-cartridges-day"></canvas>
         </div>
@@ -40,20 +40,7 @@
 <script type="text/javascript" charset="utf-8" defer>
 
     $(function() {
-
-        function get_diferrent_categories(){
-
-        }
-
-        function get_all_cartridges_sales(){
-
-        }
-
-        function get_sales_by_cartridge(){
-
-        }
-
-
+    	 
         var ctx = document.getElementById("canvas-cartridges-sales").getContext('2d');
         chart_pie = new Chart(ctx, {
             type: 'doughnut',
@@ -129,6 +116,8 @@
                 }
             }
         });
+
+        $('#final-date').datepicker();
 
 
     });
