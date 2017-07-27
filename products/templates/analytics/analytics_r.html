@@ -9,11 +9,18 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="col-md-2">
-            <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha inicial">
+        <div class="col-md-3">
+            <select class="custom-select" id="cat-sold">
+                <option value="select">Seleccionar categoría</option>
+                <option value="drinks_sold" id="drinksValue">Bebidas</option>
+                <option value="food_sold" id="food_value">Platillos</option>
+            </select>
         </div>
-        <div class="col-md-2">
-            <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha Final">
+        <div class="col-md-3">
+            <input type='date' class='datepicker-here' data-language='en' placeholder="Fecha inicial">
+        </div>
+        <div class="col-md-3">
+            <input type='date' class='datepicker-here' data-language='en' placeholder="Fecha Final">
         </div>
     </div>
     <div class="col-xs-12 col-lg-6">

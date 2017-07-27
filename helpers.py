@@ -735,6 +735,14 @@ class ProductsHelper(object):
                         'frequency': cartridges_frequency_dict[element]['frequency'],
                     }
 
+    def get_all_ticket_details(self):
+        """
+        :rtype: django.db.models.query.QuerySet
+        """
+        if self.__all_tickets_details is None:
+            self.set_all_tickets_details()
+        return self.__all_tickets_details
+
     def get_all_supplies(self):
         """
         :rtype: django.db.models.query.QuerySet

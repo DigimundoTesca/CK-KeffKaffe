@@ -6,6 +6,8 @@ import json
 from datetime import timedelta, date, datetime
 from datetime import timedelta, datetime, date
 from decimal import Decimal
+
+from django.db.models import Count, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
@@ -385,6 +387,7 @@ def shop_list(request):
     }
     return render(request, template, context)
 
+
 @login_required(login_url='users:login')
 def new_shoplist(request):
 
@@ -558,11 +561,30 @@ def products_analytics_b(request):
 
     return render(request, template, context)
 
+
 @login_required(login_url='users:login')
 def products_analytics(request):
 
     template = 'analytics/analytics_r.html'
     title = 'Analytics'
+
+    products_helper = ProductsHelper()
+    ticket_details = products_helper.get_all_ticket_details()
+    products = products_helper.get_all_cartridges()
+    packages = products_helper.get_all_packages_cartridges()
+
+    list_product_sale = []
+
+    for product in products:
+        product_sale_quantity = ticket_details.filter(cartridge=product).aggregate(sum=Sum('quantity'))
+        product_sale = {
+            'name': product,
+            'cantidad': product_sale_quantity
+        }
+        list_product_sale.append()
+
+
+
 
     context = {
         'title': PAGE_TITLE + ' | ' + title,
@@ -570,6 +592,7 @@ def products_analytics(request):
     }
 
     return render(request, template, context)
+
 
 @login_required(login_url='users:login')
 def products_predictions(request):
