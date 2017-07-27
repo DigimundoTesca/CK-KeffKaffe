@@ -10,6 +10,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-3">
+
             <select class="custom-select" id="cat-sold">
                 <option value="select">Seleccionar categoría</option>
                 <option value="drinks_sold" id="drinksValue">Bebidas</option>
@@ -21,14 +22,18 @@
         </div>
         <div class="col-md-3">
             <input type='date' class='datepicker-here' data-language='en' placeholder="Fecha Final">
+
         </div>
+        <div class="col-md-3">
+            <input type="date" class="form-control" id="final-date" placeholder="Fecha Final">		
+        </div>        
     </div>
-    <div class="col-xs-12 col-lg-6">
+    <div class="col-md-6">
         <div class="canvas-holder">
             <canvas id="canvas-cartridges-sales"></canvas>
         </div>
     </div>
-    <div class="col-xs-12 col-lg-6">
+    <div class="col-md-6">
         <div class="canvas-holder">
             <canvas id="canvas-cartridges-day"></canvas>
         </div>
@@ -47,20 +52,7 @@
 <script type="text/javascript" charset="utf-8" defer>
 
     $(function() {
-
-        function get_diferrent_categories(){
-
-        }
-
-        function get_all_cartridges_sales(){
-
-        }
-
-        function get_sales_by_cartridge(){
-
-        }
-
-
+    	 
         var ctx = document.getElementById("canvas-cartridges-sales").getContext('2d');
         chart_pie = new Chart(ctx, {
             type: 'doughnut',
@@ -136,6 +128,8 @@
                 }
             }
         });
+
+        $('#final-date').datepicker();
 
 
     });

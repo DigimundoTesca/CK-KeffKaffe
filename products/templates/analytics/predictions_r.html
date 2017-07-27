@@ -13,7 +13,7 @@
 			<input type="text" class="form-control" id="initial-date" placeholder="Fecha Inicial">		
 		</div>
 		<div class="col-md-2">
-			<input type="text" class="form-control" id="initial-date" placeholder="Fecha Final">
+			<input type="text" class="form-control" id="final-date" placeholder="Fecha Final">
 		</div>
 	</div>
 	<div class="col-xs-12 col-lg-6">
@@ -40,6 +40,34 @@
 <script type="text/javascript" charset="utf-8" defer>
 
   $(function() {
+  	/**
+    * Gets the csrf cookie from cache
+    */
+    function get_cookie(name) {
+      let cookie_value = null;
+      if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          let cookie = jQuery.trim(cookies[i]);
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookie_value;
+    }
+  	$('#initial-date').datepicker({
+      onSelect: function(selectedDate) {
+        let dataString = 'date='+selectedDate;
+      }
+    });
+
+    $('#final-date').datepicker({
+      onSelect: function(selectedDate) {
+        let dataString = 'date='+selectedDate;
+      }
+    });
 
   	let ctx_week = document.getElementById("canvas-week-sales")
   	 
