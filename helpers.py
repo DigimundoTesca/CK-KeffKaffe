@@ -3,7 +3,7 @@ import math
 import pytz
 from datetime import datetime, date, timedelta, time
 from decimal import Decimal
-from django.db.models import Min, Max
+from django.db.models import Min, Max, Sum
 from django.utils import timezone
 from diners.models import AccessLog, Diner
 from kitchen.models import Warehouse, ProcessedProduct
@@ -734,6 +734,26 @@ class ProductsHelper(object):
                         'name': cartridges_frequency_dict[element]['name'],
                         'frequency': cartridges_frequency_dict[element]['frequency'],
                     }
+
+    def get_all_sales_by_date(self):
+
+        ticket_details = self.get_all_ticket_details()
+        cartridges = self.get_all_cartridges()
+        packages = self.get_all_packages_cartridges()
+
+        cartridges_sales = []
+
+        for cartridge in cartridges:
+            cartridge_on_ticket = ticket_details.filter(cartridge=cartridge)
+            quantity = cartridge_on_ticket.aggregate(sum=Sum('quantity'))
+            sale_count = {
+                'name': cartridge.name,
+                'category': cartridge.category,
+                'quantity': quantity['sum']
+            }
+            cartridges_sales.append(sale_count)
+
+        return cartridges_sales
 
     def get_all_ticket_details(self):
         """

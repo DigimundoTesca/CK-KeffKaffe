@@ -569,25 +569,11 @@ def products_analytics(request):
     title = 'Analytics'
 
     products_helper = ProductsHelper()
-    ticket_details = products_helper.get_all_ticket_details()
-    products = products_helper.get_all_cartridges()
-    packages = products_helper.get_all_packages_cartridges()
-
-    list_product_sale = []
-
-    for product in products:
-        product_sale_quantity = ticket_details.filter(cartridge=product).aggregate(sum=Sum('quantity'))
-        product_sale = {
-            'name': product,
-            'cantidad': product_sale_quantity
-        }
-        list_product_sale.append()
-
-
-
+    sales = json.dumps(products_helper.get_all_sales_by_date())
 
     context = {
         'title': PAGE_TITLE + ' | ' + title,
+        'sales': sales,
         'page_title': title
     }
 
