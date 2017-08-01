@@ -568,8 +568,17 @@ def products_analytics(request):
     template = 'analytics/analytics_r.html'
     title = 'Analytics'
 
-    products_helper = ProductsHelper()
-    sales = json.dumps(products_helper.get_all_sales_by_date())
+    products_helper = ProductsHelper()    
+    sales = json.dumps(products_helper.get_sales_by_date(initial_date,final_date))
+
+    if request.method == 'POST':
+        if request.POST['type'] == 'sales_week':
+            initial_date = request.POST['dt_week'].split(',')[0]
+            final_date = request.POST['dt_week'].split(',')[1]
+            initial_date = helper.parse_to_datetime(initial_date)
+            final_date = helper.parse_to_datetime(final_date) + timedelta(days=1)
+
+            sales = json.dumps(products_helper.get_sales_by_date(initial_date,final_date))
 
     context = {
         'title': PAGE_TITLE + ' | ' + title,

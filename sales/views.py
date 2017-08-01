@@ -336,19 +336,19 @@ def new_sale(request):
         if len(cartridge_object['extra_ingredients']) > 0:
             extra_ingredients_products_list.append(cartridge_object)
 
-        template = 'new/new_sale.html'
-        title = 'Nueva venta'
+    template = 'new/new_sale.html'
+    title = 'Nueva venta'
 
-        context = {
-            'title': PAGE_TITLE + ' | ' + title,
-            'page_title': title,
-            'cartridges': cartridges_list,
-            'package_cartridges': package_cartridges,
-            'extra_ingredients': extra_ingredients,
-            'extra_ingredients_products_list': extra_ingredients_products_list,
-            'extra_ingredients_products_list_json': json.dumps(extra_ingredients_products_list),
-        }
-        return render(request, template, context)
+    context = {
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title,
+        'cartridges': cartridges_list,
+        'package_cartridges': package_cartridges,
+        'extra_ingredients': extra_ingredients,
+        'extra_ingredients_products_list': extra_ingredients_products_list,
+        'extra_ingredients_products_list_json': json.dumps(extra_ingredients_products_list),
+    }
+    return render(request, template, context)
 
 
 # -------------------------------- Test ------------------------------
