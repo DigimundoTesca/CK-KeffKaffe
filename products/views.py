@@ -569,7 +569,7 @@ def products_analytics(request):
     title = 'Analytics'
 
     products_helper = ProductsHelper()    
-    sales = json.dumps(products_helper.get_sales_by_date(initial_date,final_date))
+    sales = json.dumps(products_helper.get_sales_by_date())
 
     if request.method == 'POST':
         if request.POST['type'] == 'sales_week':

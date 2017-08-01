@@ -735,10 +735,9 @@ class ProductsHelper(object):
                         'frequency': cartridges_frequency_dict[element]['frequency'],
                     }
 
-    def get_sales_by_date(self,initial_date,final_date):
+    def get_sales_by_date(self):
 
-        ticket_details = self.get_all_tickets().filter(
-            created_at__range=(initial_date, final_date)).order_by('-created_at')
+        ticket_details = self.get_all_ticket_details()
         cartridges = self.get_all_cartridges()
         packages = self.get_all_packages_cartridges()
         packages_recipes = self.get_all_packages_cartridges_recipes()
@@ -754,21 +753,9 @@ class ProductsHelper(object):
                 'category': cartridge.category,
                 'quantity': quantity['sum']
             }
-            cartridges_sales.append(sale_count)
+            if sale_count['quantity'] is not None:
+                cartridges_sales.append(sale_count)
 
-        for package in packages:
-            packages_on_ticket = ticket_detail.filter(package_cartridge=package_cartridge)
-            for package_on_ticket in packages_on_ticket:
-                recipee = packages_recipes.filter(package_cartridge=packages_on_ticket)
-                for recipe in recipes:
-                    cartridge_on_recipe = ticket_details.filter(cartridge=cartridge)
-                    quantity = cartridge_on_ticket.aggregate(sum=Sum('quantity'))
-                    sale_count = {
-                        'name': cartridge.name,
-                        'category': cartridge.category,
-                        'quantity': quantity['sum']
-                    }
-                    cartridges_sales.append(sale_count)
 
         return cartridges_sales
 

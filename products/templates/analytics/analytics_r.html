@@ -8,37 +8,39 @@
 
 {% block content %}
 
+<div class="row">
+    <div class="offset-md-4 col-md-3">
+        <select class="custom-select" id="cat-sold">
+            <option value="select">Seleccionar categoría</option>
+            <option value="drinks_sold" id="drinksValue">Bebidas</option>
+            <option value="food_sold" id="food_value">Platillos</option>
+        </select>
+    </div>
+</div>
+<div class="col-md-6">
     <div class="row">
-        <div class="offset-md-4 col-md-3">
-            <select class="custom-select" id="cat-sold">
-                <option value="select">Seleccionar categoría</option>
-                <option value="drinks_sold" id="drinksValue">Bebidas</option>
-                <option value="food_sold" id="food_value">Platillos</option>
-            </select>
-        </div>        
-    </div>
-    <div class="col-md-6" height="500px">
-	    <div class="row">
-		    <div class="offset-md-2 col-md-3">
-	            <input type='input' class='datepicker-here' data-language='en' placeholder="Fecha inicial">
-	        </div>
-	        <div class="offset-md-2 col-md-3">
-	            <input type='input' class='datepicker-here' data-language='en' placeholder="Fecha Final">
-	        </div>        	        
-	    </div>
-	    <div class="row">
-	    	<div class="canvas-holder">
-	            <canvas id="canvas-cartridges-sales"></canvas>
-	        </div>
-	    </div>
-    </div>
-    <div class="col-md-6">
-        <div class="canvas-holder">
-            <canvas id="canvas-cartridges-day"></canvas>
+        <div class="offset-md-2 col-md-3">
+            <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial">
+        </div>
+        <div class="offset-md-2 col-md-3">
+            <input type='date' class='final_date' data-language='en' placeholder="Fecha Final">
+        </div>
+        <div>
+            <button class='get_dates'>
+                Obtener Fechas
+            </button>
         </div>
     </div>
+    <div class="canvas-holder">
+        <canvas id="canvas-cartridges-sales"></canvas>
+    </div>
 
-
+</div>
+<div class="col-md-6">
+    <div class="canvas-holder">
+        <canvas id="canvas-cartridges-day"></canvas>
+    </div>
+</div>
 
 
 {% endblock content %}
@@ -95,6 +97,13 @@
 
         var colors = get_colors();
 
+        $(".get_dates").on("click",function(e){
+            var initial_date = $(".initial_date").val();
+            var final_date = $(".final_date").val();
+            console.log(initial_date);
+            console.log(final_date);
+        });
+
         var ctx = document.getElementById("canvas-cartridges-sales").getContext('2d');
         chart_pie = new Chart(ctx, {
             type: 'doughnut',
@@ -115,6 +124,10 @@
                             beginAtZero:true
                         }
                     }]
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom'
                 }
             }
         });
