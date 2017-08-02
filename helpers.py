@@ -735,13 +735,37 @@ class ProductsHelper(object):
                         'frequency': cartridges_frequency_dict[element]['frequency'],
                     }
 
-    def get_sales_by_date(self):
+    def get_sales_by_date(self, initial_date, final_date):
 
-        ticket_details = self.get_all_ticket_details()
+        helper = Helper()
+        in_date = datetime.strptime(initial_date, '%Y-%m-%d')
+        fi_date = datetime.strptime(final_date, '%Y-%m-%d')
+        initial_date_naive = helper.naive_to_datetime(in_date)
+        final_date_naive = helper.naive_to_datetime(fi_date)
         cartridges = self.get_all_cartridges()
-        packages = self.get_all_packages_cartridges()
-        packages_recipes = self.get_all_packages_cartridges_recipes()
+        ticket_details = self.get_all_ticket_details().filter(ticket__created_at__range=[initial_date_naive, final_date_naive])
 
+        cartridges_sales = []
+
+        for cartridge in cartridges:
+            cartridge_on_ticket = ticket_details.filter(cartridge=cartridge)
+            quantity = cartridge_on_ticket.aggregate(sum=Sum('quantity'))
+            sale_count = {
+                'name': cartridge.name,
+                'category': cartridge.category,
+                'quantity': quantity['sum']
+            }
+            if sale_count['quantity'] is not None:
+                cartridges_sales.append(sale_count)
+
+        return cartridges_sales
+
+    def get_sales_current_month(self):
+
+        helper = Helper()
+        today = helper.naive_to_datetime(date.today())
+        cartridges = self.get_all_cartridges()
+        ticket_details = self.get_all_ticket_details().filter(ticket__created_at__year=today.year, ticket__created_at__month=today.month)
 
         cartridges_sales = []
 
@@ -758,6 +782,62 @@ class ProductsHelper(object):
 
 
         return cartridges_sales
+
+    def get_sales_dates_current_month(self):
+        helper = Helper()
+
+        today = helper.naive_to_datetime(date.today())
+        ticket_details = self.get_all_ticket_details().filter(ticket__created_at__year=today.year, ticket__created_at__month=today.month).order_by('ticket__created_at')
+
+        list_products_sold = []
+
+        def find_date_and_add(list_products_sold, date):
+            for products_sold in list_products_sold:
+                if products_sold['date'] == date:
+                    return products_sold
+            products_sold = {'date': date, 'quantity': 0}
+            list_products_sold.append(products_sold)
+            return products_sold
+
+        def add_date(list_products_sold, date, quantity):
+            person = find_date_and_add(list_products_sold, date)
+            person['quantity'] += quantity
+
+        for ticket_detail in ticket_details:
+            fecha = ticket_detail.ticket.created_at.date()
+            stringfecha = str(fecha)
+            add_date(list_products_sold, stringfecha, ticket_detail.quantity)
+
+        return list_products_sold
+
+    def get_sales_dates_by_date(self, initial_date, final_date):
+        helper = Helper()
+        in_date = datetime.strptime(initial_date, '%Y-%m-%d')
+        fi_date = datetime.strptime(final_date, '%Y-%m-%d')
+        initial_date_naive = helper.naive_to_datetime(in_date)
+        final_date_naive = helper.naive_to_datetime(fi_date)
+        ticket_details = self.get_all_ticket_details().filter(ticket__created_at__range=[initial_date_naive, final_date_naive]).order_by('ticket__created_at')
+
+        list_products_sold = []
+
+        def find_date_and_add(list_products_sold, date):
+            for products_sold in list_products_sold:
+                if products_sold['date'] == date:
+                    return products_sold
+            products_sold = {'date': date, 'quantity': 0}
+            list_products_sold.append(products_sold)
+            return products_sold
+
+        def add_date(list_products_sold, date, quantity):
+            person = find_date_and_add(list_products_sold, date)
+            person['quantity'] += quantity
+
+        for ticket_detail in ticket_details:
+            fecha = ticket_detail.ticket.created_at.date()
+            stringfecha = str(fecha)
+            add_date(list_products_sold, stringfecha, ticket_detail.quantity)
+
+        return list_products_sold
 
     def get_all_ticket_details(self):
         """

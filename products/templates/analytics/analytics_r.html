@@ -1,48 +1,86 @@
 {% extends 'base/base_nav_footer.html' %}
 
 {% load static %}
-
+    <link rel="stylesheet" type="text/css" href="{% static 'css/producs_analytics.css' %}">
 {% block link %}
 
 {% endblock link %}
 
 {% block content %}
-
-<div class="row">
-    <div class="offset-md-4 col-md-3">
+<div class="container">
+    <div class="row">
+        <div class="col-md-1">
+        <button class="button-toggle material-icons">view list</button>
+    </div>
+    <div class="offset-md-7 col-md-3">
         <select class="custom-select" id="cat-sold">
-            <option value="select">Seleccionar categoría</option>
+            <option value="select">General</option>
             <option value="drinks_sold" id="drinksValue">Bebidas</option>
             <option value="food_sold" id="food_value">Platillos</option>
         </select>
     </div>
-</div>
-<div class="col-md-6">
+    </div>
+
     <div class="row">
-        <div class="offset-md-2 col-md-3">
-            <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial">
+            <div class="col-md-4">
+                <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial">
+            </div>
+            <div class="offset-md-1 col-md-4">
+                <input type='date' class='final_date' data-language='en' placeholder="Fecha Final">
+            </div>
+            <div class="offset-md-1 col-md-2">
+                <button class='get_dates'>
+                    Go
+                </button>
+            </div>
         </div>
-        <div class="offset-md-2 col-md-3">
-            <input type='date' class='final_date' data-language='en' placeholder="Fecha Final">
-        </div>
-        <div>
-            <button class='get_dates'>
-                Obtener Fechas
-            </button>
-        </div>
-    </div>
-    <div class="canvas-holder">
-        <canvas id="canvas-cartridges-sales"></canvas>
-    </div>
-
 </div>
-<div class="col-md-6">
-    <div class="canvas-holder">
-        <canvas id="canvas-cartridges-day"></canvas>
+<div class="container chart-container">
+    <div class="col-md-6">
+        <div class="row">
+            <div class="canvas-holder col-md-12">
+                <canvas id="canvas-cartridges-sales"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="canvas-holder col-md-12">
+            <canvas id="canvas-cartridges-day"></canvas>
+        </div>
     </div>
 </div>
+<div class="container table-container">
+    <div class="col-md-6">
+        <div class="container table-container">
+            <table class="table" id="table_NQ">
+                <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cantidad</th>
+                </tr>
+                </thead>
+                <tbody>
 
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="container table-container">
+            <table class="table" id="table_DQ">
+                <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cantidad</th>
+                </tr>
+                </thead>
+                <tbody>
 
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock content %}
 
 {% block javascript %}
@@ -54,23 +92,63 @@
 
     $(function() {
 
-        let category_sold = JSON.parse('{{ sales | safe }}');
+        let sales_quantity = JSON.parse('{{ sales_quantity | safe }}');
+        let sales_data = JSON.parse('{{ sales_date | safe }}');
+        current_NQ_char = setUpNQChart(sales_quantity);
+        current_DQ_char = setUpDQChart(sales_data);
+        current_nq_table = setUpNQTable(sales_quantity);
+        current_dq_table = setUpDQTable(sales_data);
 
-        function get_labels() {
+        function get_cookie(name) {
+            let cookie_value = null;
+            if (document.cookie && document.cookie !== '') {
+                let cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    let cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookie_value;/**/
+        }
+
+        function get_labels(sales_data) {
             let sale_list = [];
             let count = 0;
-            while (count < category_sold.length) {
-                sale_list.push((category_sold[count].name));
+            while (count < sales_data.length) {
+                sale_list.push((sales_data[count].name));
                 count++;
             }
             return sale_list;
         }
 
-        function get_quantity() {
+        function get_labels_date(sales_data) {
             let sale_list = [];
             let count = 0;
-            while (count < category_sold.length) {
-                sale_list.push((category_sold[count].quantity));
+            while (count < sales_data.length) {
+                sale_list.push((sales_data[count].date));
+                count++;
+            }
+            return sale_list;
+        }
+
+        function get_quantity(sales_data) {
+            let sale_list = [];
+            let count = 0;
+            while (count < sales_data.length) {
+                sale_list.push((sales_data[count].quantity));
+                count++;
+            }
+            return sale_list;
+        }
+
+        function get_colors(sales_data) {
+            let sale_list = [];
+            let count = 0;
+            while (count < sales_data.length) {
+                sale_list.push(getRandomColor());
                 count++;
             }
             return sale_list;
@@ -85,89 +163,160 @@
             return color;
         }
 
-        function get_colors() {
-            let sale_list = [];
-            let count = 0;
-            while (count < category_sold.length) {
-                sale_list.push(getRandomColor());
-                count++;
-            }
-            return sale_list;
-        }
+        function setUpNQChart(sales_data){
 
-        var colors = get_colors();
+            labels = get_labels(sales_data);
+            quantity = get_quantity(sales_data);
+            colors = get_colors(sales_data);
 
-        $(".get_dates").on("click",function(e){
-            var initial_date = $(".initial_date").val();
-            var final_date = $(".final_date").val();
-            console.log(initial_date);
-            console.log(final_date);
-        });
-
-        var ctx = document.getElementById("canvas-cartridges-sales").getContext('2d');
-        chart_pie = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: get_labels(),
-                datasets: [{
-                    label: '# of Votes',
-                    data: get_quantity(),
-                    backgroundColor: colors,
-                    borderColor: colors,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero:true
-                        }
+            var ctx = document.getElementById("canvas-cartridges-sales").getContext('2d');
+            chart_pie = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '# of Votes',
+                        data: quantity,
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 1
                     }]
                 },
-                legend: {
-                    display: true,
-                    position: 'bottom'
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }]
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
                 }
+            });
+
+            return chart_pie
+        }
+
+        function setUpDQChart(sales_data){
+
+            labels = get_labels_date(sales_data);
+            quantity = get_quantity(sales_data);
+            colors = get_colors(sales_data);
+
+            var ctx = document.getElementById("canvas-cartridges-day").getContext('2d');
+            chart_pie = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '# de Prodcutos Vendidos',
+                        data: quantity,
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }]
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            });
+
+            return chart_pie
+        }
+
+        function setUpNQTable(sales_data){
+            var html_list = "";
+            for (i = 0; i < sales_data.length; i++) {
+                    html_list +=
+                        '<tr>' +
+                            '<th>' + sales_data[i].name + '</th>' +
+                            '<th>' + sales_data[i].quantity + '</th>' +
+                        '</tr>'
+                }
+            $("#table_NQ tbody tr").remove();
+                $("#table_NQ tbody")
+                        .append($(
+                            html_list
+                        ));
+        }
+
+        function setUpDQTable(sales_data){
+            var html_list = "";
+            for (i = 0; i < sales_data.length; i++) {
+                    html_list +=
+                        '<tr>' +
+                            '<th>' + sales_data[i].date + '</th>' +
+                            '<th>' + sales_data[i].quantity + '</th>' +
+                        '</tr>'
+                }
+            $("#table_DQ tbody tr").remove();
+                $("#table_DQ tbody")
+                        .append($(
+                            html_list
+                        ));
+        }
+
+        $(".get_dates").on("click",function(e){
+            var csrf_token = get_cookie('csrftoken');
+            var initial_date = $(".initial_date").val();
+            var final_date = $(".final_date").val();
+            if(initial_date=="" || final_date==""){
+                swal("Seleccione fecha inicial y final")
+            }else{
+                $.ajax({
+                    url: '{% url "products:analytics" %}',
+                    type: 'POST',
+                    data: {
+                        'type' : 'load_date',
+                        'initial_date': initial_date,
+                        'final_date': final_date,
+                        csrfmiddlewaretoken: csrf_token,
+                    },
+                    datatype: "html",
+                    success: function(result) {
+                        sales_quantity_selected = JSON.parse(result['sales_quantity_selected']);
+                        current_NQ_char.destroy();
+                        setUpNQChart(sales_quantity_selected);
+
+                        sales_date_selected = JSON.parse(result['sales_date_selected']);
+                        current_DQ_char.destroy();
+                        setUpDQChart(sales_date_selected);
+
+                        $("#table_NQ tbody tr").remove();
+                        setUpNQTable(sales_quantity_selected);
+
+                        $("#table_DQ tbody tr").remove();
+                        setUpDQTable(sales_date_selected);
+                    }
+                });
             }
         });
 
-        var ctx = document.getElementById("canvas-cartridges-day").getContext('2d');
-        chart_points = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
-                datasets: [{
-                    label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255,99,132,1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero:true
-                        }
-                    }]
-                }
-            }
+        $(".custom-select").on('change', function() {
+
+        //select, food_sold, drink_sold
+            console.log("lol");
+
+        });
+
+        $('.table-container').hide();
+
+        $(".button-toggle").on("click",function(e){
+            $('.table-container').slideToggle();
+            $('.chart-container').slideToggle();
         });
 
     });
