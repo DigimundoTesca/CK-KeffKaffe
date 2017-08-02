@@ -1,7 +1,7 @@
 {% extends 'base/base_nav_footer.html' %}
 
 {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/producs_analytics.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/producs_analytics.css' %}">
 {% block link %}
 
 {% endblock link %}
@@ -10,30 +10,30 @@
 <div class="container">
     <div class="row">
         <div class="col-md-1">
-        <button class="button-toggle material-icons">view list</button>
-    </div>
-    <div class="offset-md-7 col-md-3">
-        <select class="custom-select" id="cat-sold">
-            <option value="select">General</option>
-            <option value="drinks_sold" id="drinksValue">Bebidas</option>
-            <option value="food_sold" id="food_value">Platillos</option>
-        </select>
-    </div>
+            <button class="button-toggle material-icons">view list</button>
+        </div>
+        <div class="offset-md-7 col-md-3">
+            <select class="custom-select" id="cat-sold">
+                <option value="select">General</option>
+                <option value="drinks_sold" id="drinksValue">Bebidas</option>
+                <option value="food_sold" id="food_value">Platillos</option>
+            </select>
+        </div>
     </div>
 
     <div class="row">
-            <div class="col-md-4">
-                <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial">
-            </div>
-            <div class="offset-md-1 col-md-4">
-                <input type='date' class='final_date' data-language='en' placeholder="Fecha Final">
-            </div>
-            <div class="offset-md-1 col-md-2">
-                <button class='get_dates'>
-                    Go
-                </button>
-            </div>
+        <div class="col-md-4">
+            <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial">
         </div>
+        <div class="offset-md-1 col-md-4">
+            <input type='date' class='final_date' data-language='en' placeholder="Fecha Final">
+        </div>
+        <div class="offset-md-1 col-md-2">
+            <button class='get_dates'>
+                Go
+            </button>
+        </div>
+    </div>
 </div>
 <div class="container chart-container">
     <div class="col-md-6">
@@ -92,12 +92,12 @@
 
     $(function() {
 
-        let sales_quantity = JSON.parse('{{ sales_quantity | safe }}');
-        let sales_data = JSON.parse('{{ sales_date | safe }}');
-        current_NQ_char = setUpNQChart(sales_quantity);
-        current_DQ_char = setUpDQChart(sales_data);
-        current_nq_table = setUpNQTable(sales_quantity);
-        current_dq_table = setUpDQTable(sales_data);
+        let current_nq_data = JSON.parse('{{ sales_quantity | safe }}');
+        let current_dq_data = JSON.parse('{{ sales_date | safe }}');
+        current_NQ_char = setUpNQChart(current_nq_data);
+        current_DQ_char = setUpDQChart(current_dq_data);
+        current_nq_table = setUpNQTable(current_nq_data);
+        current_dq_table = setUpDQTable(current_dq_data);
 
         function get_cookie(name) {
             let cookie_value = null;
@@ -183,6 +183,13 @@
                     }]
                 },
                 options: {
+                    onClick: function(event, legendItem) {
+                        try {
+                            
+                        }catch(err){
+
+                        }
+                    },
                     scales: {
                         yAxes: [{
                             ticks: {
@@ -195,6 +202,7 @@
                         position: 'bottom'
                     }
                 }
+
             });
 
             return chart_pie
@@ -240,33 +248,33 @@
         function setUpNQTable(sales_data){
             var html_list = "";
             for (i = 0; i < sales_data.length; i++) {
-                    html_list +=
-                        '<tr>' +
-                            '<th>' + sales_data[i].name + '</th>' +
-                            '<th>' + sales_data[i].quantity + '</th>' +
-                        '</tr>'
-                }
+                html_list +=
+                    '<tr>' +
+                    '<th>' + sales_data[i].name + '</th>' +
+                    '<th>' + sales_data[i].quantity + '</th>' +
+                    '</tr>'
+            }
             $("#table_NQ tbody tr").remove();
-                $("#table_NQ tbody")
-                        .append($(
-                            html_list
-                        ));
+            $("#table_NQ tbody")
+                .append($(
+                    html_list
+                ));
         }
 
         function setUpDQTable(sales_data){
             var html_list = "";
             for (i = 0; i < sales_data.length; i++) {
-                    html_list +=
-                        '<tr>' +
-                            '<th>' + sales_data[i].date + '</th>' +
-                            '<th>' + sales_data[i].quantity + '</th>' +
-                        '</tr>'
-                }
+                html_list +=
+                    '<tr>' +
+                    '<th>' + sales_data[i].date + '</th>' +
+                    '<th>' + sales_data[i].quantity + '</th>' +
+                    '</tr>'
+            }
             $("#table_DQ tbody tr").remove();
-                $("#table_DQ tbody")
-                        .append($(
-                            html_list
-                        ));
+            $("#table_DQ tbody")
+                .append($(
+                    html_list
+                ));
         }
 
         $(".get_dates").on("click",function(e){
@@ -283,33 +291,58 @@
                         'type' : 'load_date',
                         'initial_date': initial_date,
                         'final_date': final_date,
+                        'category' : selected_category,
                         csrfmiddlewaretoken: csrf_token,
                     },
                     datatype: "html",
                     success: function(result) {
-                        sales_quantity_selected = JSON.parse(result['sales_quantity_selected']);
+                        current_nq_data = JSON.parse(result['sales_quantity_selected']);
                         current_NQ_char.destroy();
-                        setUpNQChart(sales_quantity_selected);
+                        setUpNQChart(current_nq_data);
 
-                        sales_date_selected = JSON.parse(result['sales_date_selected']);
+                        current_dq_data = JSON.parse(result['sales_date_selected']);
                         current_DQ_char.destroy();
-                        setUpDQChart(sales_date_selected);
+                        setUpDQChart(current_dq_data);
 
                         $("#table_NQ tbody tr").remove();
-                        setUpNQTable(sales_quantity_selected);
+                        setUpNQTable(current_nq_data);
 
                         $("#table_DQ tbody tr").remove();
-                        setUpDQTable(sales_date_selected);
+                        setUpDQTable(current_dq_data);
                     }
                 });
             }
         });
 
         $(".custom-select").on('change', function() {
+            var selected_category = $(this).val();
+            $.ajax({
+                url: '{% url "products:analytics" %}',
+                type: 'POST',
+                data: {
+                    'type' : 'load_date',
+                    'initial_date': initial_date,
+                    'final_date': final_date,
+                    'category' : selected_category,
+                    csrfmiddlewaretoken: csrf_token,
+                },
+                datatype: "html",
+                success: function(result) {
+                    current_nq_data = JSON.parse(result['sales_quantity_selected']);
+                    current_NQ_char.destroy();
+                    setUpNQChart(current_nq_data);
 
-        //select, food_sold, drink_sold
-            console.log("lol");
+                    current_dq_data = JSON.parse(result['sales_date_selected']);
+                    current_DQ_char.destroy();
+                    setUpDQChart(current_dq_data);
 
+                    $("#table_NQ tbody tr").remove();
+                    setUpNQTable(current_nq_data);
+
+                    $("#table_DQ tbody tr").remove();
+                    setUpDQTable(current_dq_data);
+                }
+            });
         });
 
         $('.table-container').hide();
