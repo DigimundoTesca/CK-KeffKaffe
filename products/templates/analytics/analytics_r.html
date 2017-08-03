@@ -45,7 +45,7 @@
     </div>
     <div class="col-md-6">
         <div class="canvas-holder col-md-12">
-            <canvas id="canvas-cartridges-day"></canvas>
+            <canvas id="canvas-cartridges-day" height="525"></canvas>
         </div>
     </div>
 </div>
@@ -94,6 +94,9 @@
 
         let current_nq_data = JSON.parse('{{ sales_quantity | safe }}');
         let current_dq_data = JSON.parse('{{ sales_date | safe }}');
+        let selected_category = "";
+        let initial_date = "";
+        let final_date = "";
         current_NQ_char = setUpNQChart(current_nq_data);
         current_DQ_char = setUpDQChart(current_dq_data);
         current_nq_table = setUpNQTable(current_nq_data);
@@ -185,7 +188,7 @@
                 options: {
                     onClick: function(event, legendItem) {
                         try {
-                            
+
                         }catch(err){
 
                         }
@@ -222,12 +225,12 @@
                     datasets: [{
                         label: '# de Prodcutos Vendidos',
                         data: quantity,
-                        backgroundColor: colors,
-                        borderColor: colors,
-                        borderWidth: 1
+                        fill: false,
+                        borderColor: getRandomColor()
                     }]
                 },
                 options: {
+                    maintainAspectRatio: false,
                     scales: {
                         yAxes: [{
                             ticks: {
@@ -277,45 +280,8 @@
                 ));
         }
 
-        $(".get_dates").on("click",function(e){
+        function get_new_data(){
             var csrf_token = get_cookie('csrftoken');
-            var initial_date = $(".initial_date").val();
-            var final_date = $(".final_date").val();
-            if(initial_date=="" || final_date==""){
-                swal("Seleccione fecha inicial y final")
-            }else{
-                $.ajax({
-                    url: '{% url "products:analytics" %}',
-                    type: 'POST',
-                    data: {
-                        'type' : 'load_date',
-                        'initial_date': initial_date,
-                        'final_date': final_date,
-                        'category' : selected_category,
-                        csrfmiddlewaretoken: csrf_token,
-                    },
-                    datatype: "html",
-                    success: function(result) {
-                        current_nq_data = JSON.parse(result['sales_quantity_selected']);
-                        current_NQ_char.destroy();
-                        setUpNQChart(current_nq_data);
-
-                        current_dq_data = JSON.parse(result['sales_date_selected']);
-                        current_DQ_char.destroy();
-                        setUpDQChart(current_dq_data);
-
-                        $("#table_NQ tbody tr").remove();
-                        setUpNQTable(current_nq_data);
-
-                        $("#table_DQ tbody tr").remove();
-                        setUpDQTable(current_dq_data);
-                    }
-                });
-            }
-        });
-
-        $(".custom-select").on('change', function() {
-            var selected_category = $(this).val();
             $.ajax({
                 url: '{% url "products:analytics" %}',
                 type: 'POST',
@@ -343,6 +309,31 @@
                     setUpDQTable(current_dq_data);
                 }
             });
+        }
+
+        $(".get_dates").on("click",function(e){
+            var initial_date = $(".initial_date").val();
+            var final_date = $(".final_date").val();
+            if(initial_date=="" || final_date==""){
+                swal("Seleccione fecha inicial y final")
+            }else{
+                get_new_data();
+            }
+        });
+
+        $(".custom-select").on('change', function() {
+            selected_category = $(this).val();
+            console.log(selected_category)
+        });
+
+        $(".initial_date").on('change', function() {
+            initial_date = $(this).val();
+            console.log(initial_date)
+        });
+
+        $(".final_date").on('change', function() {
+            final_date = $(this).val();
+            console.log(final_date)
         });
 
         $('.table-container').hide();
