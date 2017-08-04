@@ -23,10 +23,10 @@
 
     <div class="row">
         <div class="col-md-4">
-            <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial">
+            <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial" value="{{ initial_date }}">
         </div>
         <div class="offset-md-1 col-md-4">
-            <input type='date' class='final_date' data-language='en' placeholder="Fecha Final">
+            <input type='date' class='final_date' data-language='en' placeholder="Fecha Final" value="{{ final_date }}">
         </div>
         <div class="offset-md-1 col-md-2">
             <button class='get_dates'>
@@ -95,12 +95,16 @@
         let current_nq_data = JSON.parse('{{ sales_quantity | safe }}');
         let current_dq_data = JSON.parse('{{ sales_date | safe }}');
         let selected_category = "";
-        let initial_date = "";
-        let final_date = "";
-        current_NQ_char = setUpNQChart(current_nq_data);
-        current_DQ_char = setUpDQChart(current_dq_data);
-        current_nq_table = setUpNQTable(current_nq_data);
-        current_dq_table = setUpDQTable(current_dq_data);
+        let initial_date = '{{ initial_date }}';
+        let final_date = '{{ final_date }}';
+        let selected_cartridge_index = "";
+        let selected_cartridge_name = "";
+        let set_colors = get_colors(current_nq_data);
+
+        let current_NQ_char = setUpNQChart(current_nq_data);
+        let current_DQ_char = setUpDQChart(current_dq_data);
+        let current_nq_table = setUpNQTable(current_nq_data);
+        let current_dq_table = setUpDQTable(current_dq_data);
 
         function get_cookie(name) {
             let cookie_value = null;
@@ -127,14 +131,25 @@
             return sale_list;
         }
 
-        function get_labels_date(sales_data) {
-            let sale_list = [];
+        function get_multiple_dates_labels(sales_data){
+            let date_list = [];
             let count = 0;
             while (count < sales_data.length) {
-                sale_list.push((sales_data[count].date));
+                var list_product = sales_data[count].list_product_sold;
+                for (var x=0;x<list_product.length;x++){
+                    if(date_list.length==0){
+                        date_list.push(list_product[x].date);
+                        console.log('tamano 0');
+                    }else{
+                        if(date_list.indexOf(list_product[x].date)<0){
+                            date_list.push(list_product[x].date)
+                        }
+                    }
+
+                }
                 count++;
             }
-            return sale_list;
+            return date_list;
         }
 
         function get_quantity(sales_data) {
@@ -145,6 +160,24 @@
                 count++;
             }
             return sale_list;
+        }
+
+        function get_multiple_dataset(sales_data){
+
+            let multiple_datasets = [];
+            let count = 0;
+            while (count < sales_data.length) {
+                dataset = {
+                    label: sales_data[count].name,
+                    data: get_quantity(sales_data[count].list_product_sold),
+                    fill: false,
+                    borderColor: set_colors[count],
+                    borderWidth: 5
+                };
+                multiple_datasets.push(dataset);
+                count++;
+            }
+            return multiple_datasets;
         }
 
         function get_colors(sales_data) {
@@ -170,7 +203,7 @@
 
             labels = get_labels(sales_data);
             quantity = get_quantity(sales_data);
-            colors = get_colors(sales_data);
+            colors = set_colors;
 
             var ctx = document.getElementById("canvas-cartridges-sales").getContext('2d');
             chart_pie = new Chart(ctx, {
@@ -187,11 +220,8 @@
                 },
                 options: {
                     onClick: function(event, legendItem) {
-                        try {
-
-                        }catch(err){
-
-                        }
+                        selected_cartridge_index = legendItem[0]._index;
+                        selected_cartridge_name = current_nq_data[selected_cartridge_index].name;
                     },
                     scales: {
                         yAxes: [{
@@ -213,21 +243,16 @@
 
         function setUpDQChart(sales_data){
 
-            labels = get_labels_date(sales_data);
-            quantity = get_quantity(sales_data);
-            colors = get_colors(sales_data);
+            labels = get_multiple_dates_labels(sales_data);
+            multiple_datasets = get_multiple_dataset(sales_data);
+            colors = set_colors;
 
             var ctx = document.getElementById("canvas-cartridges-day").getContext('2d');
             chart_pie = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: '# de Prodcutos Vendidos',
-                        data: quantity,
-                        fill: false,
-                        borderColor: getRandomColor()
-                    }]
+                    datasets: multiple_datasets
                 },
                 options: {
                     maintainAspectRatio: false,
@@ -265,11 +290,12 @@
         }
 
         function setUpDQTable(sales_data){
+
             var html_list = "";
             for (i = 0; i < sales_data.length; i++) {
                 html_list +=
                     '<tr>' +
-                    '<th>' + sales_data[i].date + '</th>' +
+                    '<th>' + sales_data[i].name + '</th>' +
                     '<th>' + sales_data[i].quantity + '</th>' +
                     '</tr>'
             }
@@ -290,17 +316,22 @@
                     'initial_date': initial_date,
                     'final_date': final_date,
                     'category' : selected_category,
-                    csrfmiddlewaretoken: csrf_token,
+                    csrfmiddlewaretoken: csrf_token
                 },
                 datatype: "html",
                 success: function(result) {
                     current_nq_data = JSON.parse(result['sales_quantity_selected']);
+
+                    set_colors = get_colors(current_nq_data);
+
                     current_NQ_char.destroy();
-                    setUpNQChart(current_nq_data);
+                    current_NQ_char = setUpNQChart(current_nq_data);
 
                     current_dq_data = JSON.parse(result['sales_date_selected']);
                     current_DQ_char.destroy();
-                    setUpDQChart(current_dq_data);
+                    current_DQ_char = setUpDQChart(current_dq_data);
+
+
 
                     $("#table_NQ tbody tr").remove();
                     setUpNQTable(current_nq_data);
@@ -323,7 +354,7 @@
 
         $(".custom-select").on('change', function() {
             selected_category = $(this).val();
-            console.log(selected_category)
+            console.log(selected_category);
         });
 
         $(".initial_date").on('change', function() {
@@ -333,7 +364,6 @@
 
         $(".final_date").on('change', function() {
             final_date = $(this).val();
-            console.log(final_date)
         });
 
         $('.table-container').hide();
