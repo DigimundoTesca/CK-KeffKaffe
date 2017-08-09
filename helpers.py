@@ -807,8 +807,6 @@ class ProductsHelper(object):
                 separated_product = {'name': cartridge.name, 'list_product_sold': list_products_sold}
                 list_products_sold_separated.append(separated_product)
 
-        print(list_products_sold_separated)
-
         return list_products_sold_separated
 
     def get_all_ticket_details(self):

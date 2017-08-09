@@ -1,37 +1,20 @@
 {% extends 'base/base_nav_footer.html' %}
 
 {% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/producs_analytics.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/products_analytics.css' %}">
 {% block link %}
 
 {% endblock link %}
 
 {% block content %}
-<div class="container">
+<div class="container selector-container">
     <div class="row">
-        <div class="col-md-1">
-            <button class="button-toggle material-icons">view list</button>
-        </div>
-        <div class="offset-md-7 col-md-3">
+        <div class="offset-md-9 col-md-3">
             <select class="custom-select" id="cat-sold">
                 <option value="select">General</option>
                 <option value="drinks_sold" id="drinksValue">Bebidas</option>
                 <option value="food_sold" id="food_value">Platillos</option>
             </select>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-4">
-            <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial" value="{{ initial_date }}">
-        </div>
-        <div class="offset-md-1 col-md-4">
-            <input type='date' class='final_date' data-language='en' placeholder="Fecha Final" value="{{ final_date }}">
-        </div>
-        <div class="offset-md-1 col-md-2">
-            <button class='get_dates'>
-                Go
-            </button>
         </div>
     </div>
 </div>
@@ -47,6 +30,23 @@
         <div class="canvas-holder col-md-12">
             <canvas id="canvas-cartridges-day" height="525"></canvas>
         </div>
+    </div>
+</div>
+<div class="container date-container">
+    <div class="row">
+        <div class="col-md-2">
+            <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial" value="{{ initial_date }}">
+        </div>
+        <div class="offset-md-1 col-md-2">
+            <input type='date' class='final_date' data-language='en' placeholder="Fecha Final" value="{{ final_date }}">
+        </div>
+        <div class="offset-md-1 col-md-2">
+            <button class='get_dates'>Generar</button>
+        </div>
+        <div class="offset-md-1 col-md-2">
+            <button class='empty_set'>Vaciar fechas</button>
+        </div>
+
     </div>
 </div>
 <div class="container table-container">
@@ -100,9 +100,12 @@
         let selected_cartridge_index = "";
         let selected_cartridge_name = "";
         let set_colors = get_colors(current_nq_data);
+        let shown_arrays = [];
+        let total_datasets = 0;
 
-        let current_NQ_char = setUpNQChart(current_nq_data);
         let current_DQ_char = setUpDQChart(current_dq_data);
+        let current_NQ_char = setUpNQChart(current_nq_data);
+
         let current_nq_table = setUpNQTable(current_nq_data);
         let current_dq_table = setUpDQTable(current_dq_data);
 
@@ -139,7 +142,6 @@
                 for (var x=0;x<list_product.length;x++){
                     if(date_list.length==0){
                         date_list.push(list_product[x].date);
-                        console.log('tamano 0');
                     }else{
                         if(date_list.indexOf(list_product[x].date)<0){
                             date_list.push(list_product[x].date)
@@ -174,9 +176,13 @@
                     borderColor: set_colors[count],
                     borderWidth: 5
                 };
-                multiple_datasets.push(dataset);
+                if(shown_arrays.indexOf(count)===-1){
+                    multiple_datasets.push(dataset);
+                }
                 count++;
             }
+            total_datasets = count;
+
             return multiple_datasets;
         }
 
@@ -220,8 +226,23 @@
                 },
                 options: {
                     onClick: function(event, legendItem) {
-                        selected_cartridge_index = legendItem[0]._index;
-                        selected_cartridge_name = current_nq_data[selected_cartridge_index].name;
+                        empty_array = false;
+                        try{
+                            selected_cartridge_index = legendItem[0]._index;
+                            if(shown_arrays.indexOf(selected_cartridge_index)===-1){
+                                shown_arrays.push(selected_cartridge_index);
+                            }else{
+                                shown_arrays.splice(shown_arrays.indexOf(selected_cartridge_index),1)
+                            }
+                            current_DQ_char.destroy();
+                            current_DQ_char = setUpDQChart(current_dq_data);
+
+                        }catch(err){
+                            shown_arrays = [];
+                            current_DQ_char.destroy();
+                            current_DQ_char = setUpDQChart(current_dq_data);
+                        }
+
                     },
                     scales: {
                         yAxes: [{
@@ -331,8 +352,6 @@
                     current_DQ_char.destroy();
                     current_DQ_char = setUpDQChart(current_dq_data);
 
-
-
                     $("#table_NQ tbody tr").remove();
                     setUpNQTable(current_nq_data);
 
@@ -354,12 +373,19 @@
 
         $(".custom-select").on('change', function() {
             selected_category = $(this).val();
-            console.log(selected_category);
+            get_new_data();
+        });
+
+        $(".empty_set").on("click",function(e){
+            for(var x=0;x<total_datasets;x++){
+                shown_arrays.push(x);
+            }
+            current_DQ_char.destroy();
+            current_DQ_char = setUpDQChart(current_dq_data);
         });
 
         $(".initial_date").on('change', function() {
             initial_date = $(this).val();
-            console.log(initial_date)
         });
 
         $(".final_date").on('change', function() {
