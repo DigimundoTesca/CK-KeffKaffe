@@ -874,49 +874,6 @@ class ProductsHelper(object):
 
         return list_products_sold_separated
 
-    def get_sales_dates_by_date(self, initial_date, final_date, category_own):
-        helper = Helper()
-        cartridges = self.get_all_cartridges()
-        in_date = datetime.strptime(initial_date, '%Y-%m-%d')
-        fi_date = datetime.strptime(final_date, '%Y-%m-%d')
-        initial_date_naive = helper.naive_to_datetime(in_date)
-        final_date_naive = helper.naive_to_datetime(fi_date)
-        ticket_details = self.get_all_ticket_details().filter(ticket__created_at__range=[initial_date_naive, final_date_naive]).order_by('ticket__created_at')
-
-        if category_own=="drinks_sold":
-            ticket_details = ticket_details.filter(cartridge__category='CO')
-        if category_own=="food_sold":
-            ticket_details = ticket_details.filter(cartridge__category='FD')
-
-        list_products_sold_separated = []
-
-        def find_date_and_add(list_products_sold, date):
-            for products_sold in list_products_sold:
-                if products_sold['date'] == date:
-                    return products_sold
-            products_sold = {'date': date, 'quantity': 0}
-            list_products_sold.append(products_sold)
-            return products_sold
-
-        def add_quantity(list_products_sold, date, quantity):
-            person = find_date_and_add(list_products_sold, date)
-            person['quantity'] += quantity
-
-        for cartridge in cartridges:
-            list_products_sold = []
-            tickets_with_cartridge = ticket_details.filter(cartridge=cartridge)
-            for ticket_with_cartridge in tickets_with_cartridge:
-                fecha = ticket_with_cartridge.ticket.created_at.date()
-                stringfecha = str(fecha)
-                if ticket_with_cartridge.quantity is not None:
-                    add_quantity(list_products_sold, stringfecha, ticket_with_cartridge.quantity)
-
-            if list_products_sold:
-                separated_product = {'name': cartridge.name, 'list_product_sold': list_products_sold}
-                list_products_sold_separated.append(separated_product)
-
-        return list_products_sold_separated
-
     def get_all_ticket_details(self):
         """
         :rtype: django.db.models.query.QuerySet
