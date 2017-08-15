@@ -735,36 +735,144 @@ class ProductsHelper(object):
                         'frequency': cartridges_frequency_dict[element]['frequency'],
                     }
 
-    def get_sales_by_date(self, initial_date, final_date, category_own):
-
+    def get_sales_of_cartridges_by_range(self, initial_date, final_date, category_own):
         helper = Helper()
         in_date = datetime.strptime(initial_date, '%Y-%m-%d')
         fi_date = datetime.strptime(final_date, '%Y-%m-%d')
         initial_date_naive = helper.naive_to_datetime(in_date)
         final_date_naive = helper.naive_to_datetime(fi_date)
-        cartridges = self.get_all_cartridges()
-
-        if str(category_own)=="drinks_sold":
-            cartridges = cartridges.filter(category='CO')
-        if str(category_own)=="food_sold":
-            cartridges = cartridges.filter(category='FD')
-
-        ticket_details = self.get_all_ticket_details().filter(ticket__created_at__range=[initial_date_naive, final_date_naive])
+        recipes = self.get_all_packages_cartridges_recipes()
 
         cartridges_sales = []
 
-        for cartridge in cartridges:
-            cartridge_on_ticket = ticket_details.filter(cartridge=cartridge)
-            quantity = cartridge_on_ticket.aggregate(sum=Sum('quantity'))
-            sale_count = {
-                'name': cartridge.name,
-                'category': cartridge.category,
-                'quantity': quantity['sum']
-            }
-            if sale_count['quantity'] is not None:
-                cartridges_sales.append(sale_count)
+        ticket_details = self.get_all_ticket_details().filter(ticket__created_at__range=[initial_date_naive, final_date_naive])
+
+        def validate_category(cartridge):
+            if str(category_own) == "drinks_sold":
+                if cartridge['category']=="CO":
+                    return True
+                else:
+                    return False
+            if str(category_own) == "food_sold":
+                if cartridge['category']=="FD":
+                    return True
+                else:
+                    return False
+            return True
+
+        def find_cartridge_and_add(list_products_sold, name, category):
+            for products_sold in list_products_sold:
+                if products_sold['name'] == name:
+                    return products_sold
+            cartridges_sold = {'name': name, 'category': category, 'quantity': 0}
+            if validate_category(cartridges_sold):
+                list_products_sold.append(cartridges_sold)
+            return cartridges_sold
+
+        def add_quantity(list_products_sold, name, category, quantity):
+            person = find_cartridge_and_add(list_products_sold, name, category)
+            person['quantity'] += quantity
+
+        for ticket_detail in ticket_details:
+            if ticket_detail.cartridge is not None:
+                name = ticket_detail.cartridge.name
+                category = ticket_detail.cartridge.category
+                quantity = ticket_detail.quantity
+                add_quantity(cartridges_sales, name, category, quantity)
+            if ticket_detail.package_cartridge is not None:
+                recipe_of_cartridge = recipes.filter(package_cartridge=ticket_detail.package_cartridge)
+                for cartidge_r in recipe_of_cartridge:
+                    name = cartidge_r.cartridge.name
+                    category = cartidge_r.cartridge.category
+                    quantity = cartidge_r.quantity * ticket_detail.quantity
+                    add_quantity(cartridges_sales, name, category, quantity)
 
         return cartridges_sales
+
+    def get_sales_of_cartridges_sep_by_date(self, initial_date, final_date, category_own ):
+        helper = Helper()
+        in_date = datetime.strptime(initial_date, '%Y-%m-%d')
+        fi_date = datetime.strptime(final_date, '%Y-%m-%d')
+        initial_date_naive = helper.naive_to_datetime(in_date)
+        final_date_naive = helper.naive_to_datetime(fi_date)
+        recipes = self.get_all_packages_cartridges_recipes()
+
+        delta = final_date_naive - initial_date_naive
+
+        def validate_category(cartridge):
+            if str(category_own) == "drinks_sold":
+                if cartridge['category']=="CO":
+                    return True
+                else:
+                    return False
+            if str(category_own) == "food_sold":
+                if cartridge['category']=="FD":
+                    return True
+                else:
+                    return False
+            return True
+
+        def get_dates():
+            dates = []
+            for x in range(0, delta.days + 1):
+                ticket_date = initial_date_naive + timedelta(days=+x)
+                ticket_date_string = str(ticket_date.date().year) +"-"+ str(ticket_date.date().month) +"-"+ str(ticket_date.date().day)
+                products_sold = {'date': ticket_date_string, 'quantity': 0}
+                dates.append(products_sold)
+
+            return dates
+
+        def find_cartridge_and_add(list_products_sold, name, category):
+            for products_sold in list_products_sold:
+                if products_sold['name'] == name:
+                    return products_sold
+            list_dates = get_dates()
+            cartridges_sold = {'name': name, 'category': category, 'list_product_sold': list_dates}
+            if validate_category(cartridges_sold):
+                list_products_sold.append(cartridges_sold)
+            return cartridges_sold
+
+        def add_cartridge(list_products_sold, name, category, stringdate, quantity):
+            person = find_cartridge_and_add(list_products_sold, name, category)
+            add_quantity(person['list_product_sold'], stringdate, quantity)
+
+        def find_date_and_add(list_products_sold, date):
+            for products_sold in list_products_sold:
+                if products_sold['date'] == date:
+                    return products_sold
+            products_sold = {'date': date, 'quantity': 0}
+            list_products_sold.append(products_sold)
+            return products_sold
+
+        def add_quantity(list_products_sold, date, quantity):
+            person = find_date_and_add(list_products_sold, date)
+            person['quantity'] += quantity
+
+
+        list_products_sold_separated = []
+
+        ticket_details = self.get_all_ticket_details().filter(
+            ticket__created_at__range=[initial_date_naive, final_date_naive + timedelta(days=+1)]).order_by('ticket__created_at')
+
+        for ticket_detail in ticket_details:
+            if ticket_detail.cartridge is not None:
+                name = ticket_detail.cartridge.name
+                category = ticket_detail.cartridge.category
+                ticket_detail_date = ticket_detail.ticket.created_at
+                stringdate = str(ticket_detail_date.date().year) +"-"+ str(ticket_detail_date.date().month) +"-"+ str(ticket_detail_date.date().day)
+                quantity = ticket_detail.quantity
+                add_cartridge(list_products_sold_separated, name, category, stringdate, quantity)
+            if ticket_detail.package_cartridge is not None:
+                recipe_of_cartridge = recipes.filter(package_cartridge=ticket_detail.package_cartridge)
+                for cartidge_r in recipe_of_cartridge:
+                    name = cartidge_r.cartridge.name
+                    category = cartidge_r.cartridge.category
+                    ticket_detail_date = ticket_detail.ticket.created_at
+                    stringdate = str(ticket_detail_date.date().year) +"-"+ str(ticket_detail_date.date().month) +"-"+ str(ticket_detail_date.date().day)
+                    quantity = cartidge_r.quantity * ticket_detail.quantity
+                    add_cartridge(list_products_sold_separated, name, category, stringdate, quantity)
+
+        return list_products_sold_separated
 
     def get_sales_dates_by_date(self, initial_date, final_date, category_own):
         helper = Helper()

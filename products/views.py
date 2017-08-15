@@ -569,22 +569,24 @@ def products_analytics(request):
     title = 'Analytics'
 
     products_helper = ProductsHelper()
+
     helper = Helper()
     today = helper.naive_to_datetime(date.today())
     firs_dat = helper.naive_to_datetime(date.today().replace(day=1))
     ini_date = str(firs_dat).split(" ")[0]
     fin_date = str(today).split(" ")[0]
     category = "selected"
-    sales_quantity = json.dumps(products_helper.get_sales_by_date(ini_date, fin_date, category))
-    sales_date = json.dumps(products_helper.get_sales_dates_by_date(ini_date, fin_date, category))
+    products_helper.get_sales_of_cartridges_sep_by_date(ini_date, fin_date, category)
+    sales_quantity = json.dumps(products_helper.get_sales_of_cartridges_by_range(ini_date, fin_date, category))
+    sales_date = json.dumps(products_helper.get_sales_of_cartridges_sep_by_date(ini_date, fin_date, category))
 
     if request.method == 'POST':
         if request.POST['type'] == 'load_date':
             initial_date = request.POST['initial_date']
             final_date = request.POST['final_date']
             category = request.POST['category']
-            sales_quantity_selected = json.dumps(products_helper.get_sales_by_date(initial_date, final_date, category))
-            sales_date_selected = json.dumps(products_helper.get_sales_dates_by_date(initial_date, final_date, category))
+            sales_quantity_selected = json.dumps(products_helper.get_sales_of_cartridges_by_range(initial_date, final_date, category))
+            sales_date_selected = json.dumps(products_helper.get_sales_of_cartridges_sep_by_date(initial_date, final_date, category))
             return JsonResponse({'sales_quantity_selected': sales_quantity_selected, 'sales_date_selected': sales_date_selected})
 
     context = {
