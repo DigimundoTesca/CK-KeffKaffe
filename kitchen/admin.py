@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from kitchen.models import ProcessedProduct, Warehouse, Delivery
+from kitchen.models import ProcessedProduct, Warehouse, ShopList, ShopListDetail
 
 
 @admin.register(ProcessedProduct)
@@ -14,11 +14,19 @@ class AdminProcessedCartridge(admin.ModelAdmin):
 
 @admin.register(Warehouse)
 class AdminWarehouse(admin.ModelAdmin):
-    list_display = ('id', 'supply', 'status', 'quantity', 'cost')
+    list_display = ('id', 'supply', 'status', 'quantity')
     list_display_links = ('id', 'supply')
 
+class ShopListDetailInline(admin.TabularInline):
+    model = ShopListDetail
+    extra = 0
 
-@admin.register(Delivery)
-class AdminDelivery(admin.ModelAdmin):
-    list_display = ('id', 'delivery_day')
-    list_display_links = ('id', 'delivery_day')
+
+@admin.register(ShopList)
+class AdminShopList(admin.ModelAdmin):
+    list_display = ('id', 'created_at')
+    list_display_links = ('id', 'created_at')
+    inlines = [ShopListDetailInline]
+
+
+

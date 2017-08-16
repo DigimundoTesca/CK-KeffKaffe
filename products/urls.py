@@ -37,17 +37,16 @@ urlpatterns = [
     url(r'^categories/add/$', views.new_category, name='new_category'),
     url(r'^categories/([A-Za-z]+)$', views.categories_supplies, name='categories_supplies'),
 
-    # Catering
-    url(r'^catering/$', views.catering, name='catering'),
 
     # Products Analytics
     url(r'^products/analytics/$', views.products_analytics, name='analytics'),
     url(r'^products/predictions/$', views.products_predictions, name='predictions'),
 
+
     # Warehouse
-    url(r'^warehouse/$', views.warehouse, name='warehouse'),    
-    url(r'^warehouse/catering/$', views.catering, name='catering'),
-    url(r'^warehouse/movements/$', views.warehouse_movements, name='wh_movements'),
+    url(r'^warehouse/$', views.warehouse, name='warehouse'),        
+    url(r'^warehouse/shoplist/$', views.shop_list, name='shoplist'),
+    url(r'^warehouse/new_shoplist/$', views.new_shoplist, name='new_shoplist'),
 
 ]
 

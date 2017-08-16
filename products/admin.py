@@ -4,7 +4,7 @@ from django.contrib import admin
 
 from products.models import PackageCartridge, PackageCartridgeRecipe, \
     CartridgeRecipe, Supply, SupplyLocation, SuppliesCategory, Cartridge, \
-    ExtraIngredient
+    ExtraIngredient, Presentation
 
 
 @admin.register(SuppliesCategory)
@@ -19,8 +19,7 @@ class AdminSupplyLocation(admin.ModelAdmin):
 
 @admin.register(Supply)
 class AdminSupply(admin.ModelAdmin):
-    list_display = ('id', 'name', 'category', 'supplier', 'presentation_unit', 'presentation_cost', 'measurement_unit',
-                    'measurement_quantity',)
+    list_display = ('id', 'name', 'category', 'supplier')
     list_display_links = ('id', 'name')
     ordering = ['name']
 
@@ -42,6 +41,11 @@ class AdminCartridge(admin.ModelAdmin):
     list_editable = ('price', 'image', 'category', 'is_active',)
     inlines = [CartridgeRecipeInline, ExtraIngredientInline]
     ordering = ['name']
+
+@admin.register(Presentation)
+class AdminPresentation(admin.ModelAdmin):
+    list_display = ('id','supply', 'measurement_quantity', 'measurement_unit')
+    ordering = ['supply']
 
 
 class PackageCartridgeRecipeInline(admin.TabularInline):

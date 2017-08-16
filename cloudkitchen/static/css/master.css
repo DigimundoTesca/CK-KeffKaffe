@@ -448,7 +448,7 @@ small {
 }
 .container-sales-reports .sales-details table.table-sales-details th.header-date,
 .container-sales-reports .sales-details table.table-sales-details td.header-date {
-  min-width: 15rem;
+  min-width: 10rem;
 }
 .container-sales-reports .sales-details table.table-sales-details th.header-date,
 .container-sales-reports .sales-details table.table-sales-details td.header-date {
@@ -1017,3 +1017,4 @@ small {
     font-size: 1.2em;
   }
  }
+

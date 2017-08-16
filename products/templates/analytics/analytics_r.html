@@ -1,0 +1,406 @@
+{% extends 'base/base_nav_footer.html' %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/products_analytics.css' %}">
+{% block link %}
+
+{% endblock link %}
+
+{% block content %}
+<div class="container selector-container">
+    <div class="row">
+        <div class="offset-md-9 col-md-3">
+            <select class="custom-select" id="cat-sold">
+                <option value="select">General</option>
+                <option value="drinks_sold" id="drinksValue">Bebidas</option>
+                <option value="food_sold" id="food_value">Platillos</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="container chart-container">
+    <div class="col-md-6">
+        <div class="row">
+            <div class="canvas-holder col-md-12">
+                <canvas id="canvas-cartridges-sales"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="canvas-holder col-md-12">
+            <canvas id="canvas-cartridges-day" height="525"></canvas>
+        </div>
+    </div>
+</div>
+<div class="container date-container">
+    <div class="row">
+        <div class="col-md-2">
+            <input type='date' class='initial_date' data-language='en' placeholder="Fecha inicial" value="{{ initial_date }}">
+        </div>
+        <div class="offset-md-1 col-md-2">
+            <input type='date' class='final_date' data-language='en' placeholder="Fecha Final" value="{{ final_date }}">
+        </div>
+        <div class="offset-md-1 col-md-2">
+            <button class='get_dates'>Generar</button>
+        </div>
+        <div class="offset-md-1 col-md-2">
+            <button class='empty_set'>Vaciar fechas</button>
+        </div>
+
+    </div>
+</div>
+<div class="container table-container">
+    <div class="col-md-6">
+        <div class="container table-container">
+            <table class="table" id="table_NQ">
+                <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cantidad</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="container table-container">
+            <table class="table" id="table_DQ">
+                <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cantidad</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script src="{% static 'js/Chart.bundle.min.js' %}" defer></script>
+<script src="{% static 'js/papaparse.min.js' %}" defer></script>
+<script src="{% static 'js/blob.js' %}" defer></script>
+<script src="{% static 'js/fileSaver.min.js' %}" defer></script>
+<script type="text/javascript" charset="utf-8" defer>
+
+    $(function() {
+
+        let current_nq_data = JSON.parse('{{ sales_quantity | safe }}');
+        let current_dq_data = JSON.parse('{{ sales_date | safe }}');
+        let selected_category = "";
+        let initial_date = '{{ initial_date }}';
+        let final_date = '{{ final_date }}';
+        let selected_cartridge_index = "";
+        let selected_cartridge_name = "";
+        let set_colors = get_colors(current_nq_data);
+        let shown_arrays = [];
+        let total_datasets = 0;
+
+        let current_DQ_char = setUpDQChart(current_dq_data);
+        let current_NQ_char = setUpNQChart(current_nq_data);
+
+        let current_nq_table = setUpNQTable(current_nq_data);
+        let current_dq_table = setUpDQTable(current_dq_data);
+
+        function get_cookie(name) {
+            let cookie_value = null;
+            if (document.cookie && document.cookie !== '') {
+                let cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    let cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookie_value;/**/
+        }
+
+        function get_labels(sales_data) {
+            let sale_list = [];
+            let count = 0;
+            while (count < sales_data.length) {
+                sale_list.push((sales_data[count].name));
+                count++;
+            }
+            return sale_list;
+        }
+
+        function get_multiple_dates_labels(sales_data){
+            let date_list = [];
+            let count = 0;
+            while (count < sales_data.length) {
+                var list_product = sales_data[count].list_product_sold;
+                for (var x=0;x<list_product.length;x++){
+                    if(date_list.length==0){
+                        date_list.push(list_product[x].date);
+                    }else{
+                        if(date_list.indexOf(list_product[x].date)<0){
+                            date_list.push(list_product[x].date)
+                        }
+                    }
+
+                }
+                count++;
+            }
+            return date_list;
+        }
+
+        function get_quantity(sales_data) {
+            let sale_list = [];
+            let count = 0;
+            while (count < sales_data.length) {
+                sale_list.push((sales_data[count].quantity));
+                count++;
+            }
+            return sale_list;
+        }
+
+        function get_multiple_dataset(sales_data){
+
+            let multiple_datasets = [];
+            let count = 0;
+            while (count < sales_data.length) {
+                dataset = {
+                    label: sales_data[count].name,
+                    data: get_quantity(sales_data[count].list_product_sold),
+                    fill: false,
+                    borderColor: set_colors[count],
+                    borderWidth: 5
+                };
+                if(shown_arrays.indexOf(count)===-1){
+                    multiple_datasets.push(dataset);
+                }
+                count++;
+            }
+            total_datasets = count;
+
+            return multiple_datasets;
+        }
+
+        function get_colors(sales_data) {
+            let sale_list = [];
+            let count = 0;
+            while (count < sales_data.length) {
+                sale_list.push(getRandomColor());
+                count++;
+            }
+            return sale_list;
+        }
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function setUpNQChart(sales_data){
+
+            labels = get_labels(sales_data);
+            quantity = get_quantity(sales_data);
+            colors = set_colors;
+
+            var ctx = document.getElementById("canvas-cartridges-sales").getContext('2d');
+            chart_pie = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '# of Votes',
+                        data: quantity,
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    onClick: function(event, legendItem) {
+                        empty_array = false;
+                        try{
+                            selected_cartridge_index = legendItem[0]._index;
+                            if(shown_arrays.indexOf(selected_cartridge_index)===-1){
+                                shown_arrays.push(selected_cartridge_index);
+                            }else{
+                                shown_arrays.splice(shown_arrays.indexOf(selected_cartridge_index),1)
+                            }
+                            current_DQ_char.destroy();
+                            current_DQ_char = setUpDQChart(current_dq_data);
+
+                        }catch(err){
+                            shown_arrays = [];
+                            current_DQ_char.destroy();
+                            current_DQ_char = setUpDQChart(current_dq_data);
+                        }
+
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }]
+                    },
+                    legend: {
+                        display: false,
+                        position: 'bottom'
+                    }
+                }
+
+            });
+
+            return chart_pie
+        }
+
+        function setUpDQChart(sales_data){
+
+            labels = get_multiple_dates_labels(sales_data);
+            multiple_datasets = get_multiple_dataset(sales_data);
+            colors = set_colors;
+
+            var ctx = document.getElementById("canvas-cartridges-day").getContext('2d');
+            chart_pie = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: multiple_datasets
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }]
+                    },
+                    legend: {
+                        display: false,
+                        position: 'bottom'
+                    }
+                }
+            });
+
+            return chart_pie
+        }
+
+        function setUpNQTable(sales_data){
+            var html_list = "";
+            for (i = 0; i < sales_data.length; i++) {
+                html_list +=
+                    '<tr>' +
+                    '<th>' + sales_data[i].name + '</th>' +
+                    '<th>' + sales_data[i].quantity + '</th>' +
+                    '</tr>'
+            }
+            $("#table_NQ tbody tr").remove();
+            $("#table_NQ tbody")
+                .append($(
+                    html_list
+                ));
+        }
+
+        function setUpDQTable(sales_data){
+
+            var html_list = "";
+            for (i = 0; i < sales_data.length; i++) {
+                html_list +=
+                    '<tr>' +
+                    '<th>' + sales_data[i].name + '</th>' +
+                    '<th>' + sales_data[i].quantity + '</th>' +
+                    '</tr>'
+            }
+            $("#table_DQ tbody tr").remove();
+            $("#table_DQ tbody")
+                .append($(
+                    html_list
+                ));
+        }
+
+        function get_new_data(){
+            var csrf_token = get_cookie('csrftoken');
+            $.ajax({
+                url: '{% url "products:analytics" %}',
+                type: 'POST',
+                data: {
+                    'type' : 'load_date',
+                    'initial_date': initial_date,
+                    'final_date': final_date,
+                    'category' : selected_category,
+                    csrfmiddlewaretoken: csrf_token
+                },
+                datatype: "html",
+                success: function(result) {
+                    current_nq_data = JSON.parse(result['sales_quantity_selected']);
+
+                    set_colors = get_colors(current_nq_data);
+
+                    current_NQ_char.destroy();
+                    current_NQ_char = setUpNQChart(current_nq_data);
+
+                    current_dq_data = JSON.parse(result['sales_date_selected']);
+                    current_DQ_char.destroy();
+                    current_DQ_char = setUpDQChart(current_dq_data);
+
+                    $("#table_NQ tbody tr").remove();
+                    setUpNQTable(current_nq_data);
+
+                    $("#table_DQ tbody tr").remove();
+                    setUpDQTable(current_dq_data);
+                }
+            });
+        }
+
+        $(".get_dates").on("click",function(e){
+            var initial_date = $(".initial_date").val();
+            var final_date = $(".final_date").val();
+            if(initial_date=="" || final_date==""){
+                swal("Seleccione fecha inicial y final")
+            }else{
+                get_new_data();
+            }
+        });
+
+        $(".custom-select").on('change', function() {
+            selected_category = $(this).val();
+            get_new_data();
+        });
+
+        $(".empty_set").on("click",function(e){
+            for(var x=0;x<total_datasets;x++){
+                shown_arrays.push(x);
+            }
+            current_DQ_char.destroy();
+            current_DQ_char = setUpDQChart(current_dq_data);
+        });
+
+        $(".initial_date").on('change', function() {
+            initial_date = $(this).val();
+        });
+
+        $(".final_date").on('change', function() {
+            final_date = $(this).val();
+        });
+
+        $('.table-container').hide();
+
+        $(".button-toggle").on("click",function(e){
+            $('.table-container').slideToggle();
+            $('.chart-container').slideToggle();
+        });
+
+    });
+
+
+</script>
+{% endblock javascript %}

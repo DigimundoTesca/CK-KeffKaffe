@@ -7,187 +7,206 @@
 {% endblock link %}
 
 {% block page_title %}
-{{ page_title }}
+{{ page_title }} 
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid container-sales-reports">
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="text-xs-right mb-2">
-        <form class="form-inline" id="dates-range-form">
-          <select class="custom-select" id="dt-year">
-          </select>
-          <select class="custom-select" id="dt-week" >
-          </select>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div class="row container-sales-header">
-    <div class="col-xs-12 col-md-6">
-      <div class="text-xs-center">
-        <p>Ventas de la semana <span id="week-number">{{ week_number }}</span>:
-          <span class="font-weight-bold">$</span>
-          <span id="total-earnings-text" class="font-weight-bold"></span></p>
-      </div>
-    </div>
-    <div class="col-xs-12 col-md-6">
-      <div class="row">
-        <div class="col-xs-6">
-          <p class="float-xs-right">Hoy es: <span class="font-weight-bold">{{ today_name }}</span></p>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="text-xs-right mb-2">
+                <form class="form-inline" id="dates-range-form">
+                    <select class="custom-select" id="dt-year">
+                    </select>
+                    <select class="custom-select" id="dt-week" >
+                    </select>
+                </form>
+            </div>
         </div>
-        <div class="col-xs-6">
-          <p class="float-xs-right">Semana Actual: <span class="font-weight-bold">{{ week_number }}</span></p>
+    </div>
+    <div class="row container-sales-header">
+        <div class="col-xs-12 col-md-6">
+            <div class="text-xs-center">
+                <p>Ventas de la semana <span id="week-number">{{ week_number }}</span>:
+                    <span class="font-weight-bold">$</span>
+                    <span id="total-earnings-text" class="font-weight-bold"></span></p>
+            </div>
         </div>
-      </div>
+        <div class="col-xs-12 col-md-6">
+            <div class="row">
+                <div class="col-xs-6">
+                    <p class="float-xs-right">Hoy es: <span class="font-weight-bold">{{ today_name }}</span></p>
+                </div>
+                <div class="col-xs-6">
+                    <p class="float-xs-right">Semana Actual: <span class="font-weight-bold">{{ week_number }}</span></p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="row sales-graphics">
-    <div class="col-xs-12 col-lg-6">
-      <div class="canvas-holder">
-        <canvas id="canvas-week-sales"></canvas>
-      </div>
+    <div class="row sales-graphics">
+        <div class="col-xs-12 col-lg-6">
+            <div class="canvas-holder">
+                <canvas id="canvas-week-sales"></canvas>
+            </div>
+        </div>
+        <div class="col-xs-12 col-lg-6">
+            <div class="canvas-holder">
+                <canvas id="canvas-day-sales"></canvas>
+            </div>
+        </div>
     </div>
-    <div class="col-xs-12 col-lg-6">
-      <div class="canvas-holder">
-        <canvas id="canvas-day-sales"></canvas>
-      </div>
-    </div>
-  </div>
-  <div class="row sales-details">
-    <div class="col-xs-12">
-      <h4 class="col-xs-12 col-sm-8 col-xl-10">Ventas de hoy</h4>
-      <button id="btn-save-ticket-csv" class="col-xs-12 col-sm-4 col-xl-2 btn btn-primary d-flex">
-        <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
-      </button>
-    </div>
-    <div class="col-xs-12">
-      <div class="card card-scroll-x mt-1">
-        <table id="sales-details-table" class="table table-hover table-sales-details">
-          <thead class="thead-inverse">
-          <tr>
-            <th>Id</th>
-            <th>Orden</th>
-            <th class="header-date">Fecha</th>
-            <th class="header-products">Productos</th>
-            <th class="header-packages">Paquetes</th>
-            <th>Vendedor</th>
-            <th>Pago</th>
-            <th>Total</th>
-            <th>Acciones</th>
-          </tr>
-          </thead>
-          <tbody>
-          {% for ticket in tickets %}
-          {% if ticket.is_active == False %}
-            <tr class="table-warning">
-          {% else %}
-            <tr>
-          {% endif %}
-            <th class="header-id">{{ ticket.ticket_parent }}</th>
-            <th>{{ ticket.order_number }}</th>
-            <td class="header-date">{{ ticket.ticket_parent.created_at }}</td>
-            <td class="header-products">
-              {% for cartridge in ticket.cartridges %}
-              <span class="badge badge-success">
+    <div class="row sales-details">
+        <div class="col-xs-12">
+            <h4 class="col-xs-12 col-sm-8 col-xl-10">Ventas de hoy</h4>
+            <button id="btn-save-ticket-csv" class="col-xs-12 col-sm-4 col-xl-2 btn btn-primary d-flex">
+                <span class="btn-reports d-flex align-items-center"><i class="material-icons">file_download</i>Generar Reporte</span>
+            </button>
+        </div>
+        <div class="col-xs-12">
+            <div class="card card-scroll-x mt-1">
+                <table id="sales-details-table" class="table table-hover table-sales-details">
+                    <thead class="thead-inverse">
+                    <tr>
+                        <th>Id</th>
+                        <th>Orden</th>
+                        <th class="header-date">Fecha</th>
+                        <th class="header-products">Productos</th>
+                        <th class="header-packages">Paquetes</th>
+                        <th>Vendedor</th>
+                        <th>Pago</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for ticket in tickets %}
+                    {% if ticket.is_active == False %}
+                    <tr class="table-danger">
+                        {% else %}
+                    <tr>
+                        {% endif %}
+                        <th class="header-id">{{ ticket.ticket_parent }}</th>
+                        <th>{{ ticket.order_number }}</th>
+                        <td class="header-date">{{ ticket.ticket_parent.created_at }}</td>
+                        <td class="header-products">
+                            {% for cartridge in ticket.cartridges %}
+                            <span class="badge badge-success">
                   <span class="badge badge-info" >{{ cartridge.quantity }}</span>
                   <span class="badge badge-success ">{{ cartridge.cartridge }}</span>
                 </span>
-              {% endfor %}
-            </td>
-            <td class="header-packages">
-              {% for package in ticket.packages %}
-              <span class="badge badge-primary">
+                    {% endfor %}
+                        </td>
+                        <td class="header-packages">
+                            {% for package in ticket.packages %}
+                            <span class="badge badge-primary">
                   <span class="badge badge-info">{{ package.quantity}}</span>
                   <span class="badge badge-primary">{{ package.package }}</span>
                 </span>
-              {% endfor %}
-            </td>
-            <td>{{ ticket.ticket_parent.seller }}</td>
-            <td>{{ ticket.payment_type }}</td>
-            <td class="td-total">
-              {{ ticket.total }}
-            </td>
-            <td class="header-actions">
-              <span class="sales-actions delete-ticket"><i class="material-icons text-muted">delete</i></span>
-              <span class="sales-actions print-ticket"><i class="material-icons text-primary">local_printshop</i></span>
-            </td>
-          </tr>
-          {% endfor %}
-          <tr>
-            <th>Total </th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th>{{ total_cost }}</th>
-            <th></th>
-          </tr>
-          {% if user.is_superuser %}
-          <tr>
-            <th>SU_Total</th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th>{{ all_tickets_cost }}</th>
-            <th></th>
-          </tr>
-          {% endif %}
-          </tbody>
-        </table>
-        <table>
+                            {% endfor %}
+                        </td>
+                        <td>{{ ticket.ticket_parent.seller }}</td>
+                        <td>{{ ticket.payment_type }}</td>
+                        <td class="td-total">
+                            {{ ticket.total }}
+                        </td>
+                        <td class="header-actions">
+                            {% if ticket.is_active == True %}
+                            <span class="sales-actions deactivate-ticket"><i class="material-icons text-muted">clear</i></span>
+                            <span class="sales-actions print-ticket"><i class="material-icons text-primary">local_printshop</i></span>
+                            {% else %}
+                            <span class="sales-actions delete-ticket"><i class="material-icons text-muted">delete</i></span>
+                            <span class="sales-actions activate-ticket"><i class="material-icons text-muted">restore</i></span>
+                            <span class="sales-actions print-ticket"><i class="material-icons text-primary">local_printshop</i></span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <th>Total </th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th>{{ total_cost }}</th>
+                        <th></th>
+                    </tr>
+                    {% if user.is_superuser %}
+                    <tr>
+                        <th>SU_Total</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th>{{ all_tickets_cost }}</th>
+                        <th></th>
+                    </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+                <table>
 
-        </table>
+                </table>
 
-      </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- Ticket Modal -->
 <div class="modal fade" id="modal-ticket" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h5 class="modal-title" id="myModalLabel">Imprimir</h5>
-      </div>
-      <div class="modal-body">
-        <div class="printer-container">
-          <div id="printer">
-            <figure class="content-img">
-              <img src="{% static 'images/logo.png' %}" alt="logo-dabbawala">
-            </figure>
-            <div class="ticket-order-container text-xs-center">
-              <span>ORDEN</span>
-              <span id="ticket-order"></span>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h5 class="modal-title" id="myModalLabel">Imprimir</h5>
             </div>
-            <div class="ticket-address">
-              <p class="text-xs-center">
-                Keff Kaffe
-                Bosque de Minas #3 Local 8, Corazón de la herradura, Huixquilucan, México, C.P.:52784
-              </p>
-            </div>
-            <div class="container ticket-datetime-container">
-              <div class="row">
-                <div class="col-xs-6 ticket-datetime">
-                  <span id="ticket-time"></span>
+            <div class="modal-body">
+                <div class="printer-container">
+                    <div id="printer">
+                        <figure class="content-img">
+                            <img src="{% static 'images/logo.png' %}" alt="logo-dabbawala">
+                        </figure>
+                        <div class="ticket-order-container text-xs-center">
+                            <span>ORDEN</span>
+                            <span id="ticket-order"></span>
+                        </div>
+                        <div class="ticket-address">
+                            <p class="text-xs-center">
+                                Keff Kaffe
+                                Bosque de Minas #3 Local 8, Corazón de la herradura, Huixquilucan, México, C.P.:52784
+                            </p>
+                        </div>
+                        <div class="container ticket-datetime-container">
+                            <div class="row">
+                                <div class="col-xs-6 ticket-datetime">
+                                    <span id="ticket-time"></span>
+                                </div>
+                                <div class="col-xs-6 ticket-datetime">
+                                    <span id="ticket-date"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <ul class="list-group list-group-flush" id="sales-list-modal">
+                        </ul>
+                        <div class="ticket-id-container">
+                            <span>ID: </span><span id="ticket-id"></span>
+                        </div>
+                        <div class="ticket-contact">
+                            <p class="text-xs-center">
+                                Contacto:<br>
+                                (55) 41 22 69 00 <br>
+                                customerservice@keffkaffe.com<br>
+                            </p>
+                            <p class="text-xs-center mt-1">
+                                <strong>¡GRACIAS POR SONREIR! <span class="smile">😊</span></strong> <br>
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-xs-6 ticket-datetime">
-                  <span id="ticket-date"></span>
-                </div>
-              </div>
-            </div>
-            <ul class="list-group list-group-flush" id="sales-list-modal">
-            </ul>
-            <div class="ticket-id-container">
-              <span>ID: </span><span id="ticket-id"></span>
             </div>
             <div class="ticket-contact">
               <p class="text-xs-center">
@@ -199,23 +218,17 @@
                 <strong>¡GRACIAS POR SONREIR! <span class="smile">😊</span></strong> <br>
               </p>
             </div>
-          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-primary btn-printer">Imprimir</button>
-      </div>
     </div>
-  </div>
 </div>
 
 
 <div id="bounce-cont">
-  <span class="msg-bounce">Generando Gráficas</span>
-  <div class="sk-double-bounce">
-    <div class="sk-child sk-double-bounce1"></div>
-    <div class="sk-child sk-double-bounce2"></div>
-  </div>
+    <span class="msg-bounce">Generando Gráficas</span>
+    <div class="sk-double-bounce">
+        <div class="sk-child sk-double-bounce1"></div>
+        <div class="sk-child sk-double-bounce2"></div>
+    </div>
 </div>
 {% endblock content %}
 
@@ -226,28 +239,41 @@
 <script src="{% static 'js/fileSaver.min.js' %}" defer></script>
 
 <script type="text/javascript" charset="utf-8" defer>
-    $(function() {
+  $(function() {
 
-        let ctx_week = document.getElementById("canvas-week-sales"),
-            ctx_day = document.getElementById("canvas-day-sales");
-        let earnings_week_chart,
-            earnings_day_chart;
-        let sales_week = JSON.parse('{{ sales_week | safe }}');
-        let dates_range = JSON.parse('{{ dates_range | safe }}');
-        let today_date;
+    let ctx_week = document.getElementById("canvas-week-sales"),
+        ctx_day = document.getElementById("canvas-day-sales");
+    let earnings_week_chart,
+        earnings_day_chart;
+    let sales_week = JSON.parse('{{ sales_week | safe }}');
+    let dates_range = JSON.parse('{{ dates_range | safe }}');
+    let today_date;
 
-        /**
-         * returns a list with the earnings of the week per day
-         */
-        function get_earnings_week_list() {
-            let earnings_list = [];
-            let count = 0;
+    /**
+     * returns a list with the earnings of the week per day
+     */
+    function get_earnings_week_list() {
+      let earnings_list = [];
+      let count = 0;
 
-            while (count < sales_week.length) {
-                earnings_list.push(parseFloat(sales_week[count].earnings));
-                count++;
-            }
-            return earnings_list;
+      while (count < sales_week.length) {
+        earnings_list.push(parseFloat(sales_week[count].earnings));
+        count++;
+      }
+      return earnings_list;
+    }
+
+    /**
+     * returns a list with the earnings of the week per day with the days to set
+     */
+    function get_earnings_week_range(sales_list) {
+      let week_list = [0, 0, 0, 0, 0, 0, 0,];
+      for (let i = 0; i < 7; i++) {
+        for (let j = 0; j < sales_list.length; j++) {
+          if (sales_list[j].number_day == i) {
+            week_list[i] = sales_list[j]['earnings']
+            console.log(week_list);
+          }
         }
 
         /**
@@ -310,23 +336,42 @@
             return hour_in_minutes >= start_hour_in_minutes && hour_in_minutes < end_hour_in_minutes;
         }
 
-        /**
-         * Receives two hours with the next format: hh:mm
-         * Returns the diference of the hours given with the following format: hh:mm
-         */
-        function get_time_differences(initial_time, final_time){
-            let initial_mins = parseInt(initial_time.substr(3,2));
-            let initial_hours = parseInt(initial_time.substr(0,2));
+      });
+      today_date = $('#dt-week').val().split(',')[1];
+    }
 
-            let final_mins = parseInt(final_time.substr(3,2));
-            let final_hours = parseInt(final_time.substr(0,2));
-
-            let elapsed_mins = final_mins - initial_mins;
-            let elapsed_hours = final_hours - initial_hours;
-
-            if (elapsed_mins < 0) {
-                elapsed_hours--;
-                elapsed_mins = 60 + elapsed_mins;
+    /**
+     * Draws the chart of sales of the week
+     */
+    earnings_week_chart = new Chart(ctx_week, {
+      type: 'bar',
+      data: {
+        labels: ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sábado", "Domingo"],
+        datasets: [{
+          label: 'Ventas del día',
+          data: get_earnings_week_list(),
+          backgroundColor: [
+            'rgba(0,200,83,0.9)',
+            'rgba(0,200,83,0.9)',
+            'rgba(0,200,83,0.9)',
+            'rgba(0,200,83,0.9)',
+            'rgba(0,200,83,0.9)',
+            'rgba(0,200,83,0.9)',
+            'rgba(0,200,83,0.9)',
+          ],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        onClick: function(event, legendItem) {
+          try {
+            let selected_day = legendItem[0]._index;
+            for (let i = 0; i < sales_week.length; i++) {
+              if (sales_week[i].number_day == selected_day) {
+                console.log(sales_week[i]);
+                set_sales_day_chart(sales_week[i].date);
+              }
             }
 
             let hours = elapsed_hours.toString();
@@ -461,51 +506,106 @@
             today_date = $('#dt-week').val().split(',')[1];
         }
 
-        /**
-         * Draws the chart of sales of the week
-         */
-        earnings_week_chart = new Chart(ctx_week, {
-            type: 'bar',
-            data: {
-                labels: ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sábado", "Domingo"],
-                datasets: [{
-                    label: 'Ventas del día',
-                    data: get_earnings_week_list(),
-                    backgroundColor: [
-                        'rgba(0,200,83,0.9)',
-                        'rgba(0,200,83,0.9)',
-                        'rgba(0,200,83,0.9)',
-                        'rgba(0,200,83,0.9)',
-                        'rgba(0,200,83,0.9)',
-                        'rgba(0,200,83,0.9)',
-                        'rgba(0,200,83,0.9)',
-                    ],
-                    borderWidth: 0,
-                }]
-            },
-            options: {
-                responsive: true,
-                onClick: function(event, legendItem) {
-                    try {
-                        let selected_day = legendItem[0]._index;
-                        for (let i = 0; i < sales_week.length; i++) {
-                            if (sales_week[i].number_day == selected_day) {
-                                set_sales_day_chart(sales_week[i].date);
-                            }
-                        }
-                    } catch (error) {
-                        console.log(error.message);
-                    }
-                },
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                        },
-                    }]
-                }
+    /** 
+     * Receives a number and returns it with currency format
+     */
+    function set_number_format(amount, decimals) {
+      let amount_parts,
+          regexp = /(\d+)(\d{3})/;
+
+      amount += '';
+      amount = parseFloat(amount.replace(/[^0-9\.]/g, ''));
+      decimals = decimals || 0;
+
+      if (isNaN(amount) || amount === 0)
+        return parseFloat(0).toFixed(decimals);
+
+      amount = '' + amount.toFixed(decimals);
+      amount_parts = amount.split('.');
+
+      while (regexp.test(amount_parts[0]))
+        amount_parts[0] = amount_parts[0].replace(regexp, '$1' + ' ' + '$2');
+
+      return amount_parts.join('.');
+    }
+
+    /** 
+     * Calculates total earnings in the actual week and print it
+     */
+    function set_total_earnings() {
+      let total_earnings = 0;
+      let earnings_list = get_earnings_week_list();
+      for (let i = 0; i < earnings_list.length; i++) {
+        total_earnings += earnings_list[i];
+      }
+      total_earnings = set_number_format(total_earnings, 2);
+      $('#total-earnings-text').append(total_earnings);
+    }
+
+    /** 
+     * Refresh the page with de dates of the year and week selected
+     */
+    $(this).on('change', '#dt-week', function(event) {
+      let dt_year = $('#dt-year').val();
+      let dt_week = $('#dt-week').val();
+
+      $.ajax({
+        url: "{% url 'sales:sales' %}",
+        type: 'POST',
+        data: {
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+          'dt_year': dt_year,
+          'dt_week': dt_week,
+          'type': 'sales_week',
+        },
+        beforeSend: function(){
+          swal({
+            title: "Obteniendo registros",
+            text: "Espere mientras obtenemos toda la información",
+          });
+          swal.enableLoading();
+        },
+        traditional: true,
+        datatype: 'jsonp',
+        success: function(result, status, XHR) {
+          let tickets_objects = result['tickets'];
+          sales_week = result['sales'];
+          let week_number = result['week_number'];
+          let sales_details_table = $('#sales-details-table').find('tbody');
+          let week_earnings = 0;
+          sales_details_table.empty();
+
+          swal({
+            title: "Éxito",
+            text: "Datos obtenidos",
+            type: "info",
+            timer: 750,
+            showConfirmButton: false
+          }).then(
+          function(){},
+          function(dismiss){});
+          
+          /**
+           * Filling the sales table
+           */
+          for (let i = 0; i < tickets_objects.length; i++) {
+            week_earnings += parseFloat(tickets_objects[i].total);
+            let cartridges_list = "";
+            let packages_list = "";
+
+            for (let j = 0; j < tickets_objects[i].ticket_details['cartridges'].length; j++) {
+              cartridges_list += "" +
+              "<span class='badge badge-success'>" +
+                "<span class='badge badge-info'>" + 
+                tickets_objects[i].ticket_details['cartridges'][j].quantity +
+                "</span>" +
+                "<span class='badge badge-success'>" + 
+                tickets_objects[i].ticket_details['cartridges'][j].name +
+                "</span>" +
+              "</span>" +
+              "";
             }
-        });
+        }};
 
         /**
          * Draws the chart of sales of the day
@@ -882,8 +982,10 @@
          * Get's the ticket id for delete-icon selected
          * TODO: Make a view for delete the ticket from backend
          */
-        $(this).on('click', '.delete-ticket', function(event) {
+        $(this).on('click', '.delete-ticket, .deactivate-ticket, .activate-ticket ', function(event) {
             let id_element = $(this).parent().siblings('.header-id').text();
+
+            var action = $(this).attr('class').substring(14)
 
             function delete_ticket() {
                 $.ajax({
@@ -892,6 +994,7 @@
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                         'ticket_id': id_element,
+                        'action': action
                     },
                     traditional: true,
                     datatype: 'jsonp',

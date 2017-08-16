@@ -1,0 +1,209 @@
+{% extends "base/base_nav_footer.html" %}
+{% load static %}
+{% block link %}
+    <link rel="stylesheet" type='text/css' href="{% static 'css/shoplist.css' %}">
+{% endblock link %}
+{% block content %}
+
+    <div class="container container_view_lists">
+        <div class="a col-md-12">
+            <div class="list_display col-md-6">
+                <table class="table table-hover" id="TableShopList">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for element in shop_list %}
+                        <tr class="list-element" id="element-{{ element.id }}">
+                            <td>{{ element.id }}</td>
+                            <td>{{ element.created_at }}</td><span></span>
+                            <td>{{ element.status }}</td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="card_list block_list col-md-6">
+                <table class="table table_shoplist_detail table-hover" id="TableShopListDetail">
+                    <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Cantidad</th>
+                        <th>Presentacion</th>
+                        <th>Costo</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="popout">
+        <div class="FAB" id="fab-add-shoplist">
+            <i class="material-icons">add</i>
+        </div>
+    </div>
+
+{% endblock content %}
+{% block javascript %}
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+            function get_cookie(name) {
+                let cookie_value = null;
+                if (document.cookie && document.cookie !== '') {
+                    let cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        let cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookie_value;/**/
+            }
+
+            var shop_list;
+            //Display creation list
+            $('.FAB').click(function(event) {
+                location.href = '/warehouse/new_shoplist/';
+            });
+
+            //Load and Show elements from ShopLists
+            $(".list-element").on("click",function(e){
+
+                $(".list-element").css('backgroundColor', '#ffffff');
+                $(this).css('backgroundColor', '#abafff');
+                let csrf_token = get_cookie('csrftoken');
+                var element = $(this);
+                list_element_id = element.attr("id").substring(8);
+
+                $.ajax({
+                    url: '{% url "products:shoplist" %}',
+                    type: 'POST',
+                    data: {
+                        'type' : 'load_list',
+                        'load_list': list_element_id,
+                        csrfmiddlewaretoken: csrf_token,
+                    },
+                    traditional: true,
+                    datatype: 'jsonp',
+                    success: function(result) {
+                        swal({
+                            title: "Éxito",
+                            text: "Lista Cargada",
+                            type: "success",
+                            showConfirmButton: false
+                        });
+                        html_list_detail = "";
+                        shop_list = result['shop_list'];
+                        for (x=0;x<shop_list.length;x++){
+                            html_list_detail +=
+
+                                '<tr id="id-'+shop_list[x].id+'" class="shoplistdetail_element">' +
+                                '<td class="sld_nombre">' + shop_list[x].nombre + '</td>' +
+                                '<td class="sld_cantidad">' + shop_list[x].cantidad + '</td>' +
+                                '<td class="sld_medida">' + shop_list[x].medida + " " + shop_list[x].unidad +'</td>' +
+                                '<td class="sld_costo">' + shop_list[x].costo + ' $</td>';
+
+                            if(shop_list[x].status==="MI"){
+                                html_list_detail += '<td class="sld_missing material-icons"> <button class="mi_button" > eject </button></td>' +
+                                    '</tr>' ;
+                            }else{
+                                html_list_detail += '<td class="sld_delivered material-icons"> <button class="de_button" > done </button></td>' +
+                                    '</tr>' ;
+                            }
+                        }
+
+                        $("#TableShopListDetail tbody tr").remove();
+                        var body = $("#TableShopListDetail").find("tbody")
+                            .append($(
+                                html_list_detail
+                            ));
+
+                        body.on("click",".sld_missing",function(e){
+                            var sld_ele_id = $(this).parent().attr('id').substring(3);
+                            var nombre = $(this).parent().children(".sld_nombre").html();
+                            var presentacion = $(this).parent().children(".sld_medida").html();
+                            var cantidad = $(this).parent().children(".sld_cantidad").html();
+
+                            var message = "Agregar "+ cantidad + " unidades de " + presentacion + " de " + nombre;
+
+                            swal({
+                                title: 'Estas Seguro?',
+                                text: message,
+                                type: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33',
+                                confirmButtonText: 'Si, estoy Seguro!!'
+                            }).then(function () {
+                                $.ajax({
+                                    url: '{% url "products:shoplist" %}',
+                                    type: 'POST',
+                                    data: {
+                                        'type' : 'load_list_detail',
+                                        'load_list_detail': sld_ele_id,
+                                        csrfmiddlewaretoken: csrf_token,
+                                    },
+                                    datatype: 'jsonp',
+
+                                    success: function(result) {
+                                        swal(
+                                            'Éxito!',
+                                            'Agregado al almacen',
+                                            'success'
+                                        );
+                                        location.replace('{% url "products:shoplist" %}');
+                                    }
+                                });
+                            });
+
+                        });
+
+                        body.on("click",".sld_delivered",function(e){
+                            var sld_ele_id = $(this).parent().attr('id').substring(3);
+                            $.ajax({
+                                url: '{% url "products:shoplist" %}',
+                                type: 'POST',
+                                data: {
+                                    'type' : 'load_date',
+                                    'detail_list_id': sld_ele_id,
+                                    csrfmiddlewaretoken: csrf_token,
+                                },
+                                datatype: "html",
+                                success: function(result) {
+                                    var date = result.substring(0,11);
+                                    var time = result.substring(12,19);
+                                    swal("Fecha de Entrega: "+ date + " a las " + time)
+                                }
+                            });
+                        });
+
+
+                    },
+                    error: function(result, jqXHR, textStatus, errorThrown) {
+                        swal({
+                            title: "Lista no Cargada!",
+                            text: 'Contacte a soporte!\n ' + 'Errores: ' + textStatus + ', ' + jqXHR,
+                            type: "error",
+                            showConfirmButton: false
+                        });
+                        setTimeout(30000);
+                    },
+                });
+
+            });
+
+        });
+    </script>
+{% endblock javascript %}

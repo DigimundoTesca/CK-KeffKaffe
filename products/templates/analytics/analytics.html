@@ -2,78 +2,111 @@
 
 {% load static %}
 
-{% block link %}    
-  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css"/>
-  <link rel="stylesheet" href="{% static "css/styles27052017.css" %}">
+{% block link %}
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css"/>
+<link rel="stylesheet" href="{% static "css/styles27052017.css" %}">
 {% endblock link %}
 
 {% block content %}
-<div class="container"/>
-  <div class="form-inline">
-    <label class="sr-only" for="initial-date">Fecha inicial</label>
-    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" id="initial-date" placeholder="Primer Fecha">
-
-    <label class="sr-only" for="final-date">Fecha Final</label>
-    <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-      <input type="text" class="form-control" id="final-date" placeholder="Última Fecha">
-    </div>
-
-    <button class="btn btn-primary mb-2 mr-sm-2 mb-sm-0" onclick="" id="create-predictions">Generar</button>
+<div class="container-fluid">
+  <div class="form-inline" id="categories-selector-form">
+    <select class="custom-select" id="cat-sold">
+      <option value="select">Seleccionar categoría</option>
+      <option value="drinks_sold" id="drinksValue">Bebidas</option>
+      <option value="food_sold" id="food_value">Platillos</option>
+    </select>
+    <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha inicial">
+    <input type='text' class='datepicker-here' data-language='en' placeholder="Fecha Final">
+    <button type="data" name="button">Enviar</button>
   </div>
-  <div>
-    <table id="analytics-prro" class="table table-kitchen table-straped table-hover" align="right">
+</div>
+<div class="row container-fluid">
+  <div class="col-xs-12 col-md-4">
+    <div class="chart-container nutChar" style="width:300px !important; margin-top: 1cm;">
+      <canvas id="nutChar"></canvas>
+    </div>
+    <div class='container-fluid col-xl-8 label-container' id="label-box" style="margin-top: 1cm;">
+      <span>
+      </span>
+    </div>
+  </div>
+  <div class="col-xs-12 col-md-8">
+    <div class="chart-container">
+      <canvas id="quantity-bar"></canvas>
+    </div>
+  </div>
+</div>
+<div class="container-fluid">
+  <div class="mt-2">
+    <table id="analytics-table" class="table table-kitchen table-straped table-hover">
       <thead class="thead-inverse">
         <tr>
           <th>Producto</th>
           <th>Cantidad</th>
         </tr>
-      </thead>  
-        <tbody>
-            {% for cartridge in today_sold_product %}
-            <tr>
-              <td>
-                <span>
-                  {{ cartridge.name }}
-                </span>
-              </td>
-              <td>
-                <span class="badge badge-success">
-                  {{ cartridge.frequency }}
-                </span>
-              </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+      </thead>
+      <tbody>
+        {% for cartridge in today_sold_product %}
+        <tr>
+          <td>
+            <span>
+              {{ cartridge.name }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-success">
+              {{ cartridge.frequency }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
   </div>
 </div>
-<!-- <style type="text/css">
-  /*---------- Tables ------------ */
-tr:nth-child(even){
- background-color:  rgba(131,78,0,0.5);
-}
-tr:hover{
- background-color:  rgba(131,78,0,1) !important;
-}
-
-table{
-  border-collapse: collapse;
-  width: 100%
-}*/
-</style> -->
-
 {% endblock content %}
 
 {% block javascript %}
-<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.js">
-</script>
+<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.js"></script>
 
 <script type="text/javascript">
-  $(function() {   
-    /** 
-    * Gets the csrf cookie from cache
-    */ 
-    function get_cookie(name) {
+  $(function() {
+    let ctx = document.getElementById("nutChar").getContext('2d');
+    let bar_ctx = document.getElementById("quantity-bar").getContext('2d');
+    let today_sold_product = JSON.parse('{{ today_sold_product_json | safe }}');
+    let category_sold = JSON.parse('{{ category_sold | safe }}');
+    let all_categories = JSON.parse('{{ all_categories | safe }}');
+    let nutChar, quantity_bar;
+    let itsEmpty;
+    $('.datepicker-here').datepicker();
+    let labelName = [];
+
+    let neutralColor = ['#FFFFF',]
+    let colorList = [
+      '#efd660',
+      '#E91E63',
+      '#BA68C8',
+      '#7E57C2',
+      '#9FA8DA',
+      '#E040FB',
+      '#5E35B1',
+      '#00E676',
+      '#FBC02D',
+      '#FFC107',
+      '#A1887F',
+      '#DD2C00',
+      '#B0BEC5',
+      '#EEFF41',
+      '#827717',
+    ];
+
+    /**
+     * Gets the csrf cookie from cache
+     *
+     * @param {String} name Cookie name
+     */
+    function getCookie(name) {
       let cookie_value = null;
       if (document.cookie && document.cookie !== '') {
         let cookies = document.cookie.split(';');
@@ -88,63 +121,279 @@ table{
       return cookie_value;
     }
 
-    $('#initial-date').datepicker({
-      onSelect: function(selectedDate) {
-        let dataString = 'date='+selectedDate;
+    /**
+     * This function fills the doughnut chart with the drinks sold information
+     * @return {String[]} productsList Returns the drinks sold list
+     */
+    function fillDrinksNutChar(){
+      let drinksAux = category_sold['drinks_sold'];
+      let foodsAux = category_sold['food_sold'];
+      let drinksValue = $('#drinksValue').val();
+      let productsList = [];
+
+      for(let i = 0; i < drinksAux.length; i++){
+        let drinksQuant = drinksAux[i]['quantity'];
+        productsList[i] = drinksQuant;
+      }
+      return productsList;
+    }
+
+    /**
+     * This function fills the chart with the sold food information
+     *
+     * @return {String[]} productsList Returns the sold food list
+     */
+    function fillFoodNutChar(){
+      let foodAux = category_sold['food_sold'];
+      let drinksValue = $('#drinksValue').val();
+      let productsList = [];
+
+      for(let i = 0; i < foodAux.length; i++){
+        let food_quant = foodAux[i]['quantity'];
+        productsList[i] = food_quant;
+      }
+      return productsList;
+    }
+
+    /**
+     * This function abreviates the kind of food what we are gonna being
+       *  manipulating
+     * @param  {string} kindOfFood This is the kind of food before being
+       *  modificated.
+     * @return {string} kindOfFood Returns the kind of food abbreviation
+     */
+    function getTypeProduct(kindOfFood){
+       return kindOfFood.substring(0,3);
+    }
+
+    /**
+     * This function fills the doughnut chart when it's empty
+     */
+    function getNeutralColor(){
+      let itsEmpty = true;
+      // if(nutChar.data.datasets[0].data == 1){
+        // nutChar.data.datasets[1].backgroundColor = emptyColor;
+      // }
+
+    }
+
+    /**
+     * This function obtains the label's name of sold food for use it in
+     * the doughnut chart
+     *
+     * @return {String[]} labelList Returns the list with all the label's name
+     */
+    function getLabelFoodNutChar(){
+      let foodAux = category_sold['food_sold'];
+      let labelList = [];
+      for(i = 0; i < foodAux.length; i++){
+        labelList[i] = foodAux[i];
+      }
+      return labelList;
+    }
+
+    /**
+     * This function obtains the label's name of sold drinks for use it in
+     * the doughnut chart
+     *
+     * @return {String[]} labelList Returns the list with all the label's name
+     */
+    function getLabelDrinkNutChar(){
+      let drinksAux = category_sold['drinks_sold'];
+      let labelList = []
+      for(i = 0; i < drinksAux.length; i++){
+        labelList[i] = drinksAux[i];
+      }
+      return labelList;
+    }
+
+    quantity_bar = new Chart(bar_ctx, {
+      type: 'line',
+      data: {
+        labels: ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sábado", "Domingo"],
+        datasets: [{
+          label: 'Número de ventas',
+          data: [],
+          // backgroundColor: colorList,
+          borderColor: 'blue',
+          borderWidth: 5,
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero:true
+            }
+          }]
+        }
       }
     });
 
-    $('#final-date').datepicker({
-      onSelect: function(selectedDate) {
-        let dataString = 'date='+selectedDate;
+    nutChar = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: [],
+        datasets: [{
+          data: [0],
+          backgroundColor: colorList,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        tooltips: {
+              callbacks: {
+                  label: function(tooltipItem, data) {
+                    //get the concerned dataset
+                    var dataset = data.datasets[tooltipItem.datasetIndex];
+                    //calculate the total of this data set
+                    var total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
+                      return previousValue + currentValue;
+                    });
+                    //get the current items value
+                    var currentValue = dataset.data[tooltipItem.index];
+                    //calculate the precentage based on the total and current item, also this does a rough rounding to give a whole number
+                    var precentage = Math.floor(((currentValue/total) * 100)+0.5);
+
+                    return precentage + "%";
+                  }
+              }
+        }
+        responsive: true,
+        onClick: function(event, legendItem) {
+          try {
+            let itemSelected = legendItem[0]._index;
+            for (let i = 0; i < productsList.length; i++) {
+            }
+          } catch (error) {
+            console.log(error.message);
+          }
+        },
+        cutoutPercentage: 40,
+        legend: {
+          display: false
+        },
+        animation: {
+          animateScale: true,
+        }
       }
     });
 
-    $(this).on('click', '#create-predictions', function(event) {
-      let initial_date = $('#initial-date').val();
-      let final_date = $('#final-date').val();
+    $(this).on('click', 'button', function(event){
+    });
 
-      aux_initial = initial_date.split('/')
-      initial_date = aux_initial[1] + '-' + aux_initial[0] + '-' + aux_initial[2];
+    $(this).on('change', '.custom-select', function(event) {
+      let drinks = $('#drinks').val();
+      let food = $('#foods').val();
+      let kindOfFood = $(this)[0].value;
+      let short_element = getTypeProduct(kindOfFood);
 
-      aux_final = final_date.split('/')
-      final_date = aux_final[1] + '-' + aux_final[0] + '-' + aux_final[2];
-
-      let csrf_token = get_cookie('csrftoken');
-      console.log(initial_date)
       $.ajax({
-        url: '{% url "products:analytics" %}',
+        url: "{% url 'products:analytics' %}",
         type: 'POST',
         data: {
-          'initial_date': initial_date,
-          'final_date': final_date,
-          csrfmiddlewaretoken: csrf_token,
+          csrfmiddlewaretoken: getCookie('csrftoken'),
+          'type': 'category',
+        },
+        beforeSend: function(){
+          swal({
+            title: "Obteniendo registros",
+            text: "Espere mientras obtenemos toda la información",
+          });
+          swal.enableLoading();
         },
         traditional: true,
         datatype: 'jsonp',
-        success: function(result) {
-          swal({
-            title: "Éxito",
-            text: "Datos obtenidos",
-            type: "success",
-            showConfirmButton: true,
-          });
+        success: function(result, status, XHR) {
+          let drinks = result['drinks_sold'];
+          let food = result['food_sold'];
+          let totalSales;
+          if (short_element == 'dri'){
 
-         console.log(result);
+            let drinksAux = category_sold['drinks_sold'];
+            $(".label-container").children('span').remove(                                                                                                                                      );
+            let drinks_data = fillDrinksNutChar();
+            let labels = getLabelDrinkNutChar();
+            let percentageList = [];
+            totalSales  = drinks_data.reduce(function(drinks_data, b){
+              return drinks_data + b;
+            }, 0);
+            for (let i = 0; i < drinksAux.length; i++) {
+              labelPercentage = (drinks_data[i]*100)/totalSales;
+              percentageList[i] = labelPercentage;
+              labelPercentage = labelPercentage.toFixed(2);
+              percentageList[i] = labelPercentage
+            }
+            for (var i = 0; i < drinksAux.length; i++) {
+              let symbol = "%";
+              toString(percentageList[i]);
+              percentageList = percentageList[i] + symbol;
+            }
+            for(let i = 0; i < drinksAux.length; i++){
+              nutChar.data.labels[i] = labels[i]['name'];
+              quantity_bar.data.labels[i] = labels[i]['name'];
+              $('#label-box').append('<span class="label-name">' +
+               '    ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] + '   '
+               + '</span>');
+            }
+              nutChar.data.datasets[0].data = percentageList;
+              quantity_bar.data.datasets[0].data = drinks_data;
+              nutChar.update();
+              quantity_bar.update();
+          }
+          else if(short_element == 'foo'){
+            $(".label-container").children('span').remove();
+            let foodAux = category_sold['food_sold'];
+            let labels = getLabelFoodNutChar();
+            let food_data = fillFoodNutChar();
+            let labelPercentage;
+            let totalSales;
+            let percentageList = [];
 
-        },
-        error: function(result, jqXHR, textStatus, errorThrown) {
+            totalSales  = food_data.reduce(function(food_data, b){
+              return food_data + b;
+            }, 0);
+            for (var i = 0; i < foodAux.length; i++) {
+              labelPercentage = (food_data[i]*100)/totalSales;
+              labelPercentage = labelPercentage.toFixed(2);
+              percentageList[i] = labelPercentage;
+            }
+            for(i = 0; i < foodAux.length; i++){
+              nutChar.data.labels[i] = labels[i]['name'];
+              $('#label-box').append('<span class="label-name">'
+              +'    ' + labels[i]['name'] + ':  ' + labels[i]['quantity'] +
+                '</span>');
+            }
+              nutChar.data.datasets[0].data = percentageList;
+              nutChar.update();
+          }
+
           swal({
-            title: "Datos no obtenidos!",
-            text: 'Contacte a soporte!\n ' + 'Errores: ' + textStatus + ', ' + jqXHR,
-            type: "error",
+            title: 'Hecho',
+            text: 'Categoría seleccionada',
+            type: 'success',
+            timer: 750,
             showConfirmButton: false,
-
+          }).then(
+          function(){},
+          function(dismiss){});
+        },
+        error: function(result) {
+          swal({
+            title: "Error",
+            text: 'No se pudo generar la gráfica',
+            type: "error",
+            timer: 750,
+            showConfirmButton: false,
           });
         },
       });
     });
-
+  fillDrinksNutChar();
+  fillFoodNutChar();
+  getNeutralColor();
+  getLabelFoodNutChar();
+  getLabelDrinkNutChar();
   });
 </script>
 {% endblock javascript %}

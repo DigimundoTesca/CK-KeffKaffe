@@ -84,10 +84,6 @@ class Supply(models.Model):
         validators=[MaxValueValidator(9999999999999)], blank=True, null=True)
     supplier = models.ForeignKey(Supplier, default=1, on_delete=models.CASCADE)
     storage_required = models.CharField(choices=STORAGE_REQUIREMENTS, default=DRY_ENVIRONMENT, max_length=2)
-    presentation_unit = models.CharField(max_length=10, choices=PRESENTATION_UNIT, default=PACKAGE)
-    presentation_cost = models.FloatField(default=0)
-    measurement_quantity = models.FloatField(default=0)
-    measurement_unit = models.CharField(max_length=10, choices=METRICS, default=PACKAGE)
     optimal_duration = models.IntegerField(default=0)
     optimal_duration_unit = models.CharField(choices=OPTIMAL_DURATION, max_length=2, default=DAYS)
     location = models.ForeignKey(SupplyLocation, default=1, on_delete=models.CASCADE)
@@ -98,44 +94,47 @@ class Supply(models.Model):
     def __str__(self):
         return self.name
 
-    def measurement_conversion(self, quantity):
-        if quantity >= 1000:
-            return self.measurement_quantity / 1000
-        else:
-            return self.measurement_quantity
-
-    def self_measurement_conversion(self):
-        if self.measurement_quantity >= 1000:
-            return self.measurement_quantity / 1000
-        else:
-            return self.measurement_quantity
-
-    def unit_conversion(self, quantity):
-        if quantity >= 1000:
-            if self.measurement_unit == 'GR':
-                return "Kilos"
-            elif self.measurement_unit == 'MI':
-                return "Litros"
-            else:
-                return "Pieza"
-        else:
-            return self.measurement_unit
-
-    def self_unit_conversion(self):
-        if self.measurement_quantity >= 1000:
-            if self.measurement_unit == 'GR':
-                return "Kilos"
-            elif self.measurement_unit == 'MI':
-                return "Litros"
-            else:
-                return "Pieza"
-        else:
-            return self.measurement_unit
-
     class Meta:
         ordering = ('id',)
         verbose_name = 'Insumo'
         verbose_name_plural = 'Insumos'
+
+
+class Presentation(models.Model):
+
+    PACKAGE = 'PA'
+    BOX = 'BO'
+    PIECE = 'PZ'
+    PRESENTATION_UNIT = (
+        (PACKAGE, 'Paquete'),
+        (BOX, 'Caja'),
+        (PIECE, 'Pieza')
+    )
+
+    GRAM = 'GR'
+    MILLILITER = 'MI'
+    PIECE = 'PZ'
+
+    METRICS = (
+        (GRAM, 'gramo'),
+        (MILLILITER, 'mililitro'),
+        (PIECE, 'pieza'),
+    )
+
+    supply = models.ForeignKey(Supply, default=1, on_delete=models.CASCADE)
+    measurement_quantity = models.FloatField(default=0)
+    measurement_unit = models.CharField(max_length=10, choices=METRICS, default=PACKAGE)
+    presentation_unit = models.CharField(max_length=10, choices=PRESENTATION_UNIT, default=PACKAGE)
+    presentation_cost = models.FloatField(default=0)
+
+    def __str__(self):
+        return '%s %s %s' % (self.supply, self.measurement_quantity, self.measurement_unit)
+
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Presentacion'
+        verbose_name_plural = 'Presentaciones'
 
 
 class Cartridge(models.Model):
