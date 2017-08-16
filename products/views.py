@@ -3,6 +3,14 @@ from __future__ import unicode_literals
 import json
 from datetime import timedelta, date, datetime
 
+<<<<<<< HEAD
+import random
+import json
+from datetime import timedelta, datetime, date
+
+from decimal import Decimal
+=======
+>>>>>>> 3232a244e3e524e782e6bcf7ef4dd0bca70db4ad
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
@@ -17,7 +25,10 @@ from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 3232a244e3e524e782e6bcf7ef4dd0bca70db4ad
 # -------------------------------------  Suppliers -------------------------------------
 @login_required(login_url='users:login')
 def suppliers(request):
@@ -277,7 +288,26 @@ class DeleteCartridge(DeleteView):
         return redirect('supplies:cartridges')
 
 
+<<<<<<< HEAD
+# -------------------------------------  Catering -------------------------------------
+class AddStock(CreateView):
+    model = WarehouseDetails
+    fields = ['warehouse', 'status', 'quantity']
+    template_name = 'catering/add_stock.html'
+
+    def __init__(self, **kwargs):
+        super(AddStock).__init__(**kwargs)
+        self.object = None
+
+    def form_valid(self, form):
+        print(form)
+        self.object = form.save()
+        return redirect('products:warehouse/catering')
+
+
+=======
 # -------------------------------------  Catering -----~--------------------------------
+>>>>>>> 3232a244e3e524e782e6bcf7ef4dd0bca70db4ad
 @login_required(login_url='users:login')
 def catering(request):
     """"
@@ -295,6 +325,17 @@ def catering(request):
         for required in required_supplies:
             diner_object = {
                 'Nombre': required['name'],
+<<<<<<< HEAD
+                'Provedor': "proveedor",
+                'Cantidad': required['name'],
+                'Medida': required["measurement"],
+                'Presentacion': required['measurement_quantity'],
+                'Stock'
+                'Requerdio': required['required'],
+                'Costo': required['full_cost']
+            }
+
+=======
                 'Requeridos': required['quantity'],
                 'Stock': required['stock'],
                 'Por Comprar': required['required'],
@@ -303,6 +344,7 @@ def catering(request):
                 'Costo x Unidad': required['cost'],
                 'Costo Total': required['full_cost'],
             }
+>>>>>>> 3232a244e3e524e782e6bcf7ef4dd0bca70db4ad
             buy_objects_list.append(diner_object)
         return JsonResponse({'buy_list': buy_objects_list})
 
@@ -542,6 +584,8 @@ def new_shoplist(request):
 
 @login_required(login_url='users:login')
 def products_analytics(request):
+    products_helper = ProductsHelper()
+
     def get_period(initial_dt, final_dt):
         helper = Helper()
         sales_helper = SalesHelper()
@@ -595,6 +639,7 @@ def products_analytics(request):
                 'id': cartridge_item.id,
                 'name': cartridge_item.name,
                 'frequency': 0,
+                'category': cartridge_item.category,
             }
             cartridges_list.append(cartridge_object)
 
@@ -607,12 +652,54 @@ def products_analytics(request):
 
         return cartridges_list
 
+<<<<<<< HEAD
+    def get_sold_category():
+        drinks_sold = []
+        food_sold = []
+        for element in get_products_sold():
+            category_object = {
+                'id': element['id'],
+                'name': element['name'],
+                'category': element['category'],
+                'quantity': element['frequency']
+            }
+            if element['frequency'] > 0:
+                if element['category'] == 'CO':
+
+                    drinks_sold.append(category_object)
+                else:
+                    food_sold.append(category_object)
+        return {'drinks_sold': drinks_sold, 'food_sold': food_sold}
+
+    if request.method == 'POST':
+        if request.POST['type'] == 'category':
+            sold_categories = get_sold_category()
+            return JsonResponse(sold_categories)
+        else:
+            return JsonResponse('Hola')
+
+    template = 'analytics/analytics.html'
+    title = 'Products - Analytics'
+
+    categories_sold = get_sold_category()
+    sold_product = get_products_sold()
+    print(categories_sold)
+    all_categories = products_helper.get_all_cartridges_categories()
+    context = {
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title,
+        'today_sold_product_json': json.dumps(sold_product),
+        'today_sold_product': sold_product,
+        'category_sold': json.dumps(categories_sold),
+        'all_categories': json.dumps(all_categories),
+=======
     template = 'analytics/analytics.html'
     title = 'Products - Analytics'
 
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
+>>>>>>> 3232a244e3e524e782e6bcf7ef4dd0bca70db4ad
     }
 
     return render(request, template, context)

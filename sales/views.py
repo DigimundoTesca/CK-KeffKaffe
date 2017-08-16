@@ -157,6 +157,7 @@ def sales(request):
     # Any other request method:
     template = 'sales/sales_analytics.html'
     title = 'Registro de Ventas'
+    print(sales_helper.get_sales_actual_week())
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
