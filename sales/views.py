@@ -157,6 +157,7 @@ def sales(request):
     # Any other request method:
     template = 'sales/sales_analytics.html'
     title = 'Registro de Ventas'
+    print(sales_helper.get_sales_actual_week())
     context = {
         'title': PAGE_TITLE + ' | ' + title,
         'page_title': title,
@@ -250,9 +251,11 @@ def new_sale(request):
                     try:
                         stock = Warehouse.objects.get(supply=element.supply, status="AS")
                         stock.quantity -= element.quantity
+                        stock.save()
 
                     except ObjectDoesNotExist:
-                        print("No hay stock en Assembly")
+                        print("No Stock")
+                        #No hay Stock, deberia no permitirse el cambio
 
             for ticket_detail in ticket_detail_json_object['extra_ingredients_cartridges']:
                 cartridge_object = get_object_or_404(Cartridge, id=ticket_detail['cartridge_id'])
@@ -274,7 +277,7 @@ def new_sale(request):
                         stock.quantity -= element.quantity
 
                     except ObjectDoesNotExist:
-                        print("No hay stock en Assembly")
+                        print("No Stock")
 
                 for ingredient in ticket_detail['extra_ingredients']:
                     extra_ingredient_object = ExtraIngredient.objects.get(id=ingredient['id'])
@@ -333,19 +336,19 @@ def new_sale(request):
         if len(cartridge_object['extra_ingredients']) > 0:
             extra_ingredients_products_list.append(cartridge_object)
 
-        template = 'new/new_sale.html'
-        title = 'Nueva venta'
+    template = 'new/new_sale.html'
+    title = 'Nueva venta'
 
-        context = {
-            'title': PAGE_TITLE + ' | ' + title,
-            'page_title': title,
-            'cartridges': cartridges_list,
-            'package_cartridges': package_cartridges,
-            'extra_ingredients': extra_ingredients,
-            'extra_ingredients_products_list': extra_ingredients_products_list,
-            'extra_ingredients_products_list_json': json.dumps(extra_ingredients_products_list),
-        }
-        return render(request, template, context)
+    context = {
+        'title': PAGE_TITLE + ' | ' + title,
+        'page_title': title,
+        'cartridges': cartridges_list,
+        'package_cartridges': package_cartridges,
+        'extra_ingredients': extra_ingredients,
+        'extra_ingredients_products_list': extra_ingredients_products_list,
+        'extra_ingredients_products_list_json': json.dumps(extra_ingredients_products_list),
+    }
+    return render(request, template, context)
 
 
 # -------------------------------- Test ------------------------------
