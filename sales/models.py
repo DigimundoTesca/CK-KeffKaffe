@@ -115,3 +115,10 @@ class TicketExtraIngredient(models.Model):
 
     def __str__(self):
         return '%s' % self.extra_ingredient
+
+
+class SimulatedSale(models.Model):
+    date = models.DateTimeField(editable=True)
+    quantity = models.IntegerField(default=0)
+    cartridge = models.ForeignKey(
+        Cartridge, on_delete=models.CASCADE, blank=True, null=True)
