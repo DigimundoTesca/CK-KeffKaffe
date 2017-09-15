@@ -1,6 +1,7 @@
 import json
 import math
 import pytz
+import statistics as stats
 from datetime import datetime, date, timedelta, time
 from decimal import Decimal
 from django.db.models import Min, Max
@@ -212,16 +213,16 @@ class KitchenHelper(object):
         self.__all_warehouse = None
 
     def get_all_processed_products(self):
-        """		
-        rtype: django.db.models.query.QuerySet 		
+        """
+        rtype: django.db.models.query.QuerySet
         """
         if self.__all_processed_products is None:
             self.set_all_processed_products()
         return self.__all_processed_products
 
     def get_all_warehouse(self):
-        """		
-        :rtype: django.db.models.query.QuerySet 		
+        """
+        :rtype: django.db.models.query.QuerySet
         """
         if self.__all_warehouse is None:
             self.set_all_processed_products()
@@ -390,7 +391,7 @@ class SalesHelper(object):
         """
         Returns a JSON with a years list.
         The years list contains years objects that contains a weeks list
-            and the Weeks list contains a weeks objects with two attributes: 
+            and the Weeks list contains a weeks objects with two attributes:
             start date and final date. Ranges of each week.
         """
         helper = Helper()
@@ -428,7 +429,7 @@ class SalesHelper(object):
                     """
                     Validates if exists some week with an similar week_number of the actual year
                     If exists a same week in the list validates the start_date and the end_date,
-                    In each case valid if there is an older start date or a more current end date 
+                    In each case valid if there is an older start date or a more current end date
                         if it is the case, update the values.
                     Else creates a new week_object with the required week number
                     """
@@ -542,7 +543,7 @@ class SalesHelper(object):
     def get_tickets_list(self, initial_date, final_date):
         """
         :rtype: list
-        :param initial_date: datetime 
+        :param initial_date: datetime
         :param final_date: datetime
         """
         all_tickets = self.get_all_tickets().filter(
@@ -600,9 +601,9 @@ class ProductsHelper(object):
         self.__all_supplies = None
         self.__all_cartridges_categories = None
         self.__all_extra_ingredients = None
-        self.__all_cartridges_recipes = None        
+        self.__all_cartridges_recipes = None
         self.__all_tickets_details = None
-        self.__elements_in_warehouse = None        
+        self.__elements_in_warehouse = None
         self.__predictions = None
         self.__required_supplies_list = None
         self.__today_popular_cartridge = None
@@ -801,7 +802,7 @@ class ProductsHelper(object):
 
     def get_required_supplies(self):
         """
-        :rtype: list 
+        :rtype: list
         """
         required_supplies_list = []
         all_cartridges = self.get_all_cartridges()
@@ -809,25 +810,25 @@ class ProductsHelper(object):
         supplies_on_stock = self.get_all_elements_in_warehouse().filter(status="ST")
 
         ingredients = self.get_all_cartridges_recipes()
-        
+
         for prediction in predictions:
             for cartridge in all_cartridges:
                 if prediction['cartridge'] == cartridge:
 
-                    ingredientes = ingredients.filter(cartridge=cartridge)                    
+                    ingredientes = ingredients.filter(cartridge=cartridge)
 
-                    for ingredient in ingredientes:           
+                    for ingredient in ingredientes:
 
                         supply = ingredient.supply
                         name = ingredient.supply.name
-                        cost = ingredient.supply.presentation_cost                        
+                        cost = ingredient.supply.presentation_cost
                         measurement_unit = ingredient.supply.unit_conversion(ingredient.quantity)
                         measurement_quantity = ingredient.supply.measurement_conversion(ingredient.quantity)
                         supplier_unit = ingredient.supply.unit_conversion(ingredient.supply.measurement_quantity)
                         supplier_quantity = ingredient.supply.measurement_conversion(ingredient.supply.measurement_quantity)
                         quantity = ingredient.quantity
                         supplier = ingredient.supply.supplier
-                            
+
                         count = 0
 
                         required_supply_object = {
@@ -886,8 +887,8 @@ class ProductsHelper(object):
         return required_supplies_list
 
     def get_always_popular_cartridge(self):
-        """ 
-        :rtype: django.db.models.query.QuerySet 
+        """
+        :rtype: django.db.models.query.QuerySet
         """
         if self.__always_popular_cartridge is None:
             self.set_always_popular_cartridge()
@@ -1097,7 +1098,7 @@ class PIDControl(object):
         Controlador PID
         TODO: Obtener el Control Proporcional, Integral y Derivativo
         La fórmula está dada por:
-            ( (K1 * (Sp + Mp + Ap) ) + (K2 * ( Sum(Ts) - Sum(Tp) ) / Dr) + Dp ) / 3 
+            ( (K1 * (Sp + Mp + Ap) ) + (K2 * ( Sum(Ts) - Sum(Tp) ) / Dr) + Dp ) / 3
         En donde
             K1 = Constante Proporcional
             K2 =  Constante Integral
@@ -1126,14 +1127,14 @@ class PIDControl(object):
 
 
             Pero el valor real para el día siguiente de la gelatina fue de 7
-            por lo tanto se hace un ajuste a la primer constante k1, para que 
+            por lo tanto se hace un ajuste a la primer constante k1, para que
             5 * k1 nos de un valor aproximado a 7
             los mismo para las siguientes constantes
             de manera que:
 
                 k1 * 5  = 7; 	k1 > 1
                 k2 * 7  = 1; 	k2 = 1 ... aquí se mantuvo :D
-                k3 * 13 = 13; 	k3 < 1 
+                k3 * 13 = 13; 	k3 < 1
 
                 Ejemplo:
                 De k3 ...
@@ -1141,8 +1142,8 @@ class PIDControl(object):
                     k3 > 13 ... por lo tanto k3 * 13 > 7... y eso no nos sirve, ya que
                     la venta real fue de 7, entonces nos estaríamos alejando más...
                     la idea es realizarle ajustes a la constante para que el valor se acerque a 7 :D
-                    
-        Debemos enviarle un dato, el cual es el día que queremos calcular la predicción. 
+
+        Debemos enviarle un dato, el cual es el día que queremos calcular la predicción.
         Imaginando que hoy es DOMINGO 21 de mayo, por lo tanto enviamos el día a predecir. Es decir el Lunes 22 de mayo
         """
 
@@ -1155,7 +1156,7 @@ class PIDControl(object):
         Este metodo nos retornará un PROMEDIO, pero qué promedios???
 
         1. Por DÍA [Lunes, Martes, Miercoles...]
-        2. Por Número de día de cada MES [1, 2, 3, 4... 30, 31] 
+        2. Por Número de día de cada MES [1, 2, 3, 4... 30, 31]
         3. Por día del AÑO [1, 2, 3, 4, 5, ... 363, 364, 365]
 
         La Suma de estos tres valores nos indicarán el Control Proporcional
@@ -1168,10 +1169,10 @@ class PIDControl(object):
             el promedio de ventas de TODOS los lunes de los que se tiene registro ...
 
             Mp
-            Calcular el promedio de todos los días 15 de TODOS los meses, por ejemplo 15 de enero, 
+            Calcular el promedio de todos los días 15 de TODOS los meses, por ejemplo 15 de enero,
             15 de febrero, 15 de marzo... etc
-            Ap 
-            Calcular el promedio de ventas de todos los días X de todos los años 
+            Ap
+            Calcular el promedio de ventas de todos los días X de todos los años
             enero tiene 31...
             febero... 28 ? :v
             marzo 31...
@@ -1183,7 +1184,7 @@ class PIDControl(object):
 
         Primero debemos hacer las consultas pertinentes
 
-        En esta parte nos auxiliaremos de isoweekday que nos proveé python... 
+        En esta parte nos auxiliaremos de isoweekday que nos proveé python...
         https://docs.python.org/3/library/datetime.html#datetime.date.isoweekday
 
         nos retornará un numero del 1 al 7 dependiendo de cada día
@@ -1195,7 +1196,7 @@ class PIDControl(object):
         pero nos retorna numero del 0 al 6, siendo lunes el 0 y 6 domingo
 
         Le tenemos que enviar el día del cual queremos obtener el numero
-        correspondiente para hacer las validaciones 
+        correspondiente para hacer las validaciones
 
         :rtype int
         """
@@ -1217,12 +1218,12 @@ class PIDControl(object):
         # Es obvio que si ya existe un ticket detail con la misma fecha no importa, ya que
         # sólo indicaremos que si existen tickets en ese día ...
 
-        """ 
+        """
         Ahora obtendremos el promedio de todos esos días, como son tickets details
         entonces ya incluye el producto vendido y obvio, el precio base y el total, pero necesitamos conocer el
         id de la gelatina, por lo tanto debemos pasarlo por argumento en la funcion
         en este caso pasaremos el objecto como tal...
-        Una vez encontrado el ticket detail correspondiente podremos añadir las elementos que se 
+        Una vez encontrado el ticket detail correspondiente podremos añadir las elementos que se
         vendieron en ese movimiento
         """
 
@@ -1239,7 +1240,7 @@ class PIDControl(object):
         day_average = total_elements / len(total_days_dict)
         # Promedio de dia = cantidad de elementos vendidos entre total de dias obtenidos
 
-        """ Necesitamos calcular los días totales :D ¿Cómo los calcularias? 
+        """ Necesitamos calcular los días totales :D ¿Cómo los calcularias?
         TIP: Te puedes guiar usando los tickets_details_list <- Contiene los datos que sí nos sirven
 
         TODO: Obtener la cantidad de lunes en TODOS los tiempos en los que se haya vendido la gelatina
@@ -1266,7 +1267,7 @@ class PIDControl(object):
 
             Ejemplo:
             en el día miercoles se han vendido 20 gelatinas, y sabemos que en promedio
-            hasta la fecha de hoy, en una semana cualquiera el promedio es que se vendan 
+            hasta la fecha de hoy, en una semana cualquiera el promedio es que se vendan
             50 gelatinas, por lo tanto
             Ts = 20
             Tp = 50
@@ -1279,27 +1280,62 @@ def get_control_derivativo(self):
     """
     Este método nos retornará la derivada del día anterior con respecto a su día anterior
     aquí es donde utilizaremos los mínimos cuadrados...
-    hipoteticamente, imaginando que la semana pasada se vendieron en el siguiente 
+    hipoteticamente, imaginando que la semana pasada se vendieron en el siguiente
     orden de días la cantidad de gelatinas:
-        {'Lunes': 15, 
-        'Martes': 5, 
-        'Miércoles': 9: 
-        'Jueves': 14, 
-        'Viernes': 12, 
-        'Sabado': 0, 
+        {'Lunes': 15,
+        'Martes': 5,
+        'Miércoles': 9:
+        'Jueves': 14,
+        'Viernes': 12,
+        'Sabado': 0,
         'Domingo': 15
         }
     y al realizar las operaciones de los mínimos cuadrados obtuvimos las siguientes "Predicciones":
     (Hipoteticamente)
         {'Lunes': 13,
-        'Martes': 7, 
-        'Miércoles': 8: 
-        'Jueves': 10, 
-        'Viernes': 12, 
-        'Sabado': 0, 
+        'Martes': 7,
+        'Miércoles': 8:
+        'Jueves': 10,
+        'Viernes': 12,
+        'Sabado': 0,
         'Domingo': 12
         }
     por lo tanto si hoy es lunes y queremos conocer las ventas de mañana martes utilizaríamos
     el valor correspondiente al martes: 7
 
     """
+
+class PredictionSale:
+    def __init__(self):
+        super(PredictionSale, self).__init__()
+        self.__all_sales_cartridges = None
+        self.__all_sales_cartridge_simuleted = None
+        self.__all_sales_cartridge_prediction = None
+        self.__id_prediction_cartridge = None
+        self.__sd_cartridge = None
+
+    def set_all_sales_cartridges(self):
+        SalesHelper = SalesHelper()#duda no se tiene que hace primero el set a este objeto?
+        self.__all_cartridges_sales = SalesHelper.get_all_cartridges_sales.objects.filter(cartridge__id=id)
+
+    def set_all_sales_cartridge_simuleted(self):
+        self.all_sales_cartridge_simuleted = SimulatedSale.object.all()
+
+    def set_all_sales_cartridge_prediction(self):
+        pass
+
+    def set_id_prediction_cartridge(self):
+        pass
+
+    def set_sd_cartridge(self):
+        self.__sd_cartridge = stats.mean(get_all_sales_cartridge_prediction())
+
+    def get_all_sales_cartridge_simuleted(self):
+        if self.__all_sales_cartridge_simuleted is None:
+            self.set_all_sales_cartridge_simuleted()
+        return self.__all_sales_cartridge_simuleted
+
+    def get_id_prediction_cartridge(self):
+        if self.__id_prediction_cartridge is None:
+            self.set_id_prediction_cartridge()
+        return self.__id_prediction_cartridge
