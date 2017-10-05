@@ -78,15 +78,16 @@ class Warehouse(models.Model):
         return '%s %s' % (self.supply, self.quantity)
 
     def get_quantity_stock(self):
-        if(self.measurement_unit=="GR" or self.measurement_unit=="MI"):
-            if(self.quantity>=1000):
-                return str(self.quantity/1000) + " " + self.thousand_measuremnt()
+        if self.measurement_unit == "GR" or self.measurement_unit == "MI":
+            if self.quantity >= 1000:
+                return str(self.quantity/1000) + " " + self.thousand_measurement()
             else:
                 return str(self.quantity) + " " + self.measurement_unit
-    def thousand_measuremnt(self):
-        if(self.measurement_unit=="MI"):
+
+    def thousand_measurement(self):
+        if self.measurement_unit == "MI":
             return "L"
-        if (self.measurement_unit == "GR"):
+        if self.measurement_unit == "GR":
             return "KL"
 
     class Meta:

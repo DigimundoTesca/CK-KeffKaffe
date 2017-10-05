@@ -1,26 +1,24 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
-import json
-import random
-import json
-from datetime import timedelta, date, datetime
-from datetime import timedelta, datetime, date
-from decimal import Decimal
 
-from django.db.models import Count, Sum
+import json
+
+from datetime import timedelta, datetime, date
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 
 from branchoffices.models import Supplier
 from cloudkitchen.settings.base import PAGE_TITLE
-from helpers import Helper, LeastSquares, SalesHelper, ProductsHelper
-from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm, PresentationForm, ShopListDetailForm
+from helpers import Helper, SalesHelper, ProductsHelper
+from products.forms import SuppliesCategoryForm, SuppliersForm, RecipeForm, PresentationForm
 from products.models import Cartridge, Supply, SuppliesCategory, CartridgeRecipe, Presentation
 from kitchen.models import Warehouse, ShopList, ShopListDetail
 from django.views.generic import UpdateView
 from django.views.generic import DeleteView
 from django.views.generic import CreateView
+
 
 # -------------------------------------  Suppliers -------------------------------------
 @login_required(login_url='users:login')
@@ -73,7 +71,8 @@ def supplies(request):
 
 class CreateSupply(CreateView):
     model = Supply
-    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'optimal_duration', 'optimal_duration_unit', 'location',
+    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'optimal_duration',
+              'optimal_duration_unit', 'location',
               'image']
     template_name = 'supplies/new_supply.html'
 
@@ -101,7 +100,8 @@ def supply_detail(request, pk):
 
 class UpdateSupply(UpdateView):
     model = Supply
-    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'optimal_duration', 'optimal_duration_unit', 'location',
+    fields = ['name', 'category', 'barcode', 'supplier', 'storage_required', 'optimal_duration',
+              'optimal_duration_unit', 'location',
               'image']
     template_name = 'supplies/new_supply.html'
 
@@ -281,16 +281,71 @@ class DeleteCartridge(DeleteView):
         return redirect('supplies:cartridges')
 
 
+# -------------------------------------  Catering -----~--------------------------------
+@login_required(login_url='users:login')
+def catering(request):
+    """"
+    TODO: Media para predicción. 
+    TODO: Ordenar por prioridad.
+    """
+
+    products_helper = ProductsHelper()
+    required_supplies = products_helper.get_required_supplies()
+
+    estimated_total_cost = 0
+
+    if request.method == 'POST':
+        buy_objects_list = []
+        for required in required_supplies:
+            diner_object = {
+                'Nombre': required['name'],
+                'Provedor': "proveedor",
+                'Cantidad': required['name'],
+                'Medida': required["measurement"],
+                'Presentacion': required['measurement_quantity'],
+                'Stock'
+                'Requerdio': required['required'],
+                'Costo': required['full_cost'],
+                # CHECKOUT
+                'Requeridos': required['quantity'],
+                'Stock': required['stock'],
+                'Por Comprar': required['required'],
+                'Comprar en': str(required['supplier']),
+                'Cantidad x Unidad': required['measurement_quantity'],
+                'Costo x Unidad': required['cost'],
+                'Costo Total': required['full_cost'],
+            }
+
+            buy_objects_list.append(diner_object)
+        return JsonResponse({'buy_list': buy_objects_list})
+
+    for required in required_supplies:
+        estimated_total_cost += required["full_cost"]
+
+    template = 'catering/catering.html'
+    title = 'Abastecimiento'
+
+    context = {
+        'title': title,
+        'required_supplies': required_supplies,
+        'estimated_total_cost': estimated_total_cost,
+        'page_title': PAGE_TITLE,
+        'supply_list': products_helper.get_all_supplies(),
+        'always_popular_cartridge': products_helper.get_always_popular_cartridge(),
+        'today_popular_cartridge': products_helper.get_today_popular_cartridge(),
+    }
+
+    return render(request, template, context)
+
 
 # -------------------------------------- Warehouse ---------------------------------------------
 @login_required(login_url='users:login')
 def warehouse(request):
-
     products_helper = ProductsHelper()
     warehouse_list = products_helper.get_all_elements_in_warehouse()
 
     if request.method == 'POST':
-        
+
         if request.POST['type'] == 'save_to_assembly':
 
             quantity = json.loads(request.POST.get('quantity_available'))
@@ -324,7 +379,6 @@ def warehouse(request):
 
 @login_required(login_url='users:login')
 def shop_list(request):
-
     shop_list = ShopList.objects.all()
 
     if request.method == 'POST':
@@ -377,7 +431,6 @@ def shop_list(request):
 
             return HttpResponse(date)
 
-
     template = 'catering/shoplist.html'
     title = 'Lista de Compras'
     context = {
@@ -390,7 +443,6 @@ def shop_list(request):
 
 @login_required(login_url='users:login')
 def new_shoplist(request):
-
     products_helper = ProductsHelper()
     supps = products_helper.get_all_supplies()
     all_presentations = Presentation.objects.all()
@@ -459,7 +511,7 @@ def products_analytics_b(request):
         initial_dt = helper.naive_to_datetime(date(int(initial_dt[2]), int(initial_dt[1]), int(initial_dt[0])))
         final_dt = final_dt.split('-')
         final_dt = helper.naive_to_datetime(date(int(final_dt[2]), int(final_dt[1]), int(final_dt[0])))
-        filtered_tickets_details = sales_helper.get_all_tickets_details().\
+        filtered_tickets_details = sales_helper.get_all_tickets_details(). \
             filter(ticket__created_at__range=[initial_dt, final_dt])
         all_cartridge_recipes = CartridgeRecipe.objects.select_related('cartridge').all()
         supplies_list = []
@@ -564,7 +616,6 @@ def products_analytics_b(request):
 
 @login_required(login_url='users:login')
 def products_analytics(request):
-
     template = 'analytics/analytics_r.html'
     title = 'Analytics'
 
@@ -585,9 +636,12 @@ def products_analytics(request):
             initial_date = request.POST['initial_date']
             final_date = request.POST['final_date']
             category = request.POST['category']
-            sales_quantity_selected = json.dumps(products_helper.get_sales_of_cartridges_by_range(initial_date, final_date, category))
-            sales_date_selected = json.dumps(products_helper.get_sales_of_cartridges_sep_by_date(initial_date, final_date, category))
-            return JsonResponse({'sales_quantity_selected': sales_quantity_selected, 'sales_date_selected': sales_date_selected})
+            sales_quantity_selected = json.dumps(
+                products_helper.get_sales_of_cartridges_by_range(initial_date, final_date, category))
+            sales_date_selected = json.dumps(
+                products_helper.get_sales_of_cartridges_sep_by_date(initial_date, final_date, category))
+            return JsonResponse(
+                {'sales_quantity_selected': sales_quantity_selected, 'sales_date_selected': sales_date_selected})
 
     context = {
         'title': PAGE_TITLE + ' | ' + title,
@@ -595,7 +649,7 @@ def products_analytics(request):
         'sales_date': sales_date,
         'initial_date': ini_date,
         'final_date': fin_date,
-        'page_title': title
+        'page_title': title,
     }
 
     return render(request, template, context)
